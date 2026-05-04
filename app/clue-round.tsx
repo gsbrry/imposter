@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight, SkipForward, Eye } from 'lucide-react-native';
+import { ChevronRight, Eye } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import GlassCard from '../components/GlassCard';
 import PlayerAvatar from '../components/PlayerAvatar';
@@ -65,25 +65,7 @@ export default function ClueRoundScreen() {
     if (currentIndex < game.players.length - 1) {
       setCurrentIndex(i => i + 1);
     } else {
-      if (teamVote) {
-        // all turns done + team vote ON → show reveal imposter button (handled below)
-      } else {
-        router.push('/vote');
-      }
-    }
-  };
-
-  const skipTurn = () => {
-    clearInterval(timerRef.current);
-    setTimeLeft(maxTime);
-    if (currentIndex < game.players.length - 1) {
-      setCurrentIndex(i => i + 1);
-    } else {
-      if (teamVote) {
-        router.push('/result');
-      } else {
-        router.push('/vote');
-      }
+      router.push('/vote');
     }
   };
 
@@ -100,7 +82,6 @@ export default function ClueRoundScreen() {
   const player = game.players[currentIndex];
   const progress = timerEnabled ? timeLeft / maxTime : 1;
   const isLast = currentIndex === game.players.length - 1;
-  const allTurnsDone = isLast && teamVote;
   const timeCritical = timerEnabled && timeLeft <= 10 && timeLeft > 0;
 
   if (!player) return null;
@@ -163,35 +144,22 @@ export default function ClueRoundScreen() {
 
           {/* Action buttons */}
           <View style={styles.actions}>
-            {/* Primary: Next / Reveal Imposter */}
-            {allTurnsDone ? (
-              <PillButton
-                label="REVEAL IMPOSTER"
-                onPress={revealImposter}
-                variant="yellow"
-                icon={<Eye size={18} color={COLORS.nearBlack} />}
-              />
-            ) : (
-              <PillButton
-                label={isLast ? 'Go to Vote' : `Next: ${game.players[currentIndex + 1]?.name}`}
-                onPress={goToNext}
-                variant="yellow"
-                icon={<ChevronRight size={18} color={COLORS.nearBlack} />}
-              />
-            )}
+            <PillButton
+              label={isLast ? 'Go to Vote' : `Next: ${game.players[currentIndex + 1]?.name}`}
+              onPress={goToNext}
+              variant="yellow"
+              icon={<ChevronRight size={18} color={COLORS.nearBlack} />}
+            />
 
-            {/* Secondary row */}
             <View style={styles.secondaryRow}>
-              <TouchableOpacity style={styles.skipBtn} onPress={skipTurn} activeOpacity={0.75}>
-                <SkipForward size={15} color={COLORS.textBody} />
-                <Text style={styles.skipText}>Skip Turn</Text>
+              <TouchableOpacity style={styles.ghostBtn} onPress={goToVote} activeOpacity={0.75}>
+                <Text style={styles.ghostText}>Go to Vote</Text>
               </TouchableOpacity>
 
-              {!teamVote && (
-                <TouchableOpacity style={styles.ghostBtn} onPress={goToVote} activeOpacity={0.75}>
-                  <Text style={styles.ghostText}>Go to Vote</Text>
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity style={styles.revealBtn} onPress={revealImposter} activeOpacity={0.75}>
+                <Eye size={14} color={COLORS.yellow} />
+                <Text style={styles.revealText}>Reveal Imposter</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Animated.View>
@@ -321,27 +289,10 @@ const styles = StyleSheet.create({
   secondaryRow: {
     flexDirection: 'row',
     gap: SPACING.xs,
-    justifyContent: 'center',
-  },
-  skipBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.glass,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  skipText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 13,
-    color: COLORS.textBody,
   },
   ghostBtn: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    flex: 1,
+    paddingVertical: 13,
     borderRadius: RADIUS.button,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
@@ -352,5 +303,22 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semiBold,
     fontSize: 13,
     color: COLORS.textLabel,
+  },
+  revealBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 13,
+    borderRadius: RADIUS.button,
+    borderWidth: 1,
+    borderColor: COLORS.yellowBorder,
+    backgroundColor: COLORS.yellowGlass,
+  },
+  revealText: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 13,
+    color: COLORS.yellow,
   },
 });
