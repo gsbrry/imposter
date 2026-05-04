@@ -8,6 +8,8 @@ import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
 import GlassCard from '../../components/GlassCard';
 import { storage, Settings } from '../../utils/storage';
 
+const TIMER_SOUND_KEY = 'IMPOSTR_TIMER_SOUND';
+
 export default function SettingsScreen() {
   const router = useRouter();
   const entryAnim = useRef(new Animated.Value(0)).current;
@@ -17,10 +19,12 @@ export default function SettingsScreen() {
     soundEnabled: true,
     hapticsEnabled: true,
   });
+  const [timerSound, setTimerSound] = useState(true);
 
   useEffect(() => {
-    storage.getSettings().then(s => {
+    Promise.all([storage.getSettings(), storage.getTimerSound()]).then(([s, ts]) => {
       setSettings(s);
+      setTimerSound(ts);
       Animated.parallel([
         Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
         Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
@@ -32,6 +36,11 @@ export default function SettingsScreen() {
     const next = { ...settings, [key]: value };
     setSettings(next);
     await storage.setSettings(next);
+  };
+
+  const updateTimerSound = async (value: boolean) => {
+    setTimerSound(value);
+    await storage.setTimerSound(value);
   };
 
   return (
@@ -71,6 +80,14 @@ export default function SettingsScreen() {
               description="Vibration on imposter reveal"
               value={settings.hapticsEnabled}
               onChange={v => update('hapticsEnabled', v)}
+            />
+            <Divider />
+            <SettingRow
+              icon={<Timer size={18} color={COLORS.yellow} />}
+              label="Timer sounds"
+              description="Tick and shutter sounds during countdown"
+              value={timerSound}
+              onChange={updateTimerSound}
             />
           </GlassCard>
 

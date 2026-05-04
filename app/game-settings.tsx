@@ -27,7 +27,7 @@ export default function GameSettingsScreen() {
 
   const [playerCount, setPlayerCount] = useState(defaultGameSettings.playerCount);
   const [turnsBeforeGuess, setTurnsBeforeGuess] = useState(defaultGameSettings.turnsBeforeGuess);
-  const [timerPerClue, setTimerPerClue] = useState<number | 'none' | 'custom'>(defaultGameSettings.timerPerClue);
+  const [timerPerClue, setTimerPerClue] = useState<number | 'none' | 'custom'>(30);
   const [customSeconds, setCustomSeconds] = useState(String(defaultGameSettings.customTimerSeconds));
   const [teamVote, setTeamVote] = useState(false);
 

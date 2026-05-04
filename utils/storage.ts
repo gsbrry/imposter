@@ -12,6 +12,7 @@ const KEYS = {
   GAME_SETTINGS: 'IMPOSTR_GAME_SETTINGS',
   SAVED_PLAYERS: 'IMPOSTR_SAVED_PLAYERS',
   TEAM_VOTE: 'IMPOSTR_TEAM_VOTE',
+  TIMER_SOUND: 'IMPOSTR_TIMER_SOUND',
 };
 
 export interface PlayerData {
@@ -60,7 +61,7 @@ const defaultSettings: Settings = {
 export const defaultGameSettings: GameSettings = {
   playerCount: 4,
   turnsBeforeGuess: 1,
-  timerPerClue: 'none',
+  timerPerClue: 30,
   customTimerSeconds: 60,
 };
 
@@ -107,6 +108,9 @@ export const storage = {
 
   getTeamVote: () => get<boolean>(KEYS.TEAM_VOTE, false),
   setTeamVote: (val: boolean) => set(KEYS.TEAM_VOTE, val),
+
+  getTimerSound: () => get<boolean>(KEYS.TIMER_SOUND, true),
+  setTimerSound: (val: boolean) => set(KEYS.TIMER_SOUND, val),
 
   getSavedPlayers: () => get<string[]>(KEYS.SAVED_PLAYERS, []),
   addSavedPlayers: async (names: string[]): Promise<void> => {

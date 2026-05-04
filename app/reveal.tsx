@@ -137,13 +137,20 @@ export default function RevealScreen() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     hideWord();
     if (currentIndex < game.players.length - 1) {
       setHasSeenWord(false);
       setCurrentIndex(i => i + 1);
     } else {
-      router.push('/clue-round');
+      // Last player done — check if timer is off; if so skip clue round
+      const gs = await storage.getGameSettings();
+      const tv = await storage.getTeamVote();
+      if (gs.timerPerClue === 'none') {
+        router.push(tv ? '/result' : '/vote');
+      } else {
+        router.push('/clue-round');
+      }
     }
   };
 
