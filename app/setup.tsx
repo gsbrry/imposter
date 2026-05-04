@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Lock, ChevronRight } from 'lucide-react-native';
+import { ChevronRight, Lock } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import PillButton from '../components/PillButton';
 import { CATEGORIES, CategoryKey } from '../data/words';
@@ -17,26 +17,56 @@ const DIFFICULTIES = [
   { key: 'chaos', label: 'Chaos', desc: '2 imposters' },
 ] as const;
 
+const LAST_DIFFICULTY_KEY = 'IMPOSTR_LAST_DIFFICULTY';
+
 export default function SetupScreen() {
   const router = useRouter();
   const { setGame } = useGame();
   const [category, setCategory] = useState<CategoryKey>('general');
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | 'chaos'>('medium');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | 'chaos'>('easy');
   const [isPremium, setIsPremium] = useState(false);
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(20)).current;
 
+  // Per-card pulse anims for locked cards
+  const pulseAnims = useRef(
+    Object.fromEntries(CATEGORIES.map(c => [c.id, new Animated.Value(1)]))
+  ).current;
+
   useEffect(() => {
-    storage.getLastCategory().then(c => setCategory(c as CategoryKey));
+    storage.getLastCategory().then(c => {
+      if (c) setCategory(c as CategoryKey);
+    });
     storage.getSubscription().then(setIsPremium);
+    // Load last difficulty, default 'easy'
+    import('@react-native-async-storage/async-storage').then(({ default: AS }) => {
+      AS.getItem(LAST_DIFFICULTY_KEY).then(d => {
+        if (d === 'easy' || d === 'medium' || d === 'hard' || d === 'chaos') {
+          setDifficulty(d);
+        }
+      });
+    });
     Animated.parallel([
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
   }, []);
 
+  const handleLockedPress = (catId: CategoryKey) => {
+    // Pulse animation
+    const anim = pulseAnims[catId];
+    Animated.sequence([
+      Animated.timing(anim, { toValue: 1.05, duration: 75, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: 1, duration: 75, useNativeDriver: true }),
+    ]).start();
+    router.push('/premium');
+  };
+
   const handleNext = async () => {
     await storage.setLastCategory(category);
+    await import('@react-native-async-storage/async-storage').then(({ default: AS }) =>
+      AS.setItem(LAST_DIFFICULTY_KEY, difficulty)
+    );
     setGame(g => ({
       ...g,
       category,
@@ -63,26 +93,39 @@ export default function SetupScreen() {
               const locked = !cat.free && !isPremium;
               const selected = category === cat.id;
               return (
-                <TouchableOpacity
+                <Animated.View
                   key={cat.id}
-                  onPress={() => !locked && setCategory(cat.id)}
-                  activeOpacity={locked ? 1 : 0.75}
-                  style={[
-                    styles.catBtn,
-                    selected && styles.catSelected,
-                    locked && styles.catLocked,
-                  ]}
+                  style={{ width: '31%', transform: [{ scale: pulseAnims[cat.id] }] }}
                 >
-                  <Text style={styles.catEmoji}>{cat.emoji}</Text>
-                  <Text style={[styles.catLabel, selected && styles.catLabelSelected]}>
-                    {cat.label}
-                  </Text>
-                  {locked && (
-                    <View style={styles.lockBadge}>
-                      <Lock size={9} color={COLORS.nearBlack} />
-                    </View>
-                  )}
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => locked ? handleLockedPress(cat.id) : setCategory(cat.id)}
+                    activeOpacity={0.75}
+                    style={[
+                      styles.catBtn,
+                      selected && styles.catSelected,
+                      locked && styles.catLocked,
+                    ]}
+                  >
+                    <Text style={styles.catEmoji}>{cat.emoji}</Text>
+                    <Text style={[
+                      styles.catLabel,
+                      selected && styles.catLabelSelected,
+                      locked && styles.catLabelLocked,
+                    ]}>
+                      {cat.label}
+                    </Text>
+                    {locked && (
+                      <>
+                        <View style={styles.lockCircle}>
+                          <Lock size={9} color={COLORS.nearBlack} />
+                        </View>
+                        <View style={styles.premiumBadge}>
+                          <Text style={styles.premiumBadgeText}>PREMIUM</Text>
+                        </View>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </Animated.View>
               );
             })}
           </View>
@@ -149,7 +192,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   catBtn: {
-    width: '31%',
     aspectRatio: 0.95,
     borderRadius: RADIUS.card,
     backgroundColor: COLORS.glass,
@@ -159,12 +201,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SPACING.xs,
     gap: 6,
+    overflow: 'hidden',
   },
   catSelected: {
     borderColor: COLORS.yellow,
     backgroundColor: COLORS.yellowGlass,
   },
-  catLocked: { opacity: 0.4 },
+  catLocked: {
+    backgroundColor: 'rgba(255,214,0,0.08)',
+    borderColor: 'rgba(255,214,0,0.35)',
+  },
   catEmoji: { fontSize: 26 },
   catLabel: {
     fontFamily: FONTS.semiBold,
@@ -173,13 +219,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   catLabelSelected: { color: COLORS.yellow },
-  lockBadge: {
+  catLabelLocked: { color: 'rgba(255,255,255,0.6)' },
+  lockCircle: {
     width: 18,
     height: 18,
     borderRadius: 9,
     backgroundColor: COLORS.yellow,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  premiumBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: COLORS.yellow,
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  premiumBadgeText: {
+    fontFamily: FONTS.extraBold,
+    fontSize: 7,
+    color: COLORS.nearBlack,
+    letterSpacing: 0.3,
   },
 
   sectionHeader: { marginBottom: SPACING.xs },

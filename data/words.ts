@@ -19,7 +19,7 @@ export interface Category {
 }
 
 export const CATEGORIES: Category[] = [
-  { id: 'general', label: 'General Knowledge', emoji: '🧠', free: true },
+  { id: 'general', label: 'General', emoji: '🧠', free: true },
   { id: 'vehicles', label: 'Vehicles', emoji: '🚗', free: true },
   { id: 'home', label: 'Home & Household', emoji: '🏠', free: true },
   { id: 'food', label: 'Food & Drinks', emoji: '🍛', free: false },

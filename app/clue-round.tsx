@@ -21,6 +21,7 @@ export default function ClueRoundScreen() {
   const [maxTime, setMaxTime] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
   const [teamVote, setTeamVote] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(20)).current;
@@ -38,6 +39,7 @@ export default function ClueRoundScreen() {
         setMaxTime(seconds);
         setTimeLeft(seconds);
         setTeamVote(tv);
+        setSettingsLoaded(true);
       }
     );
     Animated.parallel([
@@ -47,6 +49,7 @@ export default function ClueRoundScreen() {
   }, []);
 
   useEffect(() => {
+    if (!settingsLoaded) return;
     clearInterval(timerRef.current);
     if (!timerEnabled) return;
     setTimeLeft(maxTime);
@@ -57,7 +60,7 @@ export default function ClueRoundScreen() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [timerEnabled, maxTime, currentIndex]);
+  }, [timerEnabled, maxTime, currentIndex, settingsLoaded]);
 
   const goToNext = () => {
     clearInterval(timerRef.current);
@@ -65,7 +68,13 @@ export default function ClueRoundScreen() {
     if (currentIndex < game.players.length - 1) {
       setCurrentIndex(i => i + 1);
     } else {
-      router.push('/vote');
+      // All turns done
+      if (teamVote) {
+        // Team vote ON: go straight to result, skipping vote
+        router.push('/result');
+      } else {
+        router.push('/vote');
+      }
     }
   };
 
@@ -82,7 +91,21 @@ export default function ClueRoundScreen() {
   const player = game.players[currentIndex];
   const progress = timerEnabled ? timeLeft / maxTime : 1;
   const isLast = currentIndex === game.players.length - 1;
+  const allTurnsDone = isLast;
   const timeCritical = timerEnabled && timeLeft <= 10 && timeLeft > 0;
+
+  // Primary button label depends on team vote mode
+  const primaryLabel = teamVote
+    ? (allTurnsDone ? 'REVEAL IMPOSTER' : `Next: ${game.players[currentIndex + 1]?.name}`)
+    : (isLast ? 'Go to Vote' : `Next: ${game.players[currentIndex + 1]?.name}`);
+
+  const handlePrimary = () => {
+    if (teamVote && allTurnsDone) {
+      revealImposter();
+    } else {
+      goToNext();
+    }
+  };
 
   if (!player) return null;
 
@@ -145,22 +168,29 @@ export default function ClueRoundScreen() {
           {/* Action buttons */}
           <View style={styles.actions}>
             <PillButton
-              label={isLast ? 'Go to Vote' : `Next: ${game.players[currentIndex + 1]?.name}`}
-              onPress={goToNext}
+              label={primaryLabel}
+              onPress={handlePrimary}
               variant="yellow"
-              icon={<ChevronRight size={18} color={COLORS.nearBlack} />}
+              icon={
+                teamVote && allTurnsDone
+                  ? <Eye size={18} color={COLORS.nearBlack} />
+                  : <ChevronRight size={18} color={COLORS.nearBlack} />
+              }
             />
 
-            <View style={styles.secondaryRow}>
-              <TouchableOpacity style={styles.ghostBtn} onPress={goToVote} activeOpacity={0.75}>
-                <Text style={styles.ghostText}>Go to Vote</Text>
-              </TouchableOpacity>
+            {/* Secondary row — only shown when NOT in team vote mode */}
+            {!teamVote && (
+              <View style={styles.secondaryRow}>
+                <TouchableOpacity style={styles.ghostBtn} onPress={goToVote} activeOpacity={0.75}>
+                  <Text style={styles.ghostText}>Go to Vote</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity style={styles.revealBtn} onPress={revealImposter} activeOpacity={0.75}>
-                <Eye size={14} color={COLORS.yellow} />
-                <Text style={styles.revealText}>Reveal Imposter</Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity style={styles.revealBtn} onPress={revealImposter} activeOpacity={0.75}>
+                  <Eye size={14} color={COLORS.yellow} />
+                  <Text style={styles.revealText}>Reveal Imposter</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </Animated.View>
       </SafeAreaView>
