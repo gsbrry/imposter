@@ -1,0 +1,296 @@
+{
+  "general": {
+    "easy": [
+      "Chair", "Table", "Clock", "Mirror", "Pillow", "Bucket", "Lamp", "Book", "Pen", "Door",
+      "Window", "Phone", "Bag", "Shoe", "Hat", "Sock", "Cup", "Plate", "Fork", "Knife",
+      "Spoon", "Bowl", "Box", "Key", "Lock", "Ball", "Toy", "Rope", "Nail", "Glue",
+      "Tape", "Brush", "Comb", "Ring", "Watch", "Belt", "Wallet", "Coin", "Stamp", "Card",
+      "Map", "Ruler", "Eraser", "Pencil", "Notebook", "Folder", "Bottle", "Can", "Jar", "Umbrella"
+    ],
+    "medium": [
+      "Compass", "Telescope", "Hammock", "Lantern", "Puzzle", "Candle", "Ladder", "Anchor",
+      "Magnifier", "Microscope", "Binoculars", "Thermometer", "Barometer", "Calendar",
+      "Calculator", "Typewriter", "Projector", "Scanner", "Printer", "Stapler",
+      "Hourglass", "Gyroscope", "Pendulum", "Metronome", "Sundial", "Abacus", "Globe",
+      "Atlas", "Dictionary", "Encyclopedia", "Thesaurus", "Blueprint", "Diagram", "Schematic",
+      "Prototype", "Specimen", "Artifact", "Relic", "Fossil", "Crystal", "Prism", "Lens",
+      "Periscope", "Kaleidoscope", "Sextant", "Astrolabe", "Stopwatch", "Compass", "Vault", "Ledger"
+    ],
+    "hard": [
+      "Theodolite", "Clinometer", "Spectrometer", "Interferometer", "Oscilloscope",
+      "Voltmeter", "Galvanometer", "Hygrometer", "Anemometer", "Seismograph",
+      "Tachometer", "Chronometer", "Stethoscope", "Ophthalmoscope", "Otoscope",
+      "Forceps", "Scalpel", "Retractor", "Curette", "Lancet", "Trocar", "Cannula",
+      "Catheter", "Tourniquet", "Manometer", "Rheometer", "Viscometer", "Refractometer",
+      "Densitometer", "Calorimeter", "Photometer", "Radiometer", "Pyrometer", "Bolometer",
+      "Actinometer", "Dosimeter", "Scintillator", "Magnetometer", "Gravimeter", "Inclinometer",
+      "Tiltmeter", "Extensometer", "Piezometer", "Tensiometer", "Lysimeter", "Infiltrometer",
+      "Evaporimeter", "Atmometer", "Nephoscope", "Ceilometer"
+    ]
+  },
+  "vehicles": {
+    "easy": [
+      "Car", "Bus", "Train", "Bike", "Truck", "Van", "Taxi", "Scooter", "Tractor", "Ferry",
+      "Boat", "Ship", "Plane", "Rocket", "Helicopter", "Cycle", "Auto", "Jeep", "Cab", "Cart",
+      "Rickshaw", "Tuk-tuk", "Minibus", "Lorry", "Coach", "Caravan", "Ambulance", "Firetruck", "Subway", "Tram",
+      "Monorail", "Cable car", "Gondola", "Canoe", "Kayak", "Raft", "Yacht", "Catamaran",
+      "Glider", "Balloon", "Airship", "Drone", "Segway", "Skateboard", "Surfboard", "Toboggan",
+      "Sled", "Chariot", "Barge", "Motorboat"
+    ],
+    "medium": [
+      "Submarine", "Zeppelin", "Hovercraft", "Hydrofoil", "Trimaran", "Skiff",
+      "Dinghy", "Galleon", "Frigate", "Destroyer", "Cruiser", "Corvette", "Tanker",
+      "Freighter", "Container ship", "Tugboat", "Dredger", "Icebreaker", "Lifeboat", "Speedboat",
+      "Pontoon", "Houseboat", "Narrowboat", "Paddleboat", "Rowboat", "Sailboat",
+      "Paraglider", "Hang glider", "Ultralight", "Seaplane", "Float plane", "Flying boat", "Biplane",
+      "Monoplane", "Fighter jet", "Bomber", "Cargo plane", "Jumbo jet", "Concorde",
+      "Space shuttle", "Spacecraft", "Satellite", "Rover", "Lander", "Probe",
+      "Hatchback", "Convertible", "Pickup truck", "Steamboat", "Trireme"
+    ],
+    "hard": [
+      "Bathyscaphe", "Bathysphere", "Submersible", "Hydroplane", "Ground effect vehicle",
+      "Ekranoplan", "Ornithopter", "Autogyro", "Gyrodyne", "Convertiplane",
+      "Tiltrotor", "Tiltwing", "Cyclogyro", "Dynaship", "Maglev",
+      "Hyperloop", "Scramjet", "Ramjet", "Pulsejet", "Turbojet", "Turboprop", "Turbofan",
+      "Turboshaft", "Rocket sled", "Linear motor", "Monorail capsule", "Personal rapid transit",
+      "Automated guideway", "Cable propelled", "Funicular", "Rack railway", "Cog railway",
+      "Aerobus", "Tracked air cushion", "Aerodyne", "Wing in ground", "Wuppertal monorail",
+      "Vactrain", "Vectored thrust", "Tiltplane", "Lifting body", "Transoceanic", "Exoatmospheric",
+      "Rotorcraft", "Gyrodyneplane", "Cyclocopter", "Aeromobile", "Roadable aircraft",
+      "Flying car", "Jetpack"
+    ]
+  },
+  "home": {
+    "easy": [
+      "Sofa", "Bed", "Wardrobe", "Fridge", "Oven", "Microwave", "Kettle", "Toaster", "Fan", "AC",
+      "TV", "Radio", "Vacuum", "Mop", "Broom", "Dustpan", "Bucket", "Sponge", "Soap", "Shampoo",
+      "Towel", "Pillow", "Blanket", "Curtain", "Mattress", "Shelf", "Mirror", "Tap", "Sink", "Toilet",
+      "Shower", "Bathtub", "Doorbell", "Doormat", "Flowerpot", "Painting", "Photo frame", "Vase",
+      "Candle", "Clock", "Table lamp", "Floor lamp", "Ceiling fan", "Tubelight", "Switchboard",
+      "Extension cord", "Mixer", "Grinder", "Blender", "Juicer"
+    ],
+    "medium": [
+      "Pressure cooker", "Ladle", "Rolling pin", "Chopping board", "Colander", "Sieve", "Whisk",
+      "Spatula", "Tongs", "Peeler", "Grater", "Mortar", "Pestle", "Casserole", "Dutch oven",
+      "Wok", "Steamer", "Slow cooker", "Bread maker", "Ice cream maker", "Waffle maker",
+      "Sandwich press", "Dehumidifier", "Humidifier", "Air purifier", "Water purifier",
+      "Garbage disposal", "Dishwasher", "Washing machine", "Dryer", "Iron", "Ironing board",
+      "Sewing machine", "Thimble", "Bobbin", "Needle threader", "Seam ripper", "Tailor chalk",
+      "Pattern paper", "Dress form", "Mannequin", "Plunger", "Pipe wrench", "Spirit level",
+      "Wall anchor", "Rawlplug", "Caulking gun", "Heat gun", "Angle grinder", "Jigsaw"
+    ],
+    "hard": [
+      "Vermiculite", "Perlite", "Hydroponics", "Aeroponics", "Aquaponics", "Vermicompost",
+      "Bokashi", "Biodigester", "Composter", "Wormery", "Rainwater harvester",
+      "Greywater recycler", "Soakaway", "French drain", "Sump pump", "Sewage treatment",
+      "Septic tank", "Cesspit", "Standpipe", "Ballcock", "Stopcock", "Isolator valve",
+      "Pressure relief", "Expansion vessel", "Radiator bleed", "Thermostatic valve",
+      "Zone valve", "Manifold", "Header tank", "Cold water cistern", "Loft insulation",
+      "Cavity wall insulation", "Underfloor heating", "Heat pump", "MVHR", "Biomass boiler",
+      "Solar thermal", "Photovoltaic", "Battery storage", "Smart meter", "Occupancy sensor",
+      "PIR detector", "Smoke ionisation", "Heat detector", "CO detector", "Radon sump",
+      "Damp proof course", "Tanking slurry", "Electro-osmosis", "Needle beam"
+    ]
+  },
+  "food": {
+    "easy": [
+      "Rice", "Roti", "Dal", "Curry", "Chai", "Samosa", "Biryani", "Dosa", "Idli", "Poha",
+      "Upma", "Paratha", "Naan", "Puri", "Kulfi", "Lassi", "Mango", "Banana", "Apple", "Potato",
+      "Onion", "Tomato", "Spinach", "Carrot", "Peas", "Lentil", "Egg", "Milk", "Butter", "Paneer",
+      "Curd", "Ghee", "Cumin", "Turmeric", "Ginger", "Garlic", "Chilli", "Coriander", "Pepper",
+      "Sugar", "Salt", "Oil", "Tamarind", "Coconut", "Cashew", "Almond", "Peanut", "Raisin",
+      "Bread", "Butter chicken"
+    ],
+    "medium": [
+      "Dhokla", "Rasam", "Pav Bhaji", "Chhole Bhature", "Rajma Chawal", "Kadhi Pakora",
+      "Aloo Gobi", "Matar Paneer", "Saag", "Methi", "Baingan Bharta", "Jeera Rice", "Pulao",
+      "Khichdi", "Halwa", "Gulab Jamun", "Rasgulla", "Jalebi", "Ladoo", "Barfi", "Peda",
+      "Kheer", "Rabri", "Phirni", "Payasam", "Pongal", "Appam", "Uttapam", "Pesarattu",
+      "Adai", "Medu Vada", "Sambhar", "Kootu", "Aviyal", "Olan", "Thoran", "Pachadi",
+      "Raita", "Chutney", "Pickle", "Papad", "Fryums", "Kachori", "Misal Pav", "Vada Pav",
+      "Bhel Puri", "Sev Puri", "Dahi Puri", "Pani Puri", "Aloo Tikki"
+    ],
+    "hard": [
+      "Kokum", "Asafoetida", "Nigella", "Mace", "Ajwain", "Kalonji", "Star anise",
+      "Fenugreek", "Cardamom", "Fennel pollen", "Sumac", "Za'atar", "Harissa",
+      "Ras el hanout", "Berbere", "Dukkah", "Baharat", "Chermoula", "Mole", "Sofrito",
+      "Mirepoix", "Brunoise", "Julienne", "Chiffonade", "Tourner", "Beurre blanc",
+      "Hollandaise", "Béarnaise", "Velouté", "Espagnole", "Béchamel", "Allemande",
+      "Soubise", "Mousseline", "Gribiche", "Remoulade", "Ravigote", "Verjuice",
+      "Agrodolce", "Mostarda", "Gremolata", "Persillade", "Salsa verde", "Romesco",
+      "Chimichurri", "Adjika", "Tkemali", "Muhammara", "Zhug", "Shatta"
+    ]
+  },
+  "bollywood": {
+    "easy": [
+      "Hero", "Villain", "Song", "Dance", "Film", "Actor", "Actress", "Director", "Producer", "Script",
+      "Scene", "Role", "Makeup", "Costume", "Stage", "Camera", "Lights", "Action", "Cut", "Take",
+      "Trailer", "Poster", "Award", "Fan", "Star", "Celebrity", "Interview", "Review", "Rating", "Sequel",
+      "Remake", "Comedy", "Drama", "Romance", "Horror", "Thriller", "Mystery", "Musical", "Biopic",
+      "Debut", "Release", "Blockbuster", "Flop", "Hit", "Superhit", "Climax", "Interval", "Flashback",
+      "Plot", "Dialogue"
+    ],
+    "medium": [
+      "Stunt double", "Choreographer", "Item number", "Playback singer", "Lyricist",
+      "Music director", "Cinematographer", "Editor", "Art director", "Set designer",
+      "Costume designer", "Casting director", "Dialogue writer", "Screenplay", "Narration",
+      "Voiceover", "Dubbing", "ADR", "Foley", "Continuity", "Location scout",
+      "Production designer", "Visual effects", "Motion capture", "Green screen",
+      "Post production", "Color grading", "Sound mixing", "Background score", "Title track",
+      "Montage", "Close-up", "Pan shot", "Crane shot", "Dolly shot", "Tracking shot",
+      "Aerial shot", "Point of view", "Establishing shot", "Reaction shot", "Cutaway",
+      "Insert", "Freeze frame", "Slow motion", "Time lapse", "Split screen",
+      "Wipe", "Dissolve", "Jump cut", "Match cut"
+    ],
+    "hard": [
+      "Auteur", "Verisimilitude", "Diegetic", "Non-diegetic", "Mise en scène",
+      "Nouvelle Vague", "Neorealism", "Expressionism", "Surrealism", "Dogme 95",
+      "Cinema verité", "Direct cinema", "Found footage", "Mockumentary", "Pseudo-documentary",
+      "Deconstruction", "Postmodern", "Intertextuality", "Metafiction", "Metalepsis",
+      "Diegesis", "Focalization", "Analepsis", "Prolepsis", "Ellipsis",
+      "Polyphony", "Heteroglossia", "Carnivalesque", "Defamiliarisation", "Ostranenie",
+      "Skaz", "Unreliable narrator", "Implied author", "Extradiegetic", "Intradiegetic",
+      "Hypodiegetic", "Fabula", "Syuzhet", "Exposition", "Inciting incident",
+      "Rising action", "Falling action", "Denouement", "Catharsis", "Hamartia",
+      "Anagnorisis", "Peripeteia", "Hubris", "Nemesis", "Pathos"
+    ]
+  },
+  "sports": {
+    "easy": [
+      "Cricket", "Football", "Tennis", "Badminton", "Hockey", "Basketball", "Volleyball",
+      "Swimming", "Running", "Cycling", "Boxing", "Wrestling", "Kabaddi", "Kho-kho",
+      "Carrom", "Chess", "Ludo", "Snooker", "Billiards", "Golf", "Rugby", "Baseball",
+      "Softball", "Handball", "Netball", "Polo", "Archery", "Shooting", "Fencing",
+      "Judo", "Karate", "Taekwondo", "Gymnastics", "Athletics", "Marathon", "Triathlon",
+      "Pentathlon", "Decathlon", "Rowing", "Sailing", "Surfing", "Skiing", "Snowboard",
+      "Skating", "Diving", "Climbing", "Hiking", "Squash", "Table tennis", "Lacrosse"
+    ],
+    "medium": [
+      "Googly", "Boundary", "Hat-trick", "Umpire", "Penalty", "Wicket", "Referee",
+      "Free throw", "Serve", "Deuce", "Advantage", "Love", "Ace", "Fault", "Let",
+      "Rally", "Smash", "Drop shot", "Lob", "Offside", "Foul", "Yellow card", "Red card",
+      "Corner kick", "Free kick", "Penalty kick", "Throw-in", "Innings", "Over",
+      "Run rate", "Duck", "Century", "Half-century", "Maiden over", "No-ball", "Wide",
+      "Bouncer", "Yorker", "Full toss", "Reverse swing", "Doosra", "Carrom ball",
+      "Flipper", "Chinaman", "Seam bowling", "Swing bowling", "Spin bowling",
+      "Power play", "Super over", "DRS review"
+    ],
+    "hard": [
+      "Plyometrics", "Proprioception", "Periodisation", "Supercompensation", "VO2 max",
+      "Lactate threshold", "Anaerobic threshold", "Oxygen debt", "Phosphocreatine",
+      "Glycolysis", "Krebs cycle", "Oxidative phosphorylation", "Slow twitch", "Fast twitch",
+      "Hypertrophy", "Sarcomere", "Myofibril", "Actin", "Myosin", "Tropomyosin",
+      "Troponin", "Sarcolemma", "Sarcoplasm", "Sarcoplasmic reticulum",
+      "Neuromuscular junction", "Motor unit", "Recruitment", "Rate coding",
+      "Glycogen depletion", "Rhabdomyolysis", "DOMS", "Creatine kinase",
+      "Lactate dehydrogenase", "Cortisol", "Testosterone", "IGF-1", "EPO",
+      "Haematocrit", "Cardiac output", "Stroke volume", "Heart rate variability",
+      "Baroreceptor", "Venous return", "Arteriovenous", "Mitochondrial density",
+      "Capillary density", "Glycogen synthase", "Phosphofructokinase",
+      "Citrate synthase", "Beta oxidation"
+    ]
+  },
+  "animals": {
+    "easy": [
+      "Dog", "Cat", "Cow", "Horse", "Elephant", "Lion", "Tiger", "Bear", "Monkey", "Rabbit",
+      "Bird", "Fish", "Snake", "Frog", "Butterfly", "Bee", "Ant", "Spider", "Fly", "Mosquito",
+      "Parrot", "Crow", "Sparrow", "Eagle", "Owl", "Duck", "Hen", "Cock", "Turkey", "Peacock",
+      "Deer", "Fox", "Wolf", "Zebra", "Giraffe", "Hippo", "Rhino", "Camel", "Kangaroo", "Koala",
+      "Penguin", "Polar bear", "Seal", "Whale", "Dolphin", "Shark", "Crocodile", "Tortoise",
+      "Lizard", "Chameleon"
+    ],
+    "medium": [
+      "Pangolin", "Firefly", "Albatross", "Narwhal", "Platypus", "Axolotl", "Tardigrade",
+      "Sloth", "Armadillo", "Tapir", "Capybara", "Alpaca", "Vicuna", "Guanaco", "Llama",
+      "Dromedary", "Bactrian", "Yak", "Buffalo", "Gaur", "Banteng", "Anoa", "Takin",
+      "Goral", "Serow", "Chamois", "Ibex", "Markhor", "Tahr", "Nilgai", "Chinkara",
+      "Blackbuck", "Saiga", "Pronghorn", "Okapi", "Bongo", "Sitatunga", "Bushbuck",
+      "Kudu", "Nyala", "Eland", "Gemsbok", "Oryx", "Addax", "Dik-dik",
+      "Klipspringer", "Steenbok", "Grysbok", "Springbok", "Impala"
+    ],
+    "hard": [
+      "Proboscidea", "Sirenia", "Hyracoidea", "Tenrecidae", "Potamogalidae",
+      "Chrysochloridae", "Macroscelididae", "Tubulidentata", "Pholidota", "Erinaceidae",
+      "Talpidae", "Soricidae", "Crocidura", "Suncus", "Diplomesodon",
+      "Scutisorex", "Nectogale", "Chimarrogale", "Neomys", "Episoriculus",
+      "Sorex", "Microsorex", "Cryptotis", "Blarina", "Blarinella",
+      "Notiosorex", "Megasorex", "Limnosorex", "Sylvisorex", "Myosorex",
+      "Surdisorex", "Ruwenzorisorex", "Congosorex", "Potamogale", "Micropotamogale",
+      "Geogale", "Microgale", "Oryzorictes", "Limnogale", "Nesogale",
+      "Hemicentetes", "Setifer", "Tenrec", "Echinops", "Dasogale",
+      "Solenodon", "Nesophontes", "Desmana", "Galemys", "Condylura"
+    ]
+  },
+  "jobs": {
+    "easy": [
+      "Doctor", "Teacher", "Engineer", "Farmer", "Driver", "Cook", "Nurse", "Pilot", "Police",
+      "Soldier", "Lawyer", "Judge", "Manager", "Clerk", "Cashier", "Waiter", "Barber", "Tailor",
+      "Plumber", "Electrician", "Carpenter", "Painter", "Mechanic", "Welder", "Mason", "Gardener",
+      "Janitor", "Guard", "Postman", "Cobbler", "Banker", "Accountant", "Journalist",
+      "Photographer", "Designer", "Architect", "Programmer", "Artist", "Musician", "Actor",
+      "Singer", "Dancer", "Chef", "Baker", "Butcher", "Fisherman", "Hunter", "Shepherd",
+      "Miner", "Economist"
+    ],
+    "medium": [
+      "Archaeologist", "Sommelier", "Air traffic controller", "Actuary", "Taxidermist",
+      "Podiatrist", "Notary", "Archivist", "Cartographer", "Cryptographer",
+      "Epidemiologist", "Toxicologist", "Forensic scientist", "Serologist", "Odontologist",
+      "Anthropologist", "Ethnographer", "Demographer", "Geomorphologist", "Hydrologist",
+      "Glaciologist", "Volcanologist", "Seismologist", "Meteorologist", "Climatologist",
+      "Oceanographer", "Limnologist", "Pedologist", "Phytologist", "Bryologist",
+      "Pteridologist", "Lichenologist", "Mycologist", "Algologist", "Protozoologist",
+      "Helminthologist", "Entomologist", "Arachnologist", "Malacologist", "Carcinologist",
+      "Ichthyologist", "Herpetologist", "Ornithologist", "Mammalogist", "Cetologist",
+      "Primatologist", "Ethologist", "Sociobiologist", "Palaeontologist", "Gemmologist"
+    ],
+    "hard": [
+      "Phlebotomist", "Cytopathologist", "Histopathologist", "Neuropathologist",
+      "Immunopathologist", "Haematopathologist", "Dermatopathologist", "Surgical pathologist",
+      "Forensic pathologist", "Veterinary pathologist", "Plant pathologist",
+      "Avian pathologist", "Molecular pathologist", "Comparative pathologist",
+      "Teratologist", "Oncologist", "Haematologist", "Rheumatologist", "Immunologist",
+      "Allergologist", "Endocrinologist", "Diabetologist", "Metabolologist", "Lipidologist",
+      "Hepatologist", "Gastroenterologist", "Proctologist", "Colorectal surgeon",
+      "Pancreatologist", "Nephrologist", "Urologist", "Andrologist", "Gynaecologist",
+      "Perinatologist", "Fetologist", "Neonatologist", "Paediatric cardiologist",
+      "Paediatric neurologist", "Child psychiatrist", "Geriatrician", "Gerontologist",
+      "Palliative care", "Intensivist", "Hospitalist", "Physiatrist",
+      "Occupational physician", "Aviation medicine", "Hyperbaric physician",
+      "Wilderness medicine", "Sports medicine"
+    ]
+  },
+  "festival": {
+    "easy": [
+      "Diwali", "Holi", "Eid", "Christmas", "Navratri", "Durga Puja", "Ganesh Chaturthi",
+      "Onam", "Pongal", "Baisakhi", "Lohri", "Makar Sankranti", "Ugadi", "Bihu", "Vishu",
+      "New Year", "Easter", "Dussehra", "Janmashtami", "Raksha Bandhan",
+      "Firework", "Cracker", "Lamp", "Gift", "Sweet", "Feast", "Dance", "Music",
+      "Decoration", "Flower", "Garland", "Rangoli", "Mehendi", "Diya", "Lantern",
+      "Balloon", "Confetti", "Ribbon", "Cake", "Card", "Present", "Party", "Costume",
+      "Mask", "Parade", "Procession", "Puja", "Prayer", "Candle", "Incense"
+    ],
+    "medium": [
+      "Iftar", "Mithai", "Carol", "Wassail", "Advent", "Epiphany", "Candlemas",
+      "Lent", "Ash Wednesday", "Palm Sunday", "Good Friday", "Pentecost",
+      "Corpus Christi", "All Saints", "All Souls", "Nativity", "Yule log",
+      "Mistletoe", "Wassail bowl", "Plum pudding", "Mince pie", "Panettone",
+      "Stollen", "Buche de Noel", "Sinterklaas", "Belsnickel", "Christkind",
+      "Weihnachtsmann", "Babbo Natale", "Ded Moroz", "Joulupukki", "Julenisse",
+      "Jultomten", "Father Christmas", "Aarti", "Prasad", "Bhog", "Sindoor",
+      "Kumkum", "Tilak", "Bindi", "Vibhuti", "Sandalwood", "Camphor",
+      "Dhoop", "Agarbatti", "Kalash", "Mangalsutra", "Thali", "Coconut breaking"
+    ],
+    "hard": [
+      "Liminality", "Communitas", "Rites of passage", "Threshold rites", "Incorporation",
+      "Separation", "Aggregation", "Betwixt and between", "Social drama", "Redressive action",
+      "Schism", "Reintegration", "Breach", "Crisis", "Calendrical ritual",
+      "Life cycle ritual", "Rites of intensification", "Rites of affliction",
+      "Rites of inversion", "Anti-structure", "Ritual elders", "Neophyte",
+      "Liminars", "Ritual pollution", "Ritual purity", "Taboo", "Totem",
+      "Mana", "Tapu", "Noa", "Hau", "Potlatch", "Kula", "Moka",
+      "Wantok", "Kastom", "Bigman", "Headman", "Shaman", "Diviner",
+      "Spirit possession", "Trance", "Ecstasy", "Apotropaic", "Votive",
+      "Ex-voto", "Circumambulation", "Ablution", "Lustration", "Catharsis"
+    ]
+  }
+}
