@@ -11,6 +11,7 @@ const KEYS = {
   LAST_CATEGORY: 'IMPOSTR_LAST_CATEGORY',
   GAME_SETTINGS: 'IMPOSTR_GAME_SETTINGS',
   SAVED_PLAYERS: 'IMPOSTR_SAVED_PLAYERS',
+  TEAM_VOTE: 'IMPOSTR_TEAM_VOTE',
 };
 
 export interface PlayerData {
@@ -36,8 +37,8 @@ export interface Settings {
 
 export interface GameSettings {
   playerCount: number;
-  cluesPerPlayer: number;
-  timerPerClue: number | 'custom';
+  turnsBeforeGuess: number;
+  timerPerClue: number | 'none' | 'custom';
   customTimerSeconds: number;
 }
 
@@ -58,8 +59,8 @@ const defaultSettings: Settings = {
 
 export const defaultGameSettings: GameSettings = {
   playerCount: 4,
-  cluesPerPlayer: 1,
-  timerPerClue: 30,
+  turnsBeforeGuess: 1,
+  timerPerClue: 'none',
   customTimerSeconds: 60,
 };
 
@@ -103,6 +104,9 @@ export const storage = {
 
   getGameSettings: () => get<GameSettings>(KEYS.GAME_SETTINGS, defaultGameSettings),
   setGameSettings: (s: GameSettings) => set(KEYS.GAME_SETTINGS, s),
+
+  getTeamVote: () => get<boolean>(KEYS.TEAM_VOTE, false),
+  setTeamVote: (val: boolean) => set(KEYS.TEAM_VOTE, val),
 
   getSavedPlayers: () => get<string[]>(KEYS.SAVED_PLAYERS, []),
   addSavedPlayers: async (names: string[]): Promise<void> => {

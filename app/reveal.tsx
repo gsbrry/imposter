@@ -3,7 +3,8 @@ import {
   View, Text, StyleSheet, TouchableOpacity, Animated, SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ghost, ShieldCheck, Eye, EyeOff } from 'lucide-react-native';
+import { Ghost, ShieldCheck } from 'lucide-react-native';
+import { Eye, EyeSlash } from 'phosphor-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import PlayerAvatar from '../components/PlayerAvatar';
 import { useGame } from '../context/GameContext';
@@ -103,6 +104,7 @@ export default function RevealScreen() {
   const scrambledWord = useScramble(game.word || '', scrambleRunning);
 
   const showWord = () => {
+    clearTimeout(lockTimer.current);
     setWordVisible(true);
     setHasSeenWord(true);
     setScrambleRunning(true);
@@ -125,6 +127,14 @@ export default function RevealScreen() {
       Animated.spring(scaleAnim, { toValue: 0.8, useNativeDriver: true }),
       Animated.timing(opacityAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
     ]).start();
+  };
+
+  const toggleWord = () => {
+    if (wordVisible) {
+      hideWord();
+    } else {
+      showWord();
+    }
   };
 
   const handleNext = () => {
@@ -178,46 +188,52 @@ export default function RevealScreen() {
             <Text style={styles.playerName}>{player.name}</Text>
           </View>
 
-          {/* Word area */}
-          {!wordVisible ? (
-            <TouchableOpacity style={styles.tapArea} onPress={showWord} activeOpacity={0.85}>
-              <View style={styles.eyeCircle}>
-                <Eye size={28} color={COLORS.yellow} />
-              </View>
-              <Text style={styles.tapText}>TAP TO SEE YOUR WORD</Text>
-              <Text style={styles.tapSubtext}>Make sure only {player.name} can see</Text>
-            </TouchableOpacity>
-          ) : (
-            <Animated.View
-              style={[
-                styles.revealCard,
-                { transform: [{ scale: scaleAnim }], opacity: opacityAnim },
-              ]}
-            >
-              {isImposter ? (
-                <>
-                  <Ghost size={48} color={COLORS.yellow} />
-                  <Text style={styles.imposterLabel}>IMPOSTER</Text>
-                  <Text style={styles.imposterSub}>Blend in — you don't know the word.</Text>
-                  {game.difficulty === 'easy' && (
-                    <View style={styles.hintBadge}>
-                      <Text style={styles.hintText}>HINT: {game.hint}</Text>
-                    </View>
-                  )}
-                </>
-              ) : (
-                <>
-                  <ShieldCheck size={36} color={COLORS.yellow} />
-                  <Text style={styles.wordLabel}>{scrambledWord}</Text>
-                  <Text style={styles.categoryLabel}>{game.category?.toUpperCase()}</Text>
-                </>
-              )}
-              <TouchableOpacity onPress={hideWord} style={styles.hideBtn}>
-                <EyeOff size={14} color={COLORS.textMuted} />
-                <Text style={styles.hideText}>Hide (auto-hides in 3s)</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
+          {/* Word area — always tappable to toggle */}
+          <TouchableOpacity
+            style={wordVisible ? styles.revealCardWrap : styles.tapArea}
+            onPress={toggleWord}
+            activeOpacity={0.85}
+          >
+            {!wordVisible ? (
+              <>
+                <View style={styles.eyeCircle}>
+                  <Eye size={28} color={COLORS.yellow} weight="fill" />
+                </View>
+                <Text style={styles.tapText}>TAP TO SEE YOUR WORD</Text>
+                <Text style={styles.tapSubtext}>Make sure only {player.name} can see</Text>
+              </>
+            ) : (
+              <Animated.View
+                style={[
+                  styles.revealCardInner,
+                  { transform: [{ scale: scaleAnim }], opacity: opacityAnim },
+                ]}
+              >
+                {isImposter ? (
+                  <>
+                    <Ghost size={48} color={COLORS.yellow} />
+                    <Text style={styles.imposterLabel}>IMPOSTER</Text>
+                    <Text style={styles.imposterSub}>Blend in — you don't know the word.</Text>
+                    {game.difficulty === 'easy' && (
+                      <View style={styles.hintBadge}>
+                        <Text style={styles.hintText}>HINT: {game.hint}</Text>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={36} color={COLORS.yellow} />
+                    <Text style={styles.wordLabel}>{scrambledWord}</Text>
+                    <Text style={styles.categoryLabel}>{game.category?.toUpperCase()}</Text>
+                  </>
+                )}
+                <View style={styles.hideHint}>
+                  <EyeSlash size={14} color={COLORS.textMuted} weight="fill" />
+                  <Text style={styles.hideText}>Tap to hide (auto-hides in 3s)</Text>
+                </View>
+              </Animated.View>
+            )}
+          </TouchableOpacity>
 
           {/* Next button */}
           <TouchableOpacity
@@ -319,21 +335,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  revealCard: {
+  revealCardWrap: {
     borderRadius: RADIUS.card,
     backgroundColor: COLORS.glass,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.xl,
-    paddingHorizontal: SPACING.md,
-    gap: SPACING.xs,
+    overflow: 'hidden',
     shadowColor: COLORS.yellow,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,
     shadowRadius: 32,
     elevation: 10,
+  },
+  revealCardInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.xs,
   },
   imposterLabel: {
     fontFamily: FONTS.extraBold,
@@ -377,7 +396,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
-  hideBtn: {
+  hideHint: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,

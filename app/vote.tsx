@@ -169,6 +169,14 @@ export default function VoteScreen() {
                 </TouchableOpacity>
               ))}
           </ScrollView>
+
+          <TouchableOpacity
+            style={styles.revealGhostBtn}
+            onPress={() => router.push('/result')}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.revealGhostText}>REVEAL IMPOSTER</Text>
+          </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
     </View>
@@ -287,6 +295,22 @@ const styles = StyleSheet.create({
     borderColor: COLORS.yellowBorder,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  revealGhostBtn: {
+    height: 44,
+    borderRadius: RADIUS.button,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: SPACING.xs,
+  },
+  revealGhostText: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 12,
+    color: COLORS.textLabel,
+    letterSpacing: 1.5,
   },
 
   // Tally phase

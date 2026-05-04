@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView,
-  TextInput, Animated, Keyboard,
+  TextInput, Animated, Keyboard, Switch,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Minus, Plus, ChevronRight, ChevronLeft } from 'lucide-react-native';
@@ -9,8 +9,9 @@ import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import { storage, GameSettings, defaultGameSettings } from '../utils/storage';
 import { useGame } from '../context/GameContext';
 
-const CLUES_OPTIONS = [1, 2, 3, 4];
-const TIMER_OPTIONS: { label: string; value: number | 'custom' }[] = [
+const TURNS_OPTIONS = [1, 2, 3, 4];
+const TIMER_OPTIONS: { label: string; value: number | 'none' | 'custom' }[] = [
+  { label: 'No Timer', value: 'none' },
   { label: '10s', value: 10 },
   { label: '30s', value: 30 },
   { label: '1 min', value: 60 },
@@ -25,9 +26,10 @@ export default function GameSettingsScreen() {
   const entryY = useRef(new Animated.Value(20)).current;
 
   const [playerCount, setPlayerCount] = useState(defaultGameSettings.playerCount);
-  const [cluesPerPlayer, setCluesPerPlayer] = useState(defaultGameSettings.cluesPerPlayer);
-  const [timerPerClue, setTimerPerClue] = useState<number | 'custom'>(defaultGameSettings.timerPerClue);
+  const [turnsBeforeGuess, setTurnsBeforeGuess] = useState(defaultGameSettings.turnsBeforeGuess);
+  const [timerPerClue, setTimerPerClue] = useState<number | 'none' | 'custom'>(defaultGameSettings.timerPerClue);
   const [customSeconds, setCustomSeconds] = useState(String(defaultGameSettings.customTimerSeconds));
+  const [teamVote, setTeamVote] = useState(false);
 
   const playerScaleDown = useRef(new Animated.Value(1)).current;
   const playerScaleUp = useRef(new Animated.Value(1)).current;
@@ -35,10 +37,11 @@ export default function GameSettingsScreen() {
   useEffect(() => {
     storage.getGameSettings().then(s => {
       setPlayerCount(s.playerCount);
-      setCluesPerPlayer(s.cluesPerPlayer);
+      setTurnsBeforeGuess(s.turnsBeforeGuess ?? 1);
       setTimerPerClue(s.timerPerClue);
       setCustomSeconds(String(s.customTimerSeconds));
     });
+    storage.getTeamVote().then(setTeamVote);
     Animated.parallel([
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
@@ -60,8 +63,9 @@ export default function GameSettingsScreen() {
   const handleNext = async () => {
     const parsed = parseInt(customSeconds, 10);
     const safeCustom = isNaN(parsed) || parsed < 1 ? 60 : Math.min(300, parsed);
-    const settings: GameSettings = { playerCount, cluesPerPlayer, timerPerClue, customTimerSeconds: safeCustom };
+    const settings: GameSettings = { playerCount, turnsBeforeGuess, timerPerClue, customTimerSeconds: safeCustom };
     await storage.setGameSettings(settings);
+    await storage.setTeamVote(teamVote);
     const savedPlayers = await storage.getPlayers();
     const defaultPlayers = Array.from({ length: playerCount }, (_, i) => ({
       id: `player_${i}`,
@@ -73,7 +77,14 @@ export default function GameSettingsScreen() {
     router.push('/player-names');
   };
 
-  const effectiveTimer = timerPerClue === 'custom' ? parseInt(customSeconds, 10) || 60 : timerPerClue;
+  const timerLabel =
+    timerPerClue === 'none'
+      ? 'Off'
+      : timerPerClue === 'custom'
+      ? `${parseInt(customSeconds, 10) || 60}s`
+      : timerPerClue >= 60
+      ? `${timerPerClue / 60} min`
+      : `${timerPerClue}s`;
 
   return (
     <View style={styles.container}>
@@ -95,6 +106,7 @@ export default function GameSettingsScreen() {
             <View style={{ width: 36 }} />
           </View>
 
+          {/* Number of players */}
           <Text style={styles.sectionLabel}>NUMBER OF PLAYERS</Text>
           <View style={styles.card}>
             <Animated.View style={{ transform: [{ scale: playerScaleDown }] }}>
@@ -107,12 +119,10 @@ export default function GameSettingsScreen() {
                 <Minus size={24} color={playerCount <= 3 ? COLORS.textMuted : COLORS.white} />
               </TouchableOpacity>
             </Animated.View>
-
             <View style={styles.countCenter}>
               <Text style={styles.countNumber}>{playerCount}</Text>
               <Text style={styles.countSub}>players</Text>
             </View>
-
             <Animated.View style={{ transform: [{ scale: playerScaleUp }] }}>
               <TouchableOpacity
                 style={[styles.countBtn, playerCount >= 15 && styles.countBtnDisabled]}
@@ -125,21 +135,25 @@ export default function GameSettingsScreen() {
             </Animated.View>
           </View>
 
-          <Text style={styles.sectionLabel}>CLUES PER TURN</Text>
-          <Text style={styles.sectionSubtitle}>How many words each player gives before voting</Text>
+          {/* Turns before guess */}
+          <Text style={styles.sectionLabel}>TURNS BEFORE GUESS</Text>
+          <Text style={styles.sectionSubtitle}>
+            Each player gives one clue word per turn, then the group guesses the imposter
+          </Text>
           <View style={styles.pillRow}>
-            {CLUES_OPTIONS.map(n => (
+            {TURNS_OPTIONS.map(n => (
               <TouchableOpacity
                 key={n}
-                style={[styles.pill, cluesPerPlayer === n && styles.pillActive]}
-                onPress={() => setCluesPerPlayer(n)}
+                style={[styles.pill, turnsBeforeGuess === n && styles.pillActive]}
+                onPress={() => setTurnsBeforeGuess(n)}
                 activeOpacity={0.75}
               >
-                <Text style={[styles.pillText, cluesPerPlayer === n && styles.pillTextActive]}>{n}</Text>
+                <Text style={[styles.pillText, turnsBeforeGuess === n && styles.pillTextActive]}>{n}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
+          {/* Timer per clue */}
           <Text style={styles.sectionLabel}>TIMER PER CLUE</Text>
           <View style={styles.timerRow}>
             {TIMER_OPTIONS.map(opt => {
@@ -177,19 +191,29 @@ export default function GameSettingsScreen() {
             </View>
           )}
 
+          {/* Team Vote toggle */}
+          <View style={styles.toggleCard}>
+            <View style={styles.toggleInfo}>
+              <Text style={styles.toggleLabel}>Team votes together</Text>
+              <Text style={styles.toggleSub}>
+                Skip individual voting, reveal imposter directly
+              </Text>
+            </View>
+            <Switch
+              value={teamVote}
+              onValueChange={setTeamVote}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: COLORS.yellowGlow }}
+              thumbColor={teamVote ? COLORS.yellow : 'rgba(255,255,255,0.4)'}
+              ios_backgroundColor="rgba(255,255,255,0.1)"
+            />
+          </View>
+
+          {/* Summary */}
           <View style={styles.summary}>
             <SummaryRow label="Players" value={`${playerCount}`} />
-            <SummaryRow label="Clues per turn" value={`${cluesPerPlayer}`} />
-            <SummaryRow
-              label="Timer per clue"
-              value={
-                timerPerClue === 'custom'
-                  ? `${effectiveTimer}s custom`
-                  : timerPerClue >= 60
-                  ? `${timerPerClue / 60} min`
-                  : `${timerPerClue}s`
-              }
-            />
+            <SummaryRow label="Turns before guess" value={`${turnsBeforeGuess}`} />
+            <SummaryRow label="Timer per clue" value={timerLabel} />
+            <SummaryRow label="Team votes together" value={teamVote ? 'Yes' : 'No'} />
           </View>
 
           <TouchableOpacity style={styles.nextBtn} onPress={handleNext} activeOpacity={0.85}>
@@ -299,15 +323,8 @@ const styles = StyleSheet.create({
     color: COLORS.textLabel,
   },
 
-  pillRow: {
-    flexDirection: 'row',
-    gap: SPACING.xs,
-  },
-  timerRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
+  pillRow: { flexDirection: 'row', gap: SPACING.xs },
+  timerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     flex: 1,
     minHeight: 52,
@@ -320,15 +337,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   timerPill: {
-    minHeight: 52,
-    minWidth: 60,
+    minHeight: 48,
+    minWidth: 56,
     borderRadius: RADIUS.button,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     backgroundColor: COLORS.glass,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     flexGrow: 1,
   },
   pillActive: {
@@ -337,7 +354,7 @@ const styles = StyleSheet.create({
   },
   pillText: {
     fontFamily: FONTS.semiBold,
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textLabel,
   },
   pillTextActive: {
@@ -345,20 +362,14 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bold,
   },
 
-  customInputWrap: {
-    marginTop: SPACING.xs,
-  },
+  customInputWrap: { marginTop: SPACING.xs },
   customLabel: {
     fontFamily: FONTS.regular,
     fontSize: 11,
     color: COLORS.textLabel,
     marginBottom: 6,
   },
-  customInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
+  customInputRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
   customInput: {
     flex: 1,
     height: 56,
@@ -377,6 +388,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textLabel,
     width: 32,
+  },
+
+  toggleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.glass,
+    borderRadius: RADIUS.card,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    marginTop: SPACING.md,
+    gap: SPACING.sm,
+  },
+  toggleInfo: { flex: 1, gap: 3 },
+  toggleLabel: {
+    fontFamily: FONTS.bold,
+    fontSize: 15,
+    color: COLORS.white,
+  },
+  toggleSub: {
+    fontFamily: FONTS.regular,
+    fontSize: 12,
+    color: COLORS.textLabel,
   },
 
   summary: {

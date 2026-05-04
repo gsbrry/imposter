@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, SkipForward, Eye } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import GlassCard from '../components/GlassCard';
 import PlayerAvatar from '../components/PlayerAvatar';
@@ -13,38 +13,43 @@ import { useGame } from '../context/GameContext';
 import HomeButton from '../components/HomeButton';
 import { storage } from '../utils/storage';
 
-const TIMER_SECONDS: Record<string, number> = {
-  easy: 90,
-  medium: 60,
-  hard: 45,
-  chaos: 30,
-};
-
 export default function ClueRoundScreen() {
   const router = useRouter();
   const { game } = useGame();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [timerEnabled, setTimerEnabled] = useState(true);
+  const [timerEnabled, setTimerEnabled] = useState(false);
+  const [maxTime, setMaxTime] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [teamVote, setTeamVote] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(20)).current;
 
-  const maxTime = TIMER_SECONDS[game.difficulty] ?? 60;
-
   useEffect(() => {
-    storage.getSettings().then(s => {
-      setTimerEnabled(s.timerEnabled);
-      setTimeLeft(maxTime);
-    });
+    Promise.all([storage.getSettings(), storage.getGameSettings(), storage.getTeamVote()]).then(
+      ([, gs, tv]) => {
+        const timer = gs.timerPerClue;
+        const noTimer = timer === 'none';
+        let seconds = 60;
+        if (!noTimer) {
+          seconds = timer === 'custom' ? (gs.customTimerSeconds || 60) : (timer as number);
+        }
+        setTimerEnabled(!noTimer);
+        setMaxTime(seconds);
+        setTimeLeft(seconds);
+        setTeamVote(tv);
+      }
+    );
     Animated.parallel([
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
-  }, [maxTime]);
+  }, []);
 
   useEffect(() => {
+    clearInterval(timerRef.current);
     if (!timerEnabled) return;
+    setTimeLeft(maxTime);
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) { clearInterval(timerRef.current); return 0; }
@@ -52,21 +57,50 @@ export default function ClueRoundScreen() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [timerEnabled, currentIndex]);
+  }, [timerEnabled, maxTime, currentIndex]);
 
-  const nextPlayer = () => {
+  const goToNext = () => {
     clearInterval(timerRef.current);
     setTimeLeft(maxTime);
     if (currentIndex < game.players.length - 1) {
       setCurrentIndex(i => i + 1);
     } else {
-      router.push('/vote');
+      if (teamVote) {
+        // all turns done + team vote ON → show reveal imposter button (handled below)
+      } else {
+        router.push('/vote');
+      }
     }
+  };
+
+  const skipTurn = () => {
+    clearInterval(timerRef.current);
+    setTimeLeft(maxTime);
+    if (currentIndex < game.players.length - 1) {
+      setCurrentIndex(i => i + 1);
+    } else {
+      if (teamVote) {
+        router.push('/result');
+      } else {
+        router.push('/vote');
+      }
+    }
+  };
+
+  const goToVote = () => {
+    clearInterval(timerRef.current);
+    router.push('/vote');
+  };
+
+  const revealImposter = () => {
+    clearInterval(timerRef.current);
+    router.push('/result');
   };
 
   const player = game.players[currentIndex];
   const progress = timerEnabled ? timeLeft / maxTime : 1;
   const isLast = currentIndex === game.players.length - 1;
+  const allTurnsDone = isLast && teamVote;
   const timeCritical = timerEnabled && timeLeft <= 10 && timeLeft > 0;
 
   if (!player) return null;
@@ -127,12 +161,39 @@ export default function ClueRoundScreen() {
             <Text style={styles.tipItem}>Imposters — be convincing!</Text>
           </View>
 
-          <PillButton
-            label={isLast ? 'Go to Vote' : `Next: ${game.players[currentIndex + 1]?.name}`}
-            onPress={nextPlayer}
-            variant="yellow"
-            icon={<ChevronRight size={18} color={COLORS.nearBlack} />}
-          />
+          {/* Action buttons */}
+          <View style={styles.actions}>
+            {/* Primary: Next / Reveal Imposter */}
+            {allTurnsDone ? (
+              <PillButton
+                label="REVEAL IMPOSTER"
+                onPress={revealImposter}
+                variant="yellow"
+                icon={<Eye size={18} color={COLORS.nearBlack} />}
+              />
+            ) : (
+              <PillButton
+                label={isLast ? 'Go to Vote' : `Next: ${game.players[currentIndex + 1]?.name}`}
+                onPress={goToNext}
+                variant="yellow"
+                icon={<ChevronRight size={18} color={COLORS.nearBlack} />}
+              />
+            )}
+
+            {/* Secondary row */}
+            <View style={styles.secondaryRow}>
+              <TouchableOpacity style={styles.skipBtn} onPress={skipTurn} activeOpacity={0.75}>
+                <SkipForward size={15} color={COLORS.textBody} />
+                <Text style={styles.skipText}>Skip Turn</Text>
+              </TouchableOpacity>
+
+              {!teamVote && (
+                <TouchableOpacity style={styles.ghostBtn} onPress={goToVote} activeOpacity={0.75}>
+                  <Text style={styles.ghostText}>Go to Vote</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
         </Animated.View>
       </SafeAreaView>
     </View>
@@ -254,5 +315,42 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.regular,
     fontSize: 14,
     color: COLORS.textBody,
+  },
+
+  actions: { gap: SPACING.xs },
+  secondaryRow: {
+    flexDirection: 'row',
+    gap: SPACING.xs,
+    justifyContent: 'center',
+  },
+  skipBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: RADIUS.button,
+    backgroundColor: COLORS.glass,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
+  },
+  skipText: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 13,
+    color: COLORS.textBody,
+  },
+  ghostBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: RADIUS.button,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ghostText: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 13,
+    color: COLORS.textLabel,
   },
 });
