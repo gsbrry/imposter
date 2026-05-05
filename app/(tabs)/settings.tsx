@@ -1,25 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity, Animated,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, Switch,
+  TouchableOpacity, Animated, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Timer, Volume2, Vibrate, Star, MessageSquare, ChevronRight } from 'lucide-react-native';
+import { Timer, Volume2, Vibrate, Star, MessageSquare, ChevronRight, Crown } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
 import GlassCard from '../../components/GlassCard';
 import { storage, Settings } from '../../utils/storage';
+import { useGame } from '../../context/GameContext';
+import { usePremium } from '@/hooks/usePremium';
 
-const TIMER_SOUND_KEY = 'IMPOSTR_TIMER_SOUND';
+// CustomerCenter is native-only
+let CustomerCenterModule: any = null;
+if (Platform.OS !== 'web') {
+  try {
+    CustomerCenterModule = require('react-native-purchases-ui');
+  } catch { /* not available */ }
+}
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { isPremium } = useGame();
+  const { getExpiryDate } = usePremium();
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(20)).current;
+
   const [settings, setSettings] = useState<Settings>({
     timerEnabled: true,
     soundEnabled: true,
     hapticsEnabled: true,
   });
   const [timerSound, setTimerSound] = useState(true);
+  const [expiryDate, setExpiryDate] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([storage.getSettings(), storage.getTimerSound()]).then(([s, ts]) => {
@@ -30,7 +43,10 @@ export default function SettingsScreen() {
         Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
       ]).start();
     });
-  }, []);
+    if (isPremium) {
+      getExpiryDate().then(setExpiryDate);
+    }
+  }, [isPremium]);
 
   const update = async (key: keyof Settings, value: boolean) => {
     const next = { ...settings, [key]: value };
@@ -43,6 +59,19 @@ export default function SettingsScreen() {
     await storage.setTimerSound(value);
   };
 
+  const openCustomerCenter = async () => {
+    if (Platform.OS === 'web' || !CustomerCenterModule) return;
+    try {
+      await CustomerCenterModule.CustomerCenter.presentCustomerCenter();
+    } catch (e) {
+      console.warn('Customer Center failed:', e);
+    }
+  };
+
+  const formattedExpiry = expiryDate
+    ? new Date(expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    : null;
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
@@ -53,10 +82,48 @@ export default function SettingsScreen() {
         >
           <View style={styles.header}>
             <Text style={styles.label}>PREFERENCES</Text>
-            <Text style={styles.title}>Settings</Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>Settings</Text>
+              {isPremium && (
+                <View style={styles.crownBadge}>
+                  <Crown size={14} color={COLORS.nearBlack} />
+                  <Text style={styles.crownText}>PREMIUM</Text>
+                </View>
+              )}
+            </View>
           </View>
 
-          <Text style={styles.sectionLabel}>GAMEPLAY</Text>
+          {/* Premium status card */}
+          {isPremium && (
+            <>
+              <Text style={styles.sectionLabel}>SUBSCRIPTION</Text>
+              <GlassCard style={styles.premiumCard}>
+                <View style={styles.premiumCardInner}>
+                  <View style={styles.premiumIconWrap}>
+                    <Crown size={20} color={COLORS.nearBlack} />
+                  </View>
+                  <View style={styles.premiumCardText}>
+                    <Text style={styles.premiumActiveLabel}>Premium Active</Text>
+                    {formattedExpiry && (
+                      <Text style={styles.premiumExpiry}>Renews {formattedExpiry}</Text>
+                    )}
+                  </View>
+                </View>
+                {Platform.OS !== 'web' && (
+                  <>
+                    <View style={styles.divider} />
+                    <SettingLink
+                      icon={<Star size={18} color={COLORS.yellow} />}
+                      label="Manage Subscription"
+                      onPress={openCustomerCenter}
+                    />
+                  </>
+                )}
+              </GlassCard>
+            </>
+          )}
+
+          <Text style={[styles.sectionLabel, isPremium && { marginTop: SPACING.md }]}>GAMEPLAY</Text>
           <GlassCard style={styles.section}>
             <SettingRow
               icon={<Timer size={18} color={COLORS.yellow} />}
@@ -64,6 +131,14 @@ export default function SettingsScreen() {
               description="Show countdown during clue round"
               value={settings.timerEnabled}
               onChange={v => update('timerEnabled', v)}
+            />
+            <Divider />
+            <SettingRow
+              icon={<Timer size={18} color={COLORS.yellow} />}
+              label="Timer sounds"
+              description="Tick and shutter sounds during countdown"
+              value={timerSound}
+              onChange={updateTimerSound}
             />
             <Divider />
             <SettingRow
@@ -81,24 +156,20 @@ export default function SettingsScreen() {
               value={settings.hapticsEnabled}
               onChange={v => update('hapticsEnabled', v)}
             />
-            <Divider />
-            <SettingRow
-              icon={<Timer size={18} color={COLORS.yellow} />}
-              label="Timer sounds"
-              description="Tick and shutter sounds during countdown"
-              value={timerSound}
-              onChange={updateTimerSound}
-            />
           </GlassCard>
 
           <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>MORE</Text>
           <GlassCard style={styles.section}>
-            <SettingLink
-              icon={<Star size={18} color={COLORS.yellow} />}
-              label="Go Premium"
-              onPress={() => router.push('/premium')}
-            />
-            <Divider />
+            {!isPremium && (
+              <>
+                <SettingLink
+                  icon={<Star size={18} color={COLORS.yellow} />}
+                  label="Go Premium"
+                  onPress={() => router.push('/premium')}
+                />
+                <Divider />
+              </>
+            )}
             <SettingLink
               icon={<MessageSquare size={18} color={COLORS.yellow} />}
               label="Suggest a Category"
@@ -157,9 +228,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.nearBlack },
   safe: { flex: 1 },
   scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 100 },
-  header: {
-    marginBottom: SPACING.md,
-  },
+  header: { marginBottom: SPACING.md },
   label: {
     fontFamily: FONTS.semiBold,
     fontSize: 10,
@@ -168,11 +237,32 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 4,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+  },
   title: {
     fontFamily: FONTS.bold,
     fontSize: 22,
     color: COLORS.white,
   },
+  crownBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.yellow,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  crownText: {
+    fontFamily: FONTS.extraBold,
+    fontSize: 10,
+    color: COLORS.nearBlack,
+    letterSpacing: 0.5,
+  },
+
   sectionLabel: {
     fontFamily: FONTS.semiBold,
     fontSize: 10,
@@ -182,9 +272,37 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
     paddingLeft: 2,
   },
-  section: {
-    marginBottom: 0,
+  section: { marginBottom: 0 },
+
+  // Premium card
+  premiumCard: { marginBottom: 0 },
+  premiumCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 16,
+    gap: 12,
   },
+  premiumIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.yellow,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  premiumCardText: { flex: 1, gap: 2 },
+  premiumActiveLabel: {
+    fontFamily: FONTS.bold,
+    fontSize: 15,
+    color: COLORS.yellow,
+  },
+  premiumExpiry: {
+    fontFamily: FONTS.regular,
+    fontSize: 12,
+    color: COLORS.textLabel,
+  },
+
   row: {
     flexDirection: 'row',
     alignItems: 'center',

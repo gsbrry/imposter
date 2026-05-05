@@ -25,6 +25,8 @@ interface GameContextType {
   game: GameState;
   setGame: React.Dispatch<React.SetStateAction<GameState>>;
   resetGame: () => void;
+  isPremium: boolean;
+  setIsPremium: (v: boolean) => void;
 }
 
 const defaultGame: GameState = {
@@ -41,15 +43,18 @@ const GameContext = createContext<GameContextType>({
   game: defaultGame,
   setGame: () => {},
   resetGame: () => {},
+  isPremium: false,
+  setIsPremium: () => {},
 });
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [game, setGame] = useState<GameState>(defaultGame);
+  const [isPremium, setIsPremium] = useState(false);
 
   const resetGame = () => setGame(defaultGame);
 
   return (
-    <GameContext.Provider value={{ game, setGame, resetGame }}>
+    <GameContext.Provider value={{ game, setGame, resetGame, isPremium, setIsPremium }}>
       {children}
     </GameContext.Provider>
   );

@@ -10,9 +10,25 @@ import {
   Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
 import * as SplashScreen from 'expo-splash-screen';
-import { GameProvider } from '../context/GameContext';
+import { GameProvider, useGame } from '../context/GameContext';
+import { usePremium } from '@/hooks/usePremium';
 
 SplashScreen.preventAutoHideAsync();
+
+function RCInitialiser() {
+  const { setIsPremium } = useGame();
+  const { initRevenueCat, checkPremiumStatus } = usePremium();
+
+  useEffect(() => {
+    (async () => {
+      await initRevenueCat();
+      const premium = await checkPremiumStatus();
+      setIsPremium(premium);
+    })();
+  }, []);
+
+  return null;
+}
 
 export default function RootLayout() {
   useFrameworkReady();
@@ -32,6 +48,7 @@ export default function RootLayout() {
 
   return (
     <GameProvider>
+      <RCInitialiser />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0F0A1E' } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="setup" options={{ animation: 'slide_from_right' }} />
@@ -42,6 +59,7 @@ export default function RootLayout() {
         <Stack.Screen name="vote" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="result" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
         <Stack.Screen name="suggest" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="+not-found" />
       </Stack>

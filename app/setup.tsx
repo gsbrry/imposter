@@ -21,10 +21,9 @@ const LAST_DIFFICULTY_KEY = 'IMPOSTR_LAST_DIFFICULTY';
 
 export default function SetupScreen() {
   const router = useRouter();
-  const { setGame } = useGame();
+  const { setGame, isPremium } = useGame();
   const [category, setCategory] = useState<CategoryKey>('general');
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | 'chaos'>('easy');
-  const [isPremium, setIsPremium] = useState(false);
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(20)).current;
 
@@ -37,7 +36,6 @@ export default function SetupScreen() {
     storage.getLastCategory().then(c => {
       if (c) setCategory(c as CategoryKey);
     });
-    storage.getSubscription().then(setIsPremium);
     // Load last difficulty, default 'easy'
     import('@react-native-async-storage/async-storage').then(({ default: AS }) => {
       AS.getItem(LAST_DIFFICULTY_KEY).then(d => {
