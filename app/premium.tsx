@@ -82,7 +82,7 @@ function WebFallback({ onClose }: { onClose: () => void }) {
 export default function PremiumScreen() {
   const router = useRouter();
   const { setIsPremium } = useGame();
-  const { getOfferings, purchasePackage, restorePurchases } = usePremium();
+  const { getOfferings, purchasePackage, restorePurchases, checkPremiumStatus } = usePremium();
 
   const [selected, setSelected] = useState<'monthly' | 'yearly' | 'lifetime'>('yearly');
   const [packages, setPackages] = useState<Record<string, PurchasesPackage>>({});
@@ -128,7 +128,8 @@ export default function PremiumScreen() {
   const handlePurchase = async () => {
     const pkg = packages[selected];
     if (!pkg) {
-      // No real offerings yet (test mode) — just mock success
+      // No real offerings yet (test mode) — mock success
+      setIsPremium(true);
       triggerSuccess();
       return;
     }
@@ -137,6 +138,9 @@ export default function PremiumScreen() {
     setLoading(false);
     if (result.cancelled) return;
     if (result.success) {
+      // Immediately refresh premium status in context from RC source of truth
+      const fresh = await checkPremiumStatus();
+      setIsPremium(fresh);
       triggerSuccess();
     } else if (result.error) {
       showToast(result.error);
@@ -158,9 +162,11 @@ export default function PremiumScreen() {
   const handleRestore = async () => {
     setRestoring(true);
     const restored = await restorePurchases();
+    // Always re-fetch from RC to get the authoritative premium state
+    const fresh = await checkPremiumStatus();
+    setIsPremium(fresh);
     setRestoring(false);
-    if (restored) {
-      setIsPremium(true);
+    if (restored || fresh) {
       showToast('Premium restored!');
       setTimeout(() => router.back(), 1500);
     } else {

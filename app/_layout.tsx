@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
@@ -10,8 +11,12 @@ import {
   Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
 import * as SplashScreen from 'expo-splash-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GameProvider, useGame } from '../context/GameContext';
 import { usePremium } from '@/hooks/usePremium';
+import { ENTITLEMENT_ID } from '@/constants/revenuecat';
+
+const PREMIUM_CACHE_KEY = 'IMPOSTR_PREMIUM_CACHE';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,11 +25,31 @@ function RCInitialiser() {
   const { initRevenueCat, checkPremiumStatus } = usePremium();
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
+
+    let listenerRemover: (() => void) | undefined;
+
     (async () => {
       await initRevenueCat();
       const premium = await checkPremiumStatus();
       setIsPremium(premium);
+
+      // Listen for any RC customer info changes (purchases, renewals, restores)
+      try {
+        const Purchases = (await import('react-native-purchases')).default;
+        const listener = Purchases.addCustomerInfoUpdateListener(async (info) => {
+          const active = info.entitlements.active[ENTITLEMENT_ID] !== undefined;
+          setIsPremium(active);
+          await AsyncStorage.setItem(
+            PREMIUM_CACHE_KEY,
+            JSON.stringify({ isPremium: active, cachedAt: Date.now() })
+          );
+        });
+        listenerRemover = () => listener.remove();
+      } catch { /* not available in this environment */ }
     })();
+
+    return () => { listenerRemover?.(); };
   }, []);
 
   return null;
