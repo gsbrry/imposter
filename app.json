@@ -30,7 +30,6 @@
       "expo-router",
       "expo-font",
       "expo-web-browser",
-      "react-native-purchases",
       "expo-haptics"
     ],
     "experiments": {
