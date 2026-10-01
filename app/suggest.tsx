@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, TextInput, SafeAreaView, TouchableOpacity, Platform,
+  View, Text, StyleSheet, TextInput, SafeAreaView, TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MessageSquare, X, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import PillButton from '../components/PillButton';
+import { storage } from '../utils/storage';
 
 export default function SuggestCategoryScreen() {
   const router = useRouter();
@@ -17,18 +18,8 @@ export default function SuggestCategoryScreen() {
   const handleSubmit = async () => {
     if (!categoryName.trim()) return;
     setLoading(true);
-    try {
-      await fetch('https://formspree.io/f/YOUR_FORM_ID', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: categoryName,
-          reason,
-          appVersion: '1.0.0',
-          platform: Platform.OS,
-        }),
-      });
-    } catch {}
+    // Suggestions stay on the device. Nothing about this app leaves the phone.
+    await storage.addSuggestion(categoryName.trim(), reason.trim());
     setLoading(false);
     setSubmitted(true);
   };
@@ -44,16 +35,17 @@ export default function SuggestCategoryScreen() {
           <MessageSquare size={32} color={COLORS.yellow} />
           <Text style={styles.title}>Suggest a Category</Text>
           <Text style={styles.sub}>
-            Got an idea for a new category? Let us know!
+            Got an idea for a new category? Jot it down.
           </Text>
         </View>
 
         {submitted ? (
           <View style={styles.successWrap}>
             <CheckCircle size={64} color={COLORS.yellow}  />
-            <Text style={styles.successTitle}>Thank you!</Text>
+            <Text style={styles.successTitle}>Saved!</Text>
             <Text style={styles.successText}>
-              Your suggestion has been sent! We review all submissions.
+              Your idea is saved on this device. We gather suggestions in app
+              updates, so keep an eye out for new categories.
             </Text>
             <PillButton label="Back to Settings" onPress={() => router.back()} variant="violet" style={{ marginTop: SPACING.sm }} />
           </View>
@@ -86,7 +78,7 @@ export default function SuggestCategoryScreen() {
             </View>
 
             <PillButton
-              label={loading ? 'Sending...' : 'Send Suggestion'}
+              label={loading ? 'Saving...' : 'Save Suggestion'}
               onPress={handleSubmit}
               variant="yellow"
               disabled={!categoryName.trim() || loading}

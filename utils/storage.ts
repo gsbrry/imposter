@@ -13,6 +13,7 @@ const KEYS = {
   SAVED_PLAYERS: 'IMPOSTR_SAVED_PLAYERS',
   TEAM_VOTE: 'IMPOSTR_TEAM_VOTE',
   TIMER_SOUND: 'IMPOSTR_TIMER_SOUND',
+  SUGGESTIONS: 'IMPOSTR_SUGGESTIONS',
 };
 
 export interface PlayerData {
@@ -34,6 +35,12 @@ export interface Settings {
   timerEnabled: boolean;
   soundEnabled: boolean;
   hapticsEnabled: boolean;
+}
+
+export interface Suggestion {
+  category: string;
+  reason: string;
+  savedAt: number;
 }
 
 export interface GameSettings {
@@ -111,6 +118,13 @@ export const storage = {
 
   getTimerSound: () => get<boolean>(KEYS.TIMER_SOUND, true),
   setTimerSound: (val: boolean) => set(KEYS.TIMER_SOUND, val),
+
+  getSuggestions: () => get<Suggestion[]>(KEYS.SUGGESTIONS, []),
+  addSuggestion: async (category: string, reason: string): Promise<void> => {
+    const existing = await get<Suggestion[]>(KEYS.SUGGESTIONS, []);
+    const merged = [{ category, reason, savedAt: Date.now() }, ...existing].slice(0, 50);
+    await set(KEYS.SUGGESTIONS, merged);
+  },
 
   getSavedPlayers: () => get<string[]>(KEYS.SAVED_PLAYERS, []),
   addSavedPlayers: async (names: string[]): Promise<void> => {
