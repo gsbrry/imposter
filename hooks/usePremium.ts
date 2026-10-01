@@ -1,11 +1,6 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  RC_ANDROID_KEY,
-  RC_IOS_KEY,
-  ENTITLEMENT_ID,
-  IS_PLACEHOLDER_RC_KEY,
-} from '@/constants/revenuecat';
+import { ENTITLEMENT_ID, getUsableKey } from '@/constants/revenuecat';
 
 // Dynamic imports so web bundle never resolves native RC modules
 async function getPurchases() {
@@ -38,15 +33,16 @@ export function usePremium() {
       const { LOG_LEVEL } = await import('react-native-purchases');
       // Verbose logging is a debugging aid, not something to ship.
       Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.VERBOSE : LOG_LEVEL.ERROR);
-      if (IS_PLACEHOLDER_RC_KEY) {
-        // Sandbox keys cannot see real Play products, so purchases will
-        // fail silently in a release build. Shout about it instead.
+      const key = getUsableKey(Platform.OS);
+      if (!key) {
+        // Configuring with a missing or "test_" key makes the SDK show a
+        // blocking dialog and close a release build. Run without purchases.
         console.warn(
-          'RevenueCat is using sandbox test keys. Purchases will not work. ' +
-            'Set the production keys in constants/revenuecat.ts before release.'
+          'RevenueCat has no production key for this platform. Purchases are ' +
+            'disabled. Set EXPO_PUBLIC_RC_ANDROID_KEY / EXPO_PUBLIC_RC_IOS_KEY.'
         );
+        return;
       }
-      const key = Platform.OS === 'ios' ? RC_IOS_KEY : RC_ANDROID_KEY;
       await Purchases.configure({ apiKey: key });
     } catch (e) {
       console.error('RevenueCat init failed:', e);

@@ -13,9 +13,11 @@
  *   iOS (App Store) keys start with "appl_"
  */
 
-// PASTE PRODUCTION KEYS HERE
-const ANDROID_KEY_FALLBACK = 'test_OoPSKqHBmWqxGxprtfMWFIPGrVO';
-const IOS_KEY_FALLBACK = 'test_OoPSKqHBmWqxGxprtfMWFIPGrVO';
+// PASTE PRODUCTION KEYS HERE (or set the EXPO_PUBLIC_ vars in eas.json)
+// Never put a "test_" key here: RevenueCat force-closes release builds that
+// use one, which is exactly what shipped to Play.
+const ANDROID_KEY_FALLBACK = '';
+const IOS_KEY_FALLBACK = '';
 
 export const RC_ANDROID_KEY =
   process.env.EXPO_PUBLIC_RC_ANDROID_KEY ?? ANDROID_KEY_FALLBACK;
@@ -31,6 +33,17 @@ export const PRODUCTS = {
   lifetime: 'lifetime',
 };
 
-/** True while the keys are still RevenueCat's sandbox test keys. */
+/** A key we must not hand to the SDK: missing, a sandbox test key, or an unfilled placeholder. */
+function isUnusableKey(key: string): boolean {
+  return !/^(goog|appl)_/.test(key);
+}
+
+/** True while either platform still lacks a real production key. */
 export const IS_PLACEHOLDER_RC_KEY =
-  RC_ANDROID_KEY.startsWith('test_') || RC_IOS_KEY.startsWith('test_');
+  isUnusableKey(RC_ANDROID_KEY) || isUnusableKey(RC_IOS_KEY);
+
+/** The key for this platform, or null when it is missing or a test key. */
+export function getUsableKey(platform: string): string | null {
+  const key = platform === 'ios' ? RC_IOS_KEY : RC_ANDROID_KEY;
+  return isUnusableKey(key) ? null : key;
+}
