@@ -1,6 +1,11 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RC_ANDROID_KEY, RC_IOS_KEY, ENTITLEMENT_ID } from '@/constants/revenuecat';
+import {
+  RC_ANDROID_KEY,
+  RC_IOS_KEY,
+  ENTITLEMENT_ID,
+  IS_PLACEHOLDER_RC_KEY,
+} from '@/constants/revenuecat';
 
 // Dynamic imports so web bundle never resolves native RC modules
 async function getPurchases() {
@@ -31,7 +36,16 @@ export function usePremium() {
     try {
       const Purchases = await getPurchases();
       const { LOG_LEVEL } = await import('react-native-purchases');
-      Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+      // Verbose logging is a debugging aid, not something to ship.
+      Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.VERBOSE : LOG_LEVEL.ERROR);
+      if (IS_PLACEHOLDER_RC_KEY) {
+        // Sandbox keys cannot see real Play products, so purchases will
+        // fail silently in a release build. Shout about it instead.
+        console.warn(
+          'RevenueCat is using sandbox test keys. Purchases will not work. ' +
+            'Set the production keys in constants/revenuecat.ts before release.'
+        );
+      }
       const key = Platform.OS === 'ios' ? RC_IOS_KEY : RC_ANDROID_KEY;
       await Purchases.configure({ apiKey: key });
     } catch (e) {
