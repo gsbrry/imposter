@@ -13,6 +13,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GameProvider, useGame } from '../context/GameContext';
+import PhoneFrame from '@/components/PhoneFrame';
 import { usePremium } from '@/hooks/usePremium';
 import { ENTITLEMENT_ID } from '@/constants/revenuecat';
 
@@ -74,20 +75,22 @@ export default function RootLayout() {
   return (
     <GameProvider>
       <RCInitialiser />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0F0A1E' } }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="setup" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="game-settings" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="player-names" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="reveal" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="clue-round" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="vote" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="result" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="suggest" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <PhoneFrame>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0F0A1E' } }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="setup" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="game-settings" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="player-names" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="reveal" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="clue-round" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="vote" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="result" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="suggest" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </PhoneFrame>
       <StatusBar style="light" />
     </GameProvider>
   );
