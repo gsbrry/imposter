@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GameProvider, useGame } from '../context/GameContext';
 import PhoneFrame from '@/components/PhoneFrame';
 import { usePremium } from '@/hooks/usePremium';
+import { storage } from '@/utils/storage';
 import { ENTITLEMENT_ID } from '@/constants/revenuecat';
 import type { CustomerInfo } from 'react-native-purchases';
 
@@ -34,14 +35,17 @@ function RCInitialiser() {
     (async () => {
       await initRevenueCat();
       const premium = await checkPremiumStatus();
-      setIsPremium(premium);
+      // A reviewer unlock persists across launches, so it has to survive
+      // RevenueCat reporting no active entitlement.
+      const reviewUnlocked = await storage.getReviewUnlock();
+      setIsPremium(premium || reviewUnlocked);
 
       // Listen for any RC customer info changes (purchases, renewals, restores)
       try {
         const Purchases = (await import('react-native-purchases')).default;
         const onCustomerInfo = async (info: CustomerInfo) => {
           const active = info.entitlements.active[ENTITLEMENT_ID] !== undefined;
-          setIsPremium(active);
+          setIsPremium(active || (await storage.getReviewUnlock()));
           await AsyncStorage.setItem(
             PREMIUM_CACHE_KEY,
             JSON.stringify({ isPremium: active, cachedAt: Date.now() })

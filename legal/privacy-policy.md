@@ -79,4 +79,4 @@ when it was last revised.
 Questions, or a data deletion request:
 
 **Gooseberry Media**
-Email: CONTACT_EMAIL_HERE
+Email: gsbrry@gmail.com

@@ -14,6 +14,7 @@ const KEYS = {
   TEAM_VOTE: 'IMPOSTR_TEAM_VOTE',
   TIMER_SOUND: 'IMPOSTR_TIMER_SOUND',
   SUGGESTIONS: 'IMPOSTR_SUGGESTIONS',
+  REVIEW_UNLOCK: 'IMPOSTR_REVIEW_UNLOCK',
 };
 
 export interface PlayerData {
@@ -118,6 +119,9 @@ export const storage = {
 
   getTimerSound: () => get<boolean>(KEYS.TIMER_SOUND, true),
   setTimerSound: (val: boolean) => set(KEYS.TIMER_SOUND, val),
+
+  getReviewUnlock: () => get<boolean>(KEYS.REVIEW_UNLOCK, false),
+  setReviewUnlock: (val: boolean) => set(KEYS.REVIEW_UNLOCK, val),
 
   getSuggestions: () => get<Suggestion[]>(KEYS.SUGGESTIONS, []),
   addSuggestion: async (category: string, reason: string): Promise<void> => {

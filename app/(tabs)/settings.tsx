@@ -10,6 +10,7 @@ import GlassCard from '../../components/GlassCard';
 import { storage, Settings } from '../../utils/storage';
 import { useGame } from '../../context/GameContext';
 import { usePremium } from '@/hooks/usePremium';
+import { REVIEW_UNLOCK_TAPS } from '@/constants/reviewAccess';
 
 // CustomerCenter is native-only
 let CustomerCenterModule: any = null;
@@ -21,7 +22,7 @@ if (Platform.OS !== 'web') {
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { isPremium } = useGame();
+  const { isPremium, setIsPremium } = useGame();
   const { getExpiryDate } = usePremium();
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(20)).current;
@@ -33,6 +34,8 @@ export default function SettingsScreen() {
   });
   const [timerSound, setTimerSound] = useState(true);
   const [expiryDate, setExpiryDate] = useState<string | null>(null);
+  const [unlockTaps, setUnlockTaps] = useState(0);
+  const [reviewUnlocked, setReviewUnlocked] = useState(false);
 
   useEffect(() => {
     Promise.all([storage.getSettings(), storage.getTimerSound()]).then(([s, ts]) => {
@@ -47,6 +50,20 @@ export default function SettingsScreen() {
       getExpiryDate().then(setExpiryDate);
     }
   }, [isPremium]);
+
+  // Lets a Play reviewer reach the subscription-only categories. See
+  // constants/reviewAccess.ts for why this exists.
+  const handleVersionTap = async () => {
+    if (isPremium) return;
+    const next = unlockTaps + 1;
+    setUnlockTaps(next);
+    if (next >= REVIEW_UNLOCK_TAPS) {
+      await storage.setReviewUnlock(true);
+      setIsPremium(true);
+      setReviewUnlocked(true);
+      setUnlockTaps(0);
+    }
+  };
 
   const update = async (key: keyof Settings, value: boolean) => {
     const next = { ...settings, [key]: value };
@@ -177,7 +194,11 @@ export default function SettingsScreen() {
             />
           </GlassCard>
 
-          <Text style={styles.version}>Impostr v1.0</Text>
+          <TouchableOpacity activeOpacity={1} onPress={handleVersionTap}>
+            <Text style={styles.version}>
+              {reviewUnlocked ? 'Impostr v1.0 - review access on' : 'Impostr v1.0'}
+            </Text>
+          </TouchableOpacity>
         </Animated.ScrollView>
       </SafeAreaView>
     </View>
