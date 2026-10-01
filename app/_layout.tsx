@@ -16,6 +16,7 @@ import { GameProvider, useGame } from '../context/GameContext';
 import PhoneFrame from '@/components/PhoneFrame';
 import { usePremium } from '@/hooks/usePremium';
 import { ENTITLEMENT_ID } from '@/constants/revenuecat';
+import type { CustomerInfo } from 'react-native-purchases';
 
 const PREMIUM_CACHE_KEY = 'IMPOSTR_PREMIUM_CACHE';
 
@@ -38,15 +39,16 @@ function RCInitialiser() {
       // Listen for any RC customer info changes (purchases, renewals, restores)
       try {
         const Purchases = (await import('react-native-purchases')).default;
-        const listener = Purchases.addCustomerInfoUpdateListener(async (info) => {
+        const onCustomerInfo = async (info: CustomerInfo) => {
           const active = info.entitlements.active[ENTITLEMENT_ID] !== undefined;
           setIsPremium(active);
           await AsyncStorage.setItem(
             PREMIUM_CACHE_KEY,
             JSON.stringify({ isPremium: active, cachedAt: Date.now() })
           );
-        });
-        listenerRemover = () => listener.remove();
+        };
+        Purchases.addCustomerInfoUpdateListener(onCustomerInfo);
+        listenerRemover = () => Purchases.removeCustomerInfoUpdateListener(onCustomerInfo);
       } catch { /* not available in this environment */ }
     })();
 
