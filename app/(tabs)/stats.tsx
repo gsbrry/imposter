@@ -5,10 +5,18 @@ import {
 import AppText from '../../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
-import {
-  Users, Check, Eye, Trophy,
-  Brain, Car, House, UtensilsCrossed, Clapperboard, PawPrint, Briefcase, PartyPopper,
-} from 'lucide-react-native';
+import Users from 'lucide-react-native/dist/esm/icons/users';
+import Check from 'lucide-react-native/dist/esm/icons/check';
+import Eye from 'lucide-react-native/dist/esm/icons/eye';
+import Trophy from 'lucide-react-native/dist/esm/icons/trophy';
+import Brain from 'lucide-react-native/dist/esm/icons/brain';
+import Car from 'lucide-react-native/dist/esm/icons/car';
+import House from 'lucide-react-native/dist/esm/icons/house';
+import UtensilsCrossed from 'lucide-react-native/dist/esm/icons/utensils-crossed';
+import Clapperboard from 'lucide-react-native/dist/esm/icons/clapperboard';
+import PawPrint from 'lucide-react-native/dist/esm/icons/paw-print';
+import Briefcase from 'lucide-react-native/dist/esm/icons/briefcase';
+import PartyPopper from 'lucide-react-native/dist/esm/icons/party-popper';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
 import ScreenBackground from '../../components/ScreenBackground';
 import GlassCard from '../../components/GlassCard';

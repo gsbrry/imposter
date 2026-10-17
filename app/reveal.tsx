@@ -5,10 +5,18 @@ import {
 import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import {
-  EyeOff, Pointer, X,
-  Brain, Car, House, UtensilsCrossed, Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
-} from 'lucide-react-native';
+import EyeOff from 'lucide-react-native/dist/esm/icons/eye-off';
+import Pointer from 'lucide-react-native/dist/esm/icons/pointer';
+import X from 'lucide-react-native/dist/esm/icons/x';
+import Brain from 'lucide-react-native/dist/esm/icons/brain';
+import Car from 'lucide-react-native/dist/esm/icons/car';
+import House from 'lucide-react-native/dist/esm/icons/house';
+import UtensilsCrossed from 'lucide-react-native/dist/esm/icons/utensils-crossed';
+import Clapperboard from 'lucide-react-native/dist/esm/icons/clapperboard';
+import Trophy from 'lucide-react-native/dist/esm/icons/trophy';
+import PawPrint from 'lucide-react-native/dist/esm/icons/paw-print';
+import Briefcase from 'lucide-react-native/dist/esm/icons/briefcase';
+import PartyPopper from 'lucide-react-native/dist/esm/icons/party-popper';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import RevealCard from '../components/RevealCard';

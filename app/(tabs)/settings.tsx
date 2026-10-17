@@ -6,10 +6,21 @@ import AppText from '../../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import Constants from 'expo-constants';
-import {
-  Crown, ChevronRight, Timer, Repeat, Volume2, Bell, Vibrate,
-  ALargeSmall, Waves, CloudDownload, LifeBuoy, MessageSquare, FileText, Minus, Plus,
-} from 'lucide-react-native';
+import Crown from 'lucide-react-native/dist/esm/icons/crown';
+import ChevronRight from 'lucide-react-native/dist/esm/icons/chevron-right';
+import Timer from 'lucide-react-native/dist/esm/icons/timer';
+import Repeat from 'lucide-react-native/dist/esm/icons/repeat';
+import Volume2 from 'lucide-react-native/dist/esm/icons/volume-2';
+import Bell from 'lucide-react-native/dist/esm/icons/bell';
+import Vibrate from 'lucide-react-native/dist/esm/icons/vibrate';
+import ALargeSmall from 'lucide-react-native/dist/esm/icons/a-large-small';
+import Waves from 'lucide-react-native/dist/esm/icons/waves';
+import CloudDownload from 'lucide-react-native/dist/esm/icons/cloud-download';
+import LifeBuoy from 'lucide-react-native/dist/esm/icons/life-buoy';
+import MessageSquare from 'lucide-react-native/dist/esm/icons/message-square';
+import FileText from 'lucide-react-native/dist/esm/icons/file-text';
+import Minus from 'lucide-react-native/dist/esm/icons/minus';
+import Plus from 'lucide-react-native/dist/esm/icons/plus';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
 import ScreenBackground from '../../components/ScreenBackground';
 import GlassCard from '../../components/GlassCard';

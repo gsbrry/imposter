@@ -5,7 +5,9 @@ import {
 import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X, Crown, Check } from 'lucide-react-native';
+import X from 'lucide-react-native/dist/esm/icons/x';
+import Crown from 'lucide-react-native/dist/esm/icons/crown';
+import Check from 'lucide-react-native/dist/esm/icons/check';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import GlassCard from '../components/GlassCard';

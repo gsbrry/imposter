@@ -6,10 +6,22 @@ import {
 import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import {
-  ArrowRight, Check, Pause, Play, RefreshCw, Eye, ChevronRight,
-  Brain, Car, House, UtensilsCrossed, Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
-} from 'lucide-react-native';
+import ArrowRight from 'lucide-react-native/dist/esm/icons/arrow-right';
+import Check from 'lucide-react-native/dist/esm/icons/check';
+import Pause from 'lucide-react-native/dist/esm/icons/pause';
+import Play from 'lucide-react-native/dist/esm/icons/play';
+import RefreshCw from 'lucide-react-native/dist/esm/icons/refresh-cw';
+import Eye from 'lucide-react-native/dist/esm/icons/eye';
+import ChevronRight from 'lucide-react-native/dist/esm/icons/chevron-right';
+import Brain from 'lucide-react-native/dist/esm/icons/brain';
+import Car from 'lucide-react-native/dist/esm/icons/car';
+import House from 'lucide-react-native/dist/esm/icons/house';
+import UtensilsCrossed from 'lucide-react-native/dist/esm/icons/utensils-crossed';
+import Clapperboard from 'lucide-react-native/dist/esm/icons/clapperboard';
+import Trophy from 'lucide-react-native/dist/esm/icons/trophy';
+import PawPrint from 'lucide-react-native/dist/esm/icons/paw-print';
+import Briefcase from 'lucide-react-native/dist/esm/icons/briefcase';
+import PartyPopper from 'lucide-react-native/dist/esm/icons/party-popper';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import { useContentSize } from '../components/ContentSize';

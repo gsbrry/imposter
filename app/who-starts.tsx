@@ -5,7 +5,8 @@ import {
 import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Dice5, Play } from 'lucide-react-native';
+import Dice5 from 'lucide-react-native/dist/esm/icons/dice-5';
+import Play from 'lucide-react-native/dist/esm/icons/play';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import GlassCard from '../components/GlassCard';

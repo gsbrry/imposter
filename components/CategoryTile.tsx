@@ -3,7 +3,7 @@ import {
   View, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import AppText from './AppText';
-import { Lock } from 'lucide-react-native';
+import Lock from 'lucide-react-native/dist/esm/icons/lock';
 import { COLORS, FONTS } from '../constants/theme';
 
 interface CategoryTileProps {

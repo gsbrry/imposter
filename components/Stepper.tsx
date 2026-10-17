@@ -3,7 +3,8 @@ import {
   View, StyleSheet,
 } from 'react-native';
 import AppText from './AppText';
-import { Minus, Plus } from 'lucide-react-native';
+import Minus from 'lucide-react-native/dist/esm/icons/minus';
+import Plus from 'lucide-react-native/dist/esm/icons/plus';
 import { COLORS, FONTS } from '../constants/theme';
 import IconButton from './IconButton';
 

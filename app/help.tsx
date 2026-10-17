@@ -6,9 +6,13 @@ import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import {
-  Flag, CircleX, Crown, ChevronRight, ChevronDown, Copy, Check,
-} from 'lucide-react-native';
+import Flag from 'lucide-react-native/dist/esm/icons/flag';
+import CircleX from 'lucide-react-native/dist/esm/icons/circle-x';
+import Crown from 'lucide-react-native/dist/esm/icons/crown';
+import ChevronRight from 'lucide-react-native/dist/esm/icons/chevron-right';
+import ChevronDown from 'lucide-react-native/dist/esm/icons/chevron-down';
+import Copy from 'lucide-react-native/dist/esm/icons/copy';
+import Check from 'lucide-react-native/dist/esm/icons/check';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import StepHeader from '../components/StepHeader';

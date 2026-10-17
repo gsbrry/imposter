@@ -5,10 +5,24 @@ import {
 import AppText from '../../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import {
-  HelpCircle, Play, Users, WifiOff, RefreshCw, ChevronRight, X, Lightbulb, CloudDownload,
-  Brain, Car, House, UtensilsCrossed, Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
-} from 'lucide-react-native';
+import HelpCircle from 'lucide-react-native/dist/esm/icons/circle-question-mark';
+import Play from 'lucide-react-native/dist/esm/icons/play';
+import Users from 'lucide-react-native/dist/esm/icons/users';
+import WifiOff from 'lucide-react-native/dist/esm/icons/wifi-off';
+import RefreshCw from 'lucide-react-native/dist/esm/icons/refresh-cw';
+import ChevronRight from 'lucide-react-native/dist/esm/icons/chevron-right';
+import X from 'lucide-react-native/dist/esm/icons/x';
+import Lightbulb from 'lucide-react-native/dist/esm/icons/lightbulb';
+import CloudDownload from 'lucide-react-native/dist/esm/icons/cloud-download';
+import Brain from 'lucide-react-native/dist/esm/icons/brain';
+import Car from 'lucide-react-native/dist/esm/icons/car';
+import House from 'lucide-react-native/dist/esm/icons/house';
+import UtensilsCrossed from 'lucide-react-native/dist/esm/icons/utensils-crossed';
+import Clapperboard from 'lucide-react-native/dist/esm/icons/clapperboard';
+import Trophy from 'lucide-react-native/dist/esm/icons/trophy';
+import PawPrint from 'lucide-react-native/dist/esm/icons/paw-print';
+import Briefcase from 'lucide-react-native/dist/esm/icons/briefcase';
+import PartyPopper from 'lucide-react-native/dist/esm/icons/party-popper';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
 import ScreenBackground from '../../components/ScreenBackground';
 import GlassCard from '../../components/GlassCard';

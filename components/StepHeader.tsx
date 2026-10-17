@@ -3,7 +3,7 @@ import {
   View, StyleSheet,
 } from 'react-native';
 import AppText from './AppText';
-import { ChevronLeft } from 'lucide-react-native';
+import ChevronLeft from 'lucide-react-native/dist/esm/icons/chevron-left';
 import { COLORS, FONTS, SIZE } from '../constants/theme';
 import IconButton from './IconButton';
 

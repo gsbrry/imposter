@@ -1,6 +1,8 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Play, ChartBar as BarChart2, Settings2 } from 'lucide-react-native';
+import Play from 'lucide-react-native/dist/esm/icons/play';
+import BarChart2 from 'lucide-react-native/dist/esm/icons/chart-bar';
+import Settings2 from 'lucide-react-native/dist/esm/icons/settings-2';
 import GlassTabBar, { TabConfig } from '../../components/GlassTabBar';
 import { TabBarVisibilityProvider } from '../../components/TabBarVisibility';
 

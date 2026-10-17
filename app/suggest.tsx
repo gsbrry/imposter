@@ -5,7 +5,8 @@ import {
 import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Send, Check } from 'lucide-react-native';
+import Send from 'lucide-react-native/dist/esm/icons/send';
+import Check from 'lucide-react-native/dist/esm/icons/check';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import StepHeader from '../components/StepHeader';

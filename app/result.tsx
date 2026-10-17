@@ -5,7 +5,10 @@ import {
 import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { RefreshCw, Trophy, Eye, EyeOff } from 'lucide-react-native';
+import RefreshCw from 'lucide-react-native/dist/esm/icons/refresh-cw';
+import Trophy from 'lucide-react-native/dist/esm/icons/trophy';
+import Eye from 'lucide-react-native/dist/esm/icons/eye';
+import EyeOff from 'lucide-react-native/dist/esm/icons/eye-off';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import GlassCard from '../components/GlassCard';

@@ -5,7 +5,7 @@ import {
 import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Eye } from 'lucide-react-native';
+import Eye from 'lucide-react-native/dist/esm/icons/eye';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import GlassCard from '../components/GlassCard';

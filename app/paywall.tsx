@@ -5,7 +5,7 @@ import {
 import AppText from '../components/AppText';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X } from 'lucide-react-native';
+import X from 'lucide-react-native/dist/esm/icons/x';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import IconButton from '../components/IconButton';
 
