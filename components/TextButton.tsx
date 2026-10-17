@@ -5,6 +5,7 @@ import { COLORS, FONTS } from '../constants/theme';
 interface TextButtonProps {
   label: string;
   onPress: () => void;
+  icon?: React.ReactNode;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: TextStyle;
@@ -17,7 +18,7 @@ interface TextButtonProps {
  * target out to the 44x44 minimum.
  */
 export default function TextButton({
-  label, onPress, disabled, style, textStyle, accessibilityLabel,
+  label, onPress, icon, disabled, style, textStyle, accessibilityLabel,
 }: TextButtonProps) {
   return (
     <TouchableOpacity
@@ -29,6 +30,7 @@ export default function TextButton({
       hitSlop={{ top: 2, bottom: 2, left: 8, right: 8 }}
       style={[styles.button, { opacity: disabled ? 0.4 : 1 }, style]}
     >
+      {icon}
       <Text style={[styles.text, textStyle]}>{label}</Text>
     </TouchableOpacity>
   );
@@ -37,8 +39,10 @@ export default function TextButton({
 const styles = StyleSheet.create({
   button: {
     minHeight: 40,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
   },
   text: {
     fontFamily: FONTS.bodySemiBold,

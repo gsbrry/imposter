@@ -152,20 +152,15 @@ export default function RevealScreen() {
     router.replace('/(tabs)');
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     hideWord();
     if (currentIndex < game.players.length - 1) {
       setHasSeenWord(false);
       setCurrentIndex(i => i + 1);
     } else {
-      // Last player done — if the timer is off there is no clue round.
-      const gs = await storage.getGameSettings();
-      const tv = await storage.getTeamVote();
-      if (gs.timerPerClue === 'none') {
-        router.push(tv ? '/result' : '/vote');
-      } else {
-        router.push('/clue-round');
-      }
+      // Everyone has seen their word, so draw who opens the clue rounds.
+      // The word reveal order itself is unchanged.
+      router.push('/who-starts');
     }
   };
 

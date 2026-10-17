@@ -107,6 +107,7 @@ export default function RootLayout() {
               <Stack.Screen name="game-settings" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="player-names" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="reveal" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="who-starts" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="clue-round" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="vote" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="result" options={{ animation: 'slide_from_right' }} />

@@ -19,6 +19,10 @@ export interface GameState {
   imposterIds: string[];
   hint: string;
   gameSettings: GameSettings;
+  /** Who opens the clue rounds this game. */
+  starterId: string | null;
+  /** Who opened the previous game, so they do not open two in a row. */
+  lastStarterId: string | null;
 }
 
 interface GameContextType {
@@ -37,6 +41,8 @@ const defaultGame: GameState = {
   imposterIds: [],
   hint: '',
   gameSettings: defaultGameSettings,
+  starterId: null,
+  lastStarterId: null,
 };
 
 const GameContext = createContext<GameContextType>({

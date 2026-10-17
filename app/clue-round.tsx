@@ -21,8 +21,9 @@ import IconButton from '../components/IconButton';
 import BottomSheet from '../components/BottomSheet';
 import Pill from '../components/Pill';
 import { useGame } from '../context/GameContext';
-import { storage } from '../utils/storage';
+import { storage, defaultGameSettings } from '../utils/storage';
 import { CATEGORIES, CategoryIcon } from '../data/words';
+import { clueOrder } from '../utils/pickStarter';
 
 const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
   brain: Brain,
@@ -97,6 +98,7 @@ export default function ClueRoundScreen() {
   const { game, resetGame } = useGame();
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [round, setRound] = useState(1);
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [maxTime, setMaxTime] = useState(30);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -128,7 +130,7 @@ export default function ClueRoundScreen() {
       setMaxTime(seconds);
       setTimeLeft(seconds);
       setTeamVote(tv);
-      setRounds(gs.turnsBeforeGuess ?? 1);
+      setRounds(gs.turnsBeforeGuess ?? defaultGameSettings.turnsBeforeGuess);
       setTimerSoundEnabled(ts);
       setSettingsLoaded(true);
     });
@@ -183,8 +185,12 @@ export default function ClueRoundScreen() {
   const goToNext = () => {
     clearInterval(timerRef.current);
     setTimeLeft(maxTime);
-    if (currentIndex < game.players.length - 1) {
+    if (currentIndex < order.length - 1) {
       setCurrentIndex(i => i + 1);
+    } else if (round < rounds) {
+      // Same order every round, so everyone gives one clue per round.
+      setRound(r => r + 1);
+      setCurrentIndex(0);
     } else {
       router.push(teamVote ? '/result' : '/vote');
     }
@@ -207,9 +213,12 @@ export default function ClueRoundScreen() {
     router.replace('/(tabs)');
   };
 
-  const player = game.players[currentIndex];
+  // Clues go round in seating order from whoever the Who starts screen drew.
+  const order = clueOrder(game.players, game.starterId);
+  const player = order[currentIndex];
+  const seat = player ? game.players.findIndex(p => p.id === player.id) : 0;
   const progress = timerEnabled ? timeLeft / maxTime : 1;
-  const isLast = currentIndex === game.players.length - 1;
+  const isLast = currentIndex === order.length - 1 && round >= rounds;
   const timeCritical = timerEnabled && timeLeft <= 10 && timeLeft > 0;
 
   const handlePrimary = () => {
@@ -241,7 +250,7 @@ export default function ClueRoundScreen() {
             <IconButton onPress={() => setPaused(true)} accessibilityLabel="Pause game">
               <Pause size={20} color={COLORS.ink} />
             </IconButton>
-            <Text style={styles.label}>CLUE ROUND 1 OF {rounds}</Text>
+            <Text style={styles.label}>CLUE ROUND {round} OF {rounds}</Text>
             <Pill
               tone="honey"
               label={category?.label ?? 'General'}
@@ -268,19 +277,19 @@ export default function ClueRoundScreen() {
 
           {/* Who is speaking */}
           <GlassCard style={styles.nowCard}>
-            <Avatar name={player.name} index={currentIndex} size={44} />
+            <Avatar name={player.name} index={seat} size={44} />
             <View style={styles.nowText}>
               <Text style={styles.label}>NOW GIVING A CLUE</Text>
               <Text style={styles.nowName} numberOfLines={1}>{player.name}</Text>
             </View>
             <Text style={styles.nowCount}>
-              {currentIndex + 1} of {game.players.length}
+              {currentIndex + 1} of {order.length}
             </Text>
           </GlassCard>
 
           {/* Turn order */}
           <View style={styles.pips}>
-            {game.players.map((p, i) => (
+            {order.map((p, i) => (
               <View
                 key={p.id}
                 style={[
@@ -294,7 +303,7 @@ export default function ClueRoundScreen() {
                     <Check size={14} color={COLORS.ink} />
                   </View>
                 ) : (
-                  <Avatar name={p.name} index={i} size={30} />
+                  <Avatar name={p.name} index={game.players.findIndex(q => q.id === p.id)} size={30} />
                 )}
               </View>
             ))}
