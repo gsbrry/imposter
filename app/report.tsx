@@ -6,6 +6,7 @@ import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Constants from 'expo-constants';
+import * as Device from 'expo-device';
 import { Send, Check } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
@@ -32,9 +33,14 @@ function deviceDetails(): string {
   const build = Platform.OS === 'android'
     ? Constants.expoConfig?.android?.versionCode
     : Constants.expoConfig?.ios?.buildNumber;
+  const model = [Device.brand, Device.modelName].filter(Boolean).join(' ');
+  const os = [Device.osName ?? Platform.OS, Device.osVersion ?? String(Platform.Version)]
+    .filter(Boolean)
+    .join(' ');
   return [
     `App: Impostr ${version}${build ? ` (${build})` : ''}`,
-    `Platform: ${Platform.OS} ${Platform.Version}`,
+    `Phone: ${model || 'unknown'}`,
+    `OS: ${os}`,
   ].join('\n');
 }
 
