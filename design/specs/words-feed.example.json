@@ -1,0 +1,30 @@
+{
+  "version": 3,
+  "updatedAt": "2026-10-15",
+  "packs": [
+    {
+      "category": "festival",
+      "id": "diwali-2026",
+      "title": "Diwali",
+      "free": true,
+      "availableFrom": "2026-10-25",
+      "availableUntil": "2026-11-15",
+      "words": {
+        "easy": ["Diya", "Rangoli", "Sweets"],
+        "medium": ["Lakshmi Puja", "Firecracker", "Lantern"],
+        "hard": ["Dhanteras", "Bhai Dooj", "Kandil"]
+      }
+    },
+    {
+      "category": "general",
+      "id": "general-additions-3",
+      "title": "General",
+      "free": true,
+      "words": {
+        "easy": ["Umbrella", "Pillow"],
+        "medium": ["Lighthouse"],
+        "hard": ["Sundial"]
+      }
+    }
+  ]
+}

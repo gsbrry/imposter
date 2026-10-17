@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impostr Store Screenshots</title>
+<link rel="stylesheet" href="../assets/impostr.css">
+<style>
+/* Play Store screenshots: 360 x 640 CSS px, exported at 3x = 1080 x 1920. Feature graphic: 1024 x 500. */
+body{background:var(--page);margin:0}
+.shot{width:360px;height:640px;position:relative;overflow:hidden;isolation:isolate;
+  background:linear-gradient(170deg,#FFE48A 0%,#F7C731 38%,#F2B705 70%,#E3A200 100%);display:flex;flex-direction:column;align-items:center}
+.shot::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(27,24,19,.08) 1.1px,transparent 1.2px);background-size:14px 14px}
+.cap{padding:40px 28px 0;text-align:center;display:flex;flex-direction:column;gap:8px}
+.cap h1{font:800 34px/1.02 var(--f-display);letter-spacing:-.03em;margin:0;color:#1B1813;text-wrap:balance}
+.cap p{margin:0;font:600 14px var(--f-body);color:rgba(27,24,19,.72)}
+.shot .phone{position:absolute;top:168px;left:50%;transform:translateX(-50%);--pw:290px;--pr:290/628;box-shadow:0 30px 50px -20px rgba(80,50,0,.55)}
+.fg{width:1024px;height:500px;position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(120deg,#FFE48A 0%,#F2B705 55%,#E3A200 100%);display:flex;align-items:center;padding:0 64px;gap:28px}
+.fg::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(27,24,19,.08) 1.2px,transparent 1.3px);background-size:16px 16px}
+.fg h1{font:800 76px/1 var(--f-display);letter-spacing:-.035em;margin:0;color:#1B1813}
+.fg p{font:600 22px var(--f-body);color:rgba(27,24,19,.75);margin:10px 0 0}
+.fg .ph{position:absolute}.fg .phone{box-shadow:0 30px 50px -20px rgba(80,50,0,.55)}
+.gallery{display:flex;flex-wrap:wrap;gap:24px;padding:24px}
+</style>
+</head>
+<body>
+<div class="gallery" id="g"></div>
+<script src="../assets/screens.js"></script>
+<script>
+IMP.injectSprite();
+const SHOTS=[
+ ['home','One word.<br>One liar.','The party word game for 3 to 12 friends'],
+ ['category','9 word packs','From Bollywood to Festivals'],
+ ['pass-phone','Pass the phone','Everyone sees the word, except one'],
+ ['clue-round','Give one-word clues','Beat the clock and stay sneaky'],
+ ['vote','Vote out the imposter','Then enjoy the big reveal'],
+ ['result','No internet needed','Play anywhere, any time']
+];
+const by=id=>IMP.S.find(s=>s.id===id);
+const g=document.getElementById('g');
+g.innerHTML=SHOTS.map(([id,h,p],i)=>`<div class="shot" id="shot-${i+1}"><div class="cap"><h1>${h}</h1><p>${p}</p></div>${IMP.phone(by(id),{w:290,h:628})}</div>`).join('')+
+ `<div class="fg" id="feature"><div style="display:flex;flex-direction:column;gap:6px;max-width:470px"><div style="filter:drop-shadow(0 14px 20px rgba(80,50,0,.35));width:84px">${IMP.MARK(84)}</div><h1 style="margin-top:14px">Impostr</h1><p>One word. One liar. Find them.</p></div><div class="ph" style="right:300px;top:70px;transform:rotate(-6deg)">${IMP.phone(by('word-reveal'),{w:250,h:540})}</div><div class="ph" style="right:40px;top:40px;transform:rotate(5deg)">${IMP.phone(by('vote'),{w:250,h:540})}</div></div>`;
+</script>
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Impostr Design Board</title>
+<link rel="stylesheet" href="assets/impostr.css">
+<style>
+.wrap{max-width:1500px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.top h1{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,54px);line-height:1;letter-spacing:-.03em;margin:0}
+.top h1 em{font-style:normal;color:var(--gold-deep)}
+.lede{color:var(--ink2);max-width:62ch;line-height:1.55;margin:10px 0 0}
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:4px;padding:6px;margin:0 0 8px;border-radius:16px;background:rgba(236,229,214,.86);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;border:0;background:none;height:40px;padding:0 16px;border-radius:11px;font:600 13.5px var(--f-body);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:8px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tabs button:focus-visible{outline:2px solid var(--gold-deep);outline-offset:2px}
+.tabs .n{font-size:11px;opacity:.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--page)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
+.toc a{font:600 12.5px var(--f-body);color:var(--ink);text-decoration:none;padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:var(--glass-hi)}
+.toc a:hover{border-color:var(--ink)}
+section.block{margin-top:56px}
+.bh{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.bh h2{font-family:var(--f-display);font-weight:700;font-size:28px;letter-spacing:-.02em;margin:0}
+.bh p{margin:0;color:var(--ink2);font-size:14px;max-width:72ch;line-height:1.5}
+.badge{font:700 10.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:var(--ink);color:var(--gold);white-space:nowrap}
+.badge.soft{background:var(--gold-soft);color:var(--gold-deep)}
+.badge.warn{background:#F6D6C9;color:#8A2E12}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:48px 28px;justify-items:center}
+figure{margin:0;display:flex;flex-direction:column;gap:14px;align-items:center;max-width:100%}
+figcaption{display:flex;gap:10px;align-items:baseline;width:340px;max-width:100%}
+figcaption b{font:700 12px var(--f-body);color:var(--gold-deep)}
+figcaption span{font-family:var(--f-display);font-weight:600;font-size:17px}
+figcaption small{margin-left:auto;color:var(--muted);font-size:12px;text-align:right}
+figcaption a{color:inherit}
+.resp{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-end;justify-content:center}
+.resp figcaption{width:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.card{padding:20px;border-radius:18px;background:var(--glass-hi);border:1px solid var(--line);min-width:0}
+.card h3{font-family:var(--f-display);font-weight:600;margin:0 0 8px;font-size:18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card p,.card li{margin:0;color:var(--ink2);line-height:1.55;font-size:14px}
+.card ul,.card ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.card .tagrow{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.card code,.doc code{font:500 12.5px ui-monospace,Menlo,monospace;background:rgba(27,24,19,.06);padding:1px 5px;border-radius:5px;word-break:break-word}
+.doc{max-width:980px}
+.tbl{overflow-x:auto;border-radius:16px;border:1px solid var(--line);background:var(--glass-hi)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+th{font:600 10.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:rgba(27,24,19,.03)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+.pre{font:500 12.5px/1.6 ui-monospace,Menlo,monospace;background:var(--ink);color:#EFE7D4;padding:16px 18px;border-radius:14px;overflow-x:auto;white-space:pre}
+.check{list-style:none;padding:0!important}
+.check li{display:flex;gap:10px;align-items:flex-start}
+.check li::before{content:"";flex:none;width:16px;height:16px;margin-top:3px;border-radius:5px;border:1.5px solid var(--muted)}
+.phase{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.phase .card{position:relative;padding-top:18px}
+.phase .when{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep)}
+.callout{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-radius:16px;background:var(--gold-soft);color:#4A3600;font-size:14px;line-height:1.5}
+.stack{display:flex;flex-direction:column;gap:20px}
+/* icon */
+.iconrow{display:flex;flex-wrap:wrap;gap:40px;align-items:center}
+.iconbig{width:220px;max-width:100%;filter:drop-shadow(0 30px 40px rgba(90,60,0,.3))}
+.masks{display:flex;gap:22px;align-items:flex-end;flex-wrap:wrap}
+.masks div{display:flex;flex-direction:column;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.circle svg{border-radius:50%}
+.homescreen{width:300px;max-width:100%;padding:22px;border-radius:28px;background:linear-gradient(160deg,#3B3326,#16130E);display:grid;grid-template-columns:repeat(4,1fr);gap:18px 10px}
+.homescreen div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:10px;color:#EDE6D6}
+.homescreen i{display:block;width:52px;height:52px;border-radius:13px;background:rgba(255,255,255,.12)}
+/* browser */
+.browser{width:100%;max-width:1200px;margin:0 auto;border-radius:18px;overflow:hidden;background:var(--bg);box-shadow:0 40px 80px -40px rgba(var(--shadow),.5);border:1px solid var(--line)}
+.bbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#E4DCCB}
+.bbar .dots{display:flex;gap:6px}.bbar .dots i{width:11px;height:11px;border-radius:50%;background:rgba(27,24,19,.18)}
+.bbar .url{flex:1;max-width:460px;margin:0 auto;height:30px;border-radius:9px;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:12.5px;color:var(--ink2)}
+.bstage{position:relative;display:grid;grid-template-columns:1fr minmax(320px,400px) 1fr;gap:32px;padding:32px;height:760px;isolation:isolate;overflow:hidden}
+.bstage::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(var(--dot) 1.1px,transparent 1.2px);background-size:16px 16px}
+.bstage .orb{filter:blur(70px)}
+.side{display:flex;flex-direction:column;gap:16px;justify-content:center;min-width:0}
+.bstage .scr{border-radius:28px;box-shadow:0 40px 80px -40px rgba(var(--shadow),.55);border:1px solid var(--stroke)}
+@media (max-width:980px){.bstage{grid-template-columns:minmax(0,400px);justify-content:center;height:auto}.bstage .side{display:none}.bstage .scr{height:720px}}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <header class="top">
+  <div style="min-width:0">
+   <span class="lab">Impostr &middot; Design v2 &middot; Honey and Cream</span>
+   <h1 style="margin-top:8px">Impostr <em>design board</em></h1>
+   <p class="lede">Screens, growth features, developer notes, security, testing and the roadmap in one place. Each screen also opens on its own page in the screens folder at real app size.</p>
+  </div>
+ </header>
+
+ <nav class="tabs" role="tablist" aria-label="Board sections">
+  <button role="tab" id="t-design" aria-controls="p-design" aria-selected="true">Design <span class="n">31</span></button>
+  <button role="tab" id="t-growth" aria-controls="p-growth" aria-selected="false">Growth and marketing <span class="n">5</span></button>
+  <button role="tab" id="t-dev" aria-controls="p-dev" aria-selected="false">Developer notes</button>
+  <button role="tab" id="t-security" aria-controls="p-security" aria-selected="false">Security</button>
+  <button role="tab" id="t-testing" aria-controls="p-testing" aria-selected="false">Testing</button>
+  <button role="tab" id="t-roadmap" aria-controls="p-roadmap" aria-selected="false">Roadmap and gaps</button>
+ </nav>
+
+ <!-- ================= DESIGN ================= -->
+ <div role="tabpanel" id="p-design" aria-labelledby="t-design">
+  <nav class="toc" aria-label="Design sections"><a href="#icon">App icon</a><a href="#core">Core game</a><a href="#extra">Phase 1 additions</a><a href="#store">Store listing</a><a href="#responsive">Responsive</a><a href="#ads">Ads</a><a href="#web">Web</a><a href="#online">Online (Phase 2)</a></nav>
+
+  <section class="block" id="icon">
+   <div class="bh"><h2>App icon</h2><p>A speech bubble for the clues, with three dots. One of them is a watching eye: the imposter hiding among friends. Reads clearly from 1024px down to 48px.</p></div>
+   <div class="iconrow"><img class="iconbig" src="icon/app-icon.svg" alt="Impostr app icon"><div class="masks" id="masks"></div><div class="homescreen" id="hs"></div></div>
+  </section>
+
+  <section class="block" id="core">
+   <div class="bh"><h2>Core game</h2><span class="badge">Phase 1</span><p>16 screens that replace the current app. Same game, cleaner flow.</p></div>
+   <div class="grid" id="g-core"></div>
+  </section>
+
+  <section class="block" id="extra">
+   <div class="bh"><h2>Phase 1 additions</h2><span class="badge">Phase 1</span><p>Pause and exit, help and support, and word updates without an app update. Settings (screen 14) now also has Accessibility, Word packs and Help sections, and the Clue round has a pause button. Full build spec: <code>design/specs/phase1-additions.md</code>.</p></div>
+   <div class="grid" id="g-extra"></div>
+  </section>
+
+  <section class="block" id="store">
+   <div class="bh"><h2>Store listing</h2><span class="badge">Phase 1</span><p>Six Play Store screenshots (1080 x 1920) and the feature graphic (1024 x 500), ready to upload from <code>design/store/</code>. Replace the screens with real captures once the app is rebuilt.</p></div>
+   <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:10px"><img src="store/screenshot-1.png" alt="Store screenshot 1" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-2.png" alt="Store screenshot 2" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-3.png" alt="Store screenshot 3" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-4.png" alt="Store screenshot 4" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-5.png" alt="Store screenshot 5" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-6.png" alt="Store screenshot 6" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"></div>
+   <img src="store/feature-graphic-1024x500.png" alt="Play Store feature graphic" style="margin-top:18px;width:100%;max-width:760px;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)">
+  </section>
+
+  <section class="block" id="responsive">
+   <div class="bh"><h2>Responsive check</h2><p>Headings, the timer ring and the grids scale with screen width. On short phones the content scrolls and the main button stays at the end of the content.</p></div>
+   <div class="resp" id="g-resp"></div>
+  </section>
+
+  <section class="block" id="ads">
+   <div class="bh"><h2>Ad placements</h2><span class="badge soft">Planned</span><p>One small card-sized ad, only where it cannot interrupt the game. It appears after the player scrolls to the bottom, or where the screen already has empty space.</p></div>
+   <div class="grid" id="g-ads"></div>
+   <div class="cards" style="margin-top:36px">
+    <div class="card"><h3>Where ads may appear</h3><ul><li>Home, below the categories</li><li>Result, below Play again</li><li>Stats and Settings, at the bottom</li></ul></div>
+    <div class="card"><h3>Where ads never appear</h3><ul><li>Pass the phone, word reveal, clue round, vote</li><li>Premium, setup steps, online rooms, rewards</li><li>Never as a pop-up or full-screen video</li></ul></div>
+    <div class="card"><h3>The ad card</h3><ul><li>Native ad, full content width, about 76px tall</li><li>Clearly marked AD, same corners as other cards</li><li>Hidden completely for Pro users</li></ul></div>
+   </div>
+  </section>
+
+  <section class="block" id="web">
+   <div class="bh"><h2>Web version</h2><p>On a laptop the app sits in a centred column with the same look. Side panels help people who arrive from a shared link: get the app or join with a code. On phones only the app column shows.</p></div>
+   <div class="browser"><div class="bbar"><span class="dots"><i></i><i></i><i></i></span><span class="url">impostr.app/play</span><span style="width:45px"></span></div>
+    <div class="bstage"><span class="orb o1" style="width:420px;height:420px;top:-160px;right:-100px"></span><span class="orb o2" style="width:480px;height:480px;bottom:-200px;left:-120px"></span><div class="side" id="wleft"></div><div id="wapp" style="min-width:0;height:100%"></div><div class="side" id="wright"></div></div></div>
+  </section>
+
+  <section class="block" id="online">
+   <div class="bh"><h2>Online play</h2><span class="badge soft">Phase 2 &middot; next iteration</span><p>Everyone plays on their own phone. The host shares a link in the group chat, friends tap it, install or open the app, and land in the room. Designed now so Phase 1 leaves room for it; build later.</p></div>
+   <div class="grid" id="g-online"></div>
+  </section>
+ </div>
+
+ <!-- ================= GROWTH ================= -->
+ <div role="tabpanel" id="p-growth" aria-labelledby="t-growth" hidden>
+  <section class="block">
+   <div class="bh"><h2>Play again and again</h2><span class="badge">Phase 1.5</span><p>Free players earn real content by playing, keep a streak going, and unlock packs by bringing friends. Every reward is something they would otherwise pay for, so it also shows the value of Pro.</p></div>
+   <div class="grid" id="g-growth"></div>
+  </section>
+
+  <section class="block">
+   <div class="bh"><h2>Reward ladder</h2><p>Simple, generous, and counted on the device. No account needed.</p></div>
+   <div class="tbl"><table>
+    <thead><tr><th>Goal</th><th>Reward</th><th>Why it works</th></tr></thead>
+    <tbody>
+     <tr><td>Play 5 games</td><td>Chaos difficulty</td><td>First win comes fast, inside the first party night</td></tr>
+     <tr><td>Play 10 games</td><td>Food pack, free forever</td><td>Brings the group back for a second night</td></tr>
+     <tr><td>3-day play streak</td><td>24-hour Pro pass</td><td>Lets free players feel every pack, then ask for Pro</td></tr>
+     <tr><td>Invite 2 friends who install</td><td>Bollywood pack, free forever</td><td>Turns each player into a recruiter</td></tr>
+     <tr><td>Win 5 times as imposter</td><td>Master of Disguise badge on the share card</td><td>Bragging rights people want to post</td></tr>
+     <tr><td>Play during a festival week</td><td>Limited festival pack (Diwali, Holi, IPL)</td><td>A reason to open the app on dates people party</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section class="block">
+   <div class="bh"><h2>Word of mouth</h2><p>The game is played in a group, so every session is a chance to reach new people. Make sharing the natural end of every game.</p></div>
+   <div class="cards">
+    <div class="card"><h3>Share card after each game</h3><p>A bright result card ("Kabir fooled no one. The word was Mango.") sized for chat and stories, with the app link on it. One tap from Result.</p></div>
+    <div class="card"><h3>Invite link with a reward</h3><p>Each player has a personal link. Two installs unlock Bollywood. Message is prewritten and fun: "One of us is lying."</p></div>
+    <div class="card"><h3>The phone is the ad</h3><p>Pass and play means everyone in the room sees the app. Show the app name and link on the Pass the phone screen footer.</p></div>
+    <div class="card"><h3>Share a custom pack</h3><p>Pro users share their own word pack as a link. Friends need the app to play it.</p></div>
+    <div class="card"><h3>Online rooms (Phase 2)</h3><p>Joining a room from a link is the strongest install driver. Each new player arrives with a friend already waiting.</p></div>
+    <div class="card"><h3>Ask for a rating at the high point</h3><p>After a crew win with 5 or more players, ask once with the store's own review prompt. Never after a loss.</p></div>
+   </div>
+  </section>
+
+  <section class="block">
+   <div class="bh"><h2>Marketing ideas</h2><p>Low cost, made for how groups in India find party games.</p></div>
+   <div class="cards">
+    <div class="card"><h3>Short videos</h3><ul><li>Reels and Shorts of real groups: the reveal moment, the worst clue</li><li>Weekly "guess the imposter" clip with the answer in comments</li></ul></div>
+    <div class="card"><h3>Creators</h3><ul><li>Small comedy and friend-group creators playing on camera</li><li>Give each a custom pack named after them</li></ul></div>
+    <div class="card"><h3>Places people gather</h3><ul><li>College fests, hostels, cafes and board game cafes</li><li>A QR standee: "Play Impostr at this table"</li></ul></div>
+    <div class="card"><h3>Seasonal moments</h3><ul><li>Diwali, Holi, New Year, IPL season packs</li><li>Push and social posts timed to party weekends</li></ul></div>
+    <div class="card"><h3>Store listing</h3><ul><li>Keywords: imposter game, party game, offline game, word game, Hindi</li><li>Screenshots from this design, with one-line captions</li></ul></div>
+    <div class="card"><h3>Language</h3><ul><li>Hindi and Hinglish word packs</li><li>Opens a much larger audience for a word game</li></ul></div>
+   </div>
+  </section>
+
+  <section class="block">
+   <div class="bh"><h2>What to measure</h2><p>Track a few numbers from day one so the team knows which ideas work. No personal data needed.</p></div>
+   <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th>Meaning</th><th>Healthy first target</th></tr></thead>
+    <tbody>
+     <tr><td>Games per session</td><td>Games played each time the app opens</td><td>3 or more</td></tr>
+     <tr><td>Day 7 return</td><td>Share of new users who play again within a week</td><td>20% or more</td></tr>
+     <tr><td>Share rate</td><td>Share card or invite sent per 10 games</td><td>1 or more</td></tr>
+     <tr><td>Invite conversion</td><td>Installs per invite link sent</td><td>15% or more</td></tr>
+     <tr><td>Pro conversion</td><td>Free users who buy any plan</td><td>2 to 4%</td></tr>
+    </tbody></table></div>
+   <p class="sub" style="margin-top:10px;font-size:12.5px">Targets are starting assumptions for a casual party game, not measured figures. Replace them with real data after the first month.</p>
+  </section>
+ </div>
+
+ <!-- ================= DEVELOPER ================= -->
+ <div role="tabpanel" id="p-dev" aria-labelledby="t-dev" hidden>
+  <div class="stack doc">
+  <section class="block">
+   <div class="bh"><h2>Developer notes</h2><p>How to turn this board into the React Native app. The HTML is a reference only; do not ship it.</p></div>
+   <div class="callout">Start with <code>design/README.md</code> and <code>design/tokens.json</code>. Build shared components first, then screens in the order of the game flow.</div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Stack and setup</h3>
+   <div class="tbl"><table><thead><tr><th>Area</th><th>Use</th><th>Note</th></tr></thead><tbody>
+    <tr><td>App</td><td>Expo SDK 54, Expo Router, TypeScript</td><td>Keep existing routes and game logic</td></tr>
+    <tr><td>Fonts</td><td><code>@expo-google-fonts/outfit</code>, <code>@expo-google-fonts/plus-jakarta-sans</code></td><td>Remove Nunito once replaced</td></tr>
+    <tr><td>Glass</td><td><code>expo-blur</code> BlurView, intensity 40, light tint</td><td>On slow Android phones, use the fill colour without blur</td></tr>
+    <tr><td>Icons</td><td>One library only (Lucide is closest to this board)</td><td>The project has three icon libraries today; remove the extra two</td></tr>
+    <tr><td>Purchases</td><td>RevenueCat (existing)</td><td>Entitlement check on every launch, not only from cache</td></tr>
+    <tr><td>Storage</td><td>AsyncStorage (existing keys)</td><td>Add keys for rewards: games played, streak, unlocked packs</td></tr>
+    <tr><td>Web</td><td>Expo web export</td><td>Centred column, max 480px; side panels from 980px</td></tr>
+   </tbody></table></div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Shared components to build first</h3>
+   <div class="cards">
+    <div class="card"><h3>Surfaces</h3><ul><li><code>ScreenBackground</code> (cream, orbs, dot pattern)</li><li><code>GlassCard</code></li><li><code>BottomSheet</code></li><li><code>GlassTabBar</code></li></ul></div>
+    <div class="card"><h3>Actions</h3><ul><li><code>PrimaryButton</code> (honey)</li><li><code>InkButton</code>, <code>GlassButton</code>, <code>TextButton</code></li><li><code>IconButton</code></li></ul></div>
+    <div class="card"><h3>Inputs</h3><ul><li><code>Toggle</code>, <code>Segmented</code>, <code>Stepper</code></li><li><code>Chip</code>, <code>TextField</code></li><li><code>PlanOption</code> (Premium)</li></ul></div>
+    <div class="card"><h3>Game pieces</h3><ul><li><code>Avatar</code>, <code>CategoryTile</code></li><li><code>RevealCard</code> (one component for crew and imposter)</li><li><code>TimerRing</code>, <code>VoteCard</code>, <code>ProgressBar</code></li></ul></div>
+   </div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Rules that are easy to get wrong</h3>
+   <div class="cards">
+    <div class="card"><h3>Reveal parity</h3><p>Crew and imposter use the same <code>RevealCard</code> with the same colours, size and timing. Only the strings change. Also match haptics and sound, or the imposter can be heard.</p></div>
+    <div class="card"><h3>One primary action</h3><p>Only one honey button per screen. Secondary actions are glass or text.</p></div>
+    <div class="card"><h3>Plain text</h3><p>Use straight apostrophes in all strings and save files as UTF-8, so broken characters never appear.</p></div>
+    <div class="card"><h3>Category names</h3><p>One word each. Change display names in the word data, not in screen code.</p></div>
+   </div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Clean-up found in the current code</h3>
+   <div class="card"><ul>
+    <li><code>utils</code> has both <code>.js</code> and <code>.ts</code> copies of <code>getWord</code> and <code>selectImposter</code>. Keep the TypeScript version only.</li>
+    <li><code>package.json</code> name is still <code>bolt-expo-starter</code>. Rename to <code>impostr</code>.</li>
+    <li>Player order is shuffled with <code>sort(() =&gt; Math.random() - 0.5)</code>, which is not a fair shuffle. Use Fisher-Yates.</li>
+    <li>The colour keys in <code>constants/theme.ts</code> are called <code>yellow</code> but hold green. Rename them to match the new tokens.</li>
+    <li>No test setup and no test script yet. See the Testing tab.</li>
+   </ul></div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Phase 1 additions</h3>
+   <p class="sub" style="margin-bottom:12px">Build spec with acceptance checks: <code>design/specs/phase1-additions.md</code>. Suggested order: 1, 2, 5, 8, 3, 7, 6, 4.</p>
+   <div class="tbl"><table><thead><tr><th>Item</th><th>What to build</th><th>Screens</th></tr></thead><tbody>
+    <tr><td>1. Pause and exit</td><td>Pause button, pause sheet, exit confirm; back button and backgrounding pause the game</td><td>10, 31, 32</td></tr>
+    <tr><td>2. Crash reporting</td><td>Sentry with its Expo plugin, release builds only, no personal data, source maps from EAS</td><td>None</td></tr>
+    <tr><td>3. Privacy and Data safety</td><td>Update the policy page and Play form from the table in the spec</td><td>None</td></tr>
+    <tr><td>4. Store screenshots</td><td>Upload the files in <code>design/store/</code></td><td>Store listing</td></tr>
+    <tr><td>5. Accessibility</td><td>Labels and roles, 44px targets, font scaling, Larger text and Reduce motion settings</td><td>14</td></tr>
+    <tr><td>6. Word updates</td><td>Fetch a validated JSON feed, cache it, fall back to bundled words; festival dates</td><td>14, 35</td></tr>
+    <tr><td>7. Age rating</td><td>IARC questionnaire, 13 and over, word check script</td><td>None</td></tr>
+    <tr><td>8. In-app support</td><td>Help screen, report form with device details, email shown as text</td><td>14, 33, 34</td></tr>
+   </tbody></table></div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Analytics events (no personal data)</h3>
+   <div class="pre">app_open
+game_start          { category, difficulty, players, mode: "pass" | "online" }
+game_end            { winner: "crew" | "imposter", rounds, skipped_vote }
+reward_unlocked     { reward_id }
+share_card_sent     { from: "result" | "reward" }
+invite_link_sent
+paywall_view        { from }
+purchase            { plan: "monthly" | "yearly" | "lifetime" }</div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Prompt for Code</h3>
+   <div class="pre">Read design/README.md and open design/index.html (Design and Developer notes tabs).
+Rebuild the 16 Phase 1 screens in React Native using design/tokens.json,
+replacing the green theme and Nunito font. Build the shared components first.
+Keep the existing game logic. Fix the clean-up items in Developer notes.
+Then build the 8 items in design/specs/phase1-additions.md, in the order given,
+and meet each "Done when" check. Remove the 7-tap reviewer unlock.
+Wire the new icons from design/icon into app.json.
+Do not build online play (Phase 2), rewards (Phase 1.5) or ads yet.</div>
+  </section>
+  </div>
+ </div>
+
+ <!-- ================= SECURITY ================= -->
+ <div role="tabpanel" id="p-security" aria-labelledby="t-security" hidden>
+  <div class="stack doc">
+  <section class="block">
+   <div class="bh"><h2>Security guide</h2><p>What protects revenue, user trust and store approval. Phase 1 is offline, so most risk is in purchases and builds. Phase 2 adds a server, which changes the picture.</p></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Phase 1 findings in the current code</h3>
+   <div class="tbl"><table><thead><tr><th>Finding</th><th>Risk</th><th>Action</th></tr></thead><tbody>
+    <tr><td>Reviewer unlock: tapping the version label 7 times turns on Premium locally</td><td><span class="badge warn">High</span> Anyone who learns the gesture gets every pack free</td><td>Remove it from release builds. Give Play reviewers access with license testers or a promo code instead.</td></tr>
+    <tr><td>Premium status is cached on the device</td><td><span class="badge soft">Medium</span> A rooted phone can edit the cache</td><td>Check the RevenueCat entitlement on every launch; use the cache only when offline, with a short expiry.</td></tr>
+    <tr><td>RevenueCat keys in <code>eas.json</code></td><td><span class="badge soft">Low</span> These are public SDK keys, designed to ship in the app</td><td>Fine to keep. Never add the secret API key anywhere in the app or repo.</td></tr>
+    <tr><td>Release signing key</td><td><span class="badge soft">Medium</span> Losing it blocks updates; leaking it allows fake updates</td><td>Keep it in EAS credentials only. Confirm no <code>.keystore</code> other than the debug one is in git.</td></tr>
+    <tr><td>Suggest a category form</td><td><span class="badge soft">Low</span> Free text from users</td><td>Limit length, strip links, and say in the privacy policy where suggestions go.</td></tr>
+   </tbody></table></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Phase 1 additions</h3>
+   <div class="cards">
+    <div class="card"><h3>Word feed</h3><p>HTTPS only. Validate the whole file (version, categories, plain short strings, under 1 MB) and reject it if anything fails. Treat words as text, never as code or HTML. Keep the bundled list as the fallback.</p></div>
+    <div class="card"><h3>Crash reports</h3><p>Turn off default PII in Sentry and strip player names. Keep the Sentry auth token in EAS secrets only.</p></div>
+    <div class="card"><h3>Support reports</h3><p>Send only what the user typed plus device model and versions. Limit length and rate. If a form endpoint is used, protect it from spam.</p></div>
+   </div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Rewards and invites (Phase 1.5)</h3>
+   <div class="card"><ul>
+    <li>Rewards counted on the device can be cheated on rooted phones. Keep rewards small (one pack), so cheating costs little.</li>
+    <li>Invite rewards need a trusted count of installs. Use the Play Install Referrer and a small server check, or reward the inviter only when the friend finishes one game.</li>
+    <li>Rate-limit invite rewards per device so one person cannot farm packs.</li>
+   </ul></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Online play (Phase 2)</h3>
+   <div class="cards">
+    <div class="card"><h3>Server decides roles</h3><p>The server picks the imposter and sends each phone only its own word. Never send the word to the imposter's phone, even hidden. Otherwise anyone can read it from the network.</p></div>
+    <div class="card"><h3>Room codes</h3><p>Use 5 or more characters without look-alike letters. Rooms expire after 2 hours. Limit join attempts per device to stop guessing.</p></div>
+    <div class="card"><h3>Names and clues</h3><p>Filter abusive words in names and typed clues. Let the host remove a player.</p></div>
+    <div class="card"><h3>Votes</h3><p>Votes are counted on the server, one per player per round. Phones never see who voted for whom until the reveal.</p></div>
+    <div class="card"><h3>Invite links</h3><p>Validate the code on the server before opening a room. Links carry only the room code, never a name or ID.</p></div>
+    <div class="card"><h3>No accounts needed</h3><p>Use an anonymous device ID. Collect no phone numbers, emails or contacts.</p></div>
+   </div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Ads, privacy and store policy</h3>
+   <div class="card"><ul>
+    <li>Set the target age to 13 and over in Play Console. If children are in the audience, Families policy limits which ad networks you can use.</li>
+    <li>Show the consent form for ads where the law requires it (Google's consent SDK handles this).</li>
+    <li>Keep the Play Data safety form and <code>public/privacy-policy.html</code> in step with every new feature: analytics, ads, invites, online.</li>
+    <li>Keep blocking unneeded permissions in <code>app.json</code>, as today. Online play needs internet only.</li>
+   </ul></div>
+  </section>
+  </div>
+ </div>
+
+ <!-- ================= TESTING ================= -->
+ <div role="tabpanel" id="p-testing" aria-labelledby="t-testing" hidden>
+  <div class="stack doc">
+  <section class="block">
+   <div class="bh"><h2>Testing guide</h2><p>What to test before each release. Automated tests cover the game rules; people test the feel on real phones.</p></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Automated</h3>
+   <div class="tbl"><table><thead><tr><th>Type</th><th>Tool</th><th>What to cover</th></tr></thead><tbody>
+    <tr><td>Unit</td><td>Jest with <code>jest-expo</code></td><td>Imposter pick is fair over 10,000 runs; no word repeats until a pack is used up; vote tally, ties and skipped votes; reward ladder counts and streak dates across midnight</td></tr>
+    <tr><td>Component</td><td>React Native Testing Library</td><td>RevealCard shows identical layout for crew and imposter; toggles save settings; locked categories open Premium</td></tr>
+    <tr><td>End to end</td><td>Maestro flows</td><td>Full game with 3, 5 and 12 players; purchase and restore in sandbox; app sent to background mid-round</td></tr>
+    <tr><td>Visual</td><td>Screenshots compared with <code>design/screens/*.html</code></td><td>Each Phase 1 screen at 360 x 640 and 430 x 932</td></tr>
+    <tr><td>Checks</td><td><code>npm run typecheck</code>, <code>npm run lint</code></td><td>Run on every change</td></tr>
+   </tbody></table></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Device matrix</h3>
+   <div class="cards">
+    <div class="card"><h3>Small, low-end Android</h3><p>About 360 x 640, 3GB RAM. Check blur speed, scrolling and the timer staying accurate.</p></div>
+    <div class="card"><h3>Standard Android</h3><p>Android 13 or newer. Main test phone for all flows.</p></div>
+    <div class="card"><h3>Large phone</h3><p>About 430 x 932. Check spacing does not look empty.</p></div>
+    <div class="card"><h3>Web</h3><p>Chrome on a laptop and on a phone. Check the centred column and side panels.</p></div>
+   </div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Manual checklist</h3>
+   <div class="cards">
+    <div class="card"><h3>Game feel</h3><ul class="check"><li>In a dark room, crew and imposter screens look and sound the same</li><li>Pass the phone hides the word before handing over</li><li>Timer, tick and horn sounds respect the settings</li><li>Haptics respect the setting</li></ul></div>
+    <div class="card"><h3>Purchases</h3><ul class="check"><li>Buy each plan with a license tester</li><li>Restore on a second phone</li><li>Cancel and confirm packs lock again after expiry</li><li>No reviewer unlock in the release build</li></ul></div>
+    <div class="card"><h3>Edge cases</h3><ul class="check"><li>Airplane mode for a full game</li><li>Phone call during the clue round</li><li>Very long player names</li><li>Large system font size</li></ul></div>
+    <div class="card"><h3>Pause and exit</h3><ul class="check"><li>Pause stops the timer and sounds</li><li>Back button opens pause, not the previous screen</li><li>Exiting does not count in stats</li><li>Word never visible while paused</li></ul></div>
+    <div class="card"><h3>Word updates</h3><ul class="check"><li>Airplane mode uses bundled words</li><li>Broken or huge feed is ignored</li><li>Festival pack shows only on its dates</li><li>New words sheet shows once</li></ul></div>
+    <div class="card"><h3>Accessibility</h3><ul class="check"><li>TalkBack reads every button by name</li><li>Touch targets at least 44 x 44</li><li>Text contrast passes on cream and on glass</li><li>Reduced motion turns off pulses</li></ul></div>
+   </div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Release gate</h3>
+   <div class="card"><ul class="check"><li>All automated tests pass</li><li>Manual checklist done on two Android phones</li><li>Internal testing track for 2 days with no crashes</li><li>Data safety form and privacy policy updated</li><li>Store screenshots updated to the new design</li></ul></div>
+  </section>
+  </div>
+ </div>
+
+ <!-- ================= ROADMAP ================= -->
+ <div role="tabpanel" id="p-roadmap" aria-labelledby="t-roadmap" hidden>
+  <section class="block">
+   <div class="bh"><h2>Roadmap</h2><p>Ship the redesign first, then features that bring players back, then online play.</p></div>
+   <div class="phase">
+    <div class="card"><span class="when">Phase 1 &middot; now</span><h3>Redesign</h3><ul><li>16 core screens in Honey and Cream</li><li>New fonts and app icon</li><li>Reveal parity, one-word categories</li><li>Pause and exit, in-app support</li><li>Accessibility, word updates</li><li>Crash reporting, privacy, age rating</li><li>New store listing</li><li>Code clean-up, security fixes, tests</li></ul></div>
+    <div class="card"><span class="when">Phase 1.5 &middot; next</span><h3>Play again and grow</h3><ul><li>Reward ladder and streaks</li><li>Share result card</li><li>Invite friends link</li><li>Store review prompt</li><li>Analytics events</li></ul></div>
+    <div class="card"><span class="when">Phase 2 &middot; later</span><h3>Online play</h3><ul><li>Rooms, codes and invite links</li><li>Each player on their own phone</li><li>Server for roles, clues and votes</li><li>Web join page</li></ul></div>
+    <div class="card"><span class="when">Planned &middot; when ready</span><h3>Ads and more</h3><ul><li>Small native ad card for free users</li><li>Custom word pack editor</li><li>Hindi and Hinglish packs</li><li>Game modes: two imposters, similar word</li></ul></div>
+   </div>
+  </section>
+  <section class="block">
+   <div class="bh"><h2>Did we miss anything?</h2><p>Gaps found during design. Eight are now designed and specified for Phase 1.</p></div>
+   <div class="tbl"><table><thead><tr><th>Item</th><th>Status</th><th>Where</th></tr></thead><tbody>
+    <tr><td>Pause and exit</td><td><span class="badge">Phase 1</span> Designed and specified</td><td>Screens 10, 31, 32; spec item 1</td></tr>
+    <tr><td>Crash reporting</td><td><span class="badge">Phase 1</span> Specified</td><td>Spec item 2</td></tr>
+    <tr><td>Privacy policy and Data safety</td><td><span class="badge">Phase 1</span> Specified, with a data table per phase</td><td>Spec item 3</td></tr>
+    <tr><td>Store screenshots</td><td><span class="badge">Phase 1</span> Files ready</td><td><code>design/store/</code>; spec item 4</td></tr>
+    <tr><td>Accessibility</td><td><span class="badge">Phase 1</span> Designed and specified; colours fixed to pass contrast</td><td>Screen 14; spec item 5</td></tr>
+    <tr><td>Word updates without an app update</td><td><span class="badge">Phase 1</span> Designed and specified, example feed included</td><td>Screens 14, 35; spec item 6</td></tr>
+    <tr><td>Age rating</td><td><span class="badge">Phase 1</span> Specified</td><td>Spec item 7</td></tr>
+    <tr><td>In-app support</td><td><span class="badge">Phase 1</span> Designed and specified</td><td>Screens 14, 33, 34; spec item 8</td></tr>
+    <tr><td>First-time welcome</td><td><span class="badge soft">Phase 1.5</span> Not designed</td><td>Roadmap</td></tr>
+    <tr><td>Localisation (Hindi)</td><td><span class="badge soft">Planned</span> Not designed</td><td>Roadmap</td></tr>
+    <tr><td>iOS build</td><td><span class="badge warn">Decide</span> App is set up for iOS; only Android ships</td><td>Owner decision</td></tr>
+   </tbody></table></div>
+  </section>
+ </div>
+</div>
+
+<script src="assets/screens.js"></script>
+<script>
+IMP.injectSprite();
+const fig=(s,opt={})=>`<figure><figcaption><b>${s.n}</b><span><a href="screens/${String(s.n).padStart(2,'0')}-${s.id}.html">${s.name}</a></span><small>${opt.cap||s.note}</small></figcaption>${IMP.phone(s,opt)}</figure>`;
+IMP.S.forEach((s,i)=>s.n=i+1);
+['core','extra','online','ads','growth'].forEach(g=>{document.getElementById('g-'+g).innerHTML=IMP.S.filter(s=>s.group===g).map(s=>fig(s)).join('')});
+const by=id=>IMP.S.find(s=>s.id===id);
+document.getElementById('g-resp').innerHTML=[[by('home'),{w:270,h:480,cap:'Small phone 360 x 640'}],[by('vote'),{w:270,h:480,cap:'Small phone 360 x 640'}],[by('home'),{w:340,h:736,cap:'Standard 390 x 844'}],[by('clue-round'),{w:380,h:826,cap:'Large 430 x 932'}]].map(([s,o])=>fig(s,o)).join('');
+document.querySelectorAll('#g-ads .body, #g-extra figure:last-child .body').forEach(b=>b.scrollTop=b.scrollHeight);
+document.getElementById('masks').innerHTML=[[96,'Squircle'],[96,'Circle (Android)'],[64,''],[48,''],[32,'Favicon']].map(([s,l],i)=>`<div class="${i===1?'circle':''}">${IMP.MARK(s)}<span>${l||s+'px'}</span></div>`).join('');
+document.getElementById('hs').innerHTML=['Photos','Maps','','Music','Notes','Impostr','Clock','Mail'].map(l=>`<div>${l==='Impostr'?IMP.MARK(52):'<i></i>'}<span>${l}</span></div>`).join('');
+document.getElementById('wapp').innerHTML=IMP.phone(by('home'),{frame:false});
+document.getElementById('wleft').innerHTML=`<div class="row" style="gap:12px">${IMP.MARK(52)}<div><div class="h h-l">Impostr</div><div class="sub">The party word game</div></div></div><p class="sub" style="font-size:15px;max-width:30ch">One word. One liar. Play on this screen, or get the app for the best experience.</p><div class="glass" style="padding:16px;display:flex;gap:14px;align-items:center;max-width:320px"><div class="qr" style="width:92px;height:92px"><i></i></div><div class="col" style="gap:4px"><span class="h h-s">Get the app</span><span class="sub" style="font-size:12.5px">Scan with your phone camera</span></div></div>`;
+document.getElementById('wright').innerHTML=`<div class="glass" style="padding:18px;display:flex;flex-direction:column;gap:12px;max-width:320px"><span class="lab">Have a room code? (Phase 2)</span><div class="codebox" style="gap:6px">${['H','N','Y','4','2'].map(c=>`<span class="glass" style="font-size:20px">${c}</span>`).join('')}</div><button class="btn btn-gold" style="min-height:46px">Join room</button></div><div class="glass" style="padding:18px;display:flex;flex-direction:column;gap:10px;max-width:320px"><span class="lab">How it works</span>${['Everyone gets the word except one','Give one-word clues','Vote out the imposter'].map((t,i)=>`<div class="howstep" style="gap:10px;align-items:center"><span class="n" style="width:26px;height:26px">${i+1}</span><span style="font-size:13px;font-weight:600">${t}</span></div>`).join('')}</div>`;
+// tabs
+const tabs=[...document.querySelectorAll('[role=tab]')];
+function show(id,push){tabs.forEach(t=>{const on=t.id==='t-'+id;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!on});if(push){try{history.replaceState(null,'','#'+id)}catch(e){}}}
+tabs.forEach((t,i)=>{t.addEventListener('click',()=>{show(t.id.slice(2),true);window.scrollTo({top:0})});t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const n=tabs[(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length];n.focus();n.click()}})});
+const h=(location.hash||'').slice(1);if(tabs.some(t=>t.id==='t-'+h))show(h);
+</script>
+</body>
+</html>

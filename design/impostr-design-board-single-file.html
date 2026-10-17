@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Impostr Design Board</title>
+<style>
+/* Impostr design system v2: Honey & Cream liquid glass.
+   Layout: phone-first app column; glass only on floating layers; solid honey for the one primary action. */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+:root{
+  /* colour */
+  --bg:#F4EFE4;          /* cream app background */
+  --bg2:#EAE2CF;         /* deeper cream */
+  --page:#ECE5D6;        /* board / web surround */
+  --ink:#1B1813;         /* primary text, selected states */
+  --ink2:#5C5547;        /* body text */
+  --muted:#6F6757;       /* labels, hints */
+  --gold:#F2B705;        /* honey: primary action, progress */
+  --gold-deep:#805B00;   /* honey text on cream (AA) */
+  --gold-soft:#FBE7A1;   /* honey tint fills */
+  --on-gold:#1B1813;
+  --glass:rgba(255,252,245,.55);
+  --glass-hi:rgba(255,253,248,.8);
+  --stroke:rgba(255,255,255,.85);
+  --line:rgba(27,24,19,.09);
+  --dot:rgba(27,24,19,.07);
+  --orb1:#FFD13D; --orb2:#F6DCA0; --orb3:#FFF6DC;
+  --shadow:28,20,4;
+  --frame:#1B1813;
+  /* type */
+  --f-display:"Outfit","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+  /* shape */
+  --r-xl:24px; --r-lg:20px; --r-md:14px; --r-sm:10px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--page);color:var(--ink);font-family:var(--f-body);-webkit-font-smoothing:antialiased}
+button{font-family:inherit}
+
+/* ---------- PHONE FRAME (board only) ---------- */
+.phone{width:var(--pw,340px);max-width:100%;aspect-ratio:var(--pr,340/736);border-radius:52px;padding:9px;background:var(--frame);
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.08) inset,0 40px 60px -30px rgba(var(--shadow),.45),0 12px 24px -12px rgba(var(--shadow),.3)}
+.phone.sm{border-radius:40px}.phone.sm .scr{border-radius:32px}
+
+/* ---------- SCREEN ---------- */
+.scr{position:relative;height:100%;border-radius:44px;overflow:hidden;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;isolation:isolate;font-size:14px;container-type:inline-size}
+.scr::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(var(--dot) 1.1px,transparent 1.2px);background-size:14px 14px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 55%);mask-image:linear-gradient(180deg,#000 0%,transparent 55%)}
+.orb{position:absolute;border-radius:50%;filter:blur(38px);z-index:-2;pointer-events:none}
+.o1{width:66cqi;height:66cqi;background:var(--orb1);top:-20cqi;right:-24cqi;opacity:.75}
+.o2{width:76cqi;height:76cqi;background:var(--orb2);bottom:-26cqi;left:-26cqi;opacity:.9}
+.o3{width:44cqi;height:44cqi;background:var(--orb3);top:42%;left:55%;opacity:.9}
+.status{display:flex;justify-content:space-between;align-items:center;padding:16px 28px 6px;font:600 13px var(--f-body);flex:none}
+.island{width:96px;height:28px;background:#000;border-radius:20px;position:absolute;left:50%;top:10px;transform:translateX(-50%)}
+.sicons{display:flex;gap:5px;align-items:center}
+.sicons svg{width:15px;height:15px}
+.body{flex:1;display:flex;flex-direction:column;padding:10px 18px 24px;gap:14px;min-height:0;overflow-y:auto;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.body.tabbed{padding-bottom:100px}
+
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* liquid glass */
+.glass{position:relative;background:var(--glass);border:1px solid var(--stroke);border-radius:var(--r-lg);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 1px 2px rgba(var(--shadow),.06),0 14px 30px -16px rgba(var(--shadow),.28)}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.45) 0%,rgba(255,255,255,0) 38%,rgba(255,255,255,0) 70%,rgba(255,255,255,.18) 100%);mix-blend-mode:soft-light}
+.pad{padding:16px}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;border-radius:var(--r-md);border:0;font:700 15px var(--f-body);cursor:pointer;width:100%;flex:none}
+.btn-gold{background:linear-gradient(180deg,#F8CF4A 0%,var(--gold) 55%,#DFA800 100%);color:var(--on-gold);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(0,0,0,.08),0 12px 24px -10px rgba(242,183,5,.75)}
+.btn-ink{background:var(--ink);color:var(--bg);box-shadow:0 12px 22px -12px rgba(var(--shadow),.6)}
+.btn-glass{background:var(--glass-hi);color:var(--ink);border:1px solid var(--stroke)}
+.btn-text{background:none;color:var(--ink2);min-height:40px;font-weight:600}
+.iconbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--ink);cursor:pointer;padding:0;border:0;background:none;flex:none}
+.iconbtn.glass{background:var(--glass)}
+.btn:focus-visible,.iconbtn:focus-visible,.tog:focus-visible{outline:2px solid var(--gold-deep);outline-offset:2px}
+
+/* type */
+.lab{font:600 10.5px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.h{font-family:var(--f-display);font-weight:700;letter-spacing:-.025em;line-height:1.04;margin:0;text-wrap:balance}
+.h-xl{font-size:clamp(30px,11.5cqi,44px)}
+.h-l{font-size:clamp(23px,8.4cqi,30px)}
+.h-m{font-size:clamp(18px,6cqi,21px)}
+.h-s{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.hero{font-size:clamp(32px,12.4cqi,46px);font-weight:800}
+.word{font:800 clamp(38px,14.5cqi,54px)/1 var(--f-display);letter-spacing:-.035em}
+.sub{color:var(--ink2);line-height:1.45;margin:0;font-size:13.5px}
+.num{font-family:var(--f-display);font-variant-numeric:tabular-nums}
+.gold{color:var(--gold-deep)}
+.spacer{flex:1}
+.row{display:flex;align-items:center;gap:12px}
+.col{display:flex;flex-direction:column;gap:12px}
+.center{text-align:center;align-items:center}
+.navrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.steps{display:flex;gap:4px}
+.steps i{width:22px;height:4px;border-radius:2px;background:var(--line)}
+.steps i.on{background:var(--gold)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:8px;font:600 11.5px var(--f-body);background:var(--glass-hi);border:1px solid var(--stroke);color:var(--ink2);white-space:nowrap}
+.pill.g{background:var(--gold-soft);border-color:transparent;color:var(--gold-deep)}
+.pill.ink{background:var(--ink);border-color:transparent;color:var(--gold)}
+.pill svg{width:14px;height:14px}
+.tile-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--gold-soft);color:var(--gold-deep);flex:none}
+.tile-ic.ink{background:var(--ink);color:var(--gold)}
+
+/* tab bar */
+.tabbar{position:absolute;left:16px;right:16px;bottom:16px;height:64px;display:flex;justify-content:space-around;align-items:center;border-radius:22px;padding:0 8px;z-index:3}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font:600 10.5px var(--f-body);color:var(--muted);flex:1;padding:8px 0;border-radius:16px}
+.tab.on{color:var(--ink);background:var(--glass-hi);box-shadow:0 4px 12px -6px rgba(var(--shadow),.3)}
+.tab.on svg{color:var(--gold-deep)}
+
+/* controls */
+.tog{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;border:0;cursor:pointer;flex:none;padding:0}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);transition:transform .2s}
+.tog[aria-pressed="true"]{background:var(--gold)}
+.tog[aria-pressed="true"]::after{transform:translateX(18px)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:14px}
+.seg button{border:0;background:none;height:38px;border-radius:10px;font:600 13px var(--f-body);color:var(--ink2);cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg);box-shadow:0 6px 14px -8px rgba(var(--shadow),.6)}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.list-row + .list-row{border-top:1px solid var(--line)}
+.list-row .t{font-weight:600;font-size:14px}
+.list-row .d{font-size:12px;color:var(--muted);margin-top:2px}
+.grow{flex:1;min-width:0}
+
+.av{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font:700 13px var(--f-display);flex:none;color:#1B1813}
+.a1{background:#FFD866}.a2{background:#F4C7A1}.a3{background:#CFE3B0}.a4{background:#BFD8EE}.a5{background:#E6CBEA}.a6{background:#F2D7B6}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:10px;font:600 12.5px var(--f-body);border:1px solid var(--line);background:var(--glass-hi);color:var(--ink);white-space:nowrap}
+.chip svg{width:15px;height:15px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+
+.catgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cat{padding:12px 10px;border-radius:16px;display:flex;flex-direction:column;gap:8px;position:relative;min-height:92px}
+.cat .n{font-weight:700;font-size:12.5px;line-height:1.2}
+.cat .c{font:500 10.5px var(--f-body);color:var(--muted)}
+.cat.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cat.sel .tile-ic{background:var(--gold);color:var(--on-gold)}
+.cat.sel .c{color:rgba(244,239,228,.6)}
+.cat .lock{position:absolute;top:10px;right:10px;width:14px;height:14px;color:var(--muted)}
+.cat .tile-ic{width:32px;height:32px;border-radius:10px}
+.cat .tile-ic svg{width:17px;height:17px}
+
+.stepper{display:flex;align-items:center;justify-content:space-between}
+.stepper .iconbtn{background:var(--glass-hi);border:1px solid var(--stroke)}
+.big-num{font:700 56px/1 var(--f-display);letter-spacing:-.04em}
+.reveal-card{flex:1;min-height:300px;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px}
+.ring{position:relative;width:min(190px,56cqi);aspect-ratio:1;margin:0 auto;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.vote-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.vcard{padding:12px;border-radius:16px;display:flex;align-items:center;gap:10px;position:relative;min-width:0}
+.vcard span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vcard.sel{outline:2px solid var(--gold);background:var(--gold-soft)}
+.vcard .cnt{position:absolute;top:6px;right:8px;font:700 11px var(--f-display);color:var(--ink2);min-width:18px;height:18px;border-radius:6px;background:var(--line);display:grid;place-items:center;padding:0 4px}
+@container (max-width:330px){.vcard{padding:10px 8px;gap:8px}.vcard .av{width:28px;height:28px;border-radius:9px;font-size:12px}}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:3px}
+.sheet{position:absolute;left:8px;right:8px;bottom:8px;border-radius:34px;padding:22px 20px 18px;display:flex;flex-direction:column;gap:14px;background:var(--glass-hi);z-index:4}
+.dim{position:absolute;inset:0;background:rgba(20,16,8,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:3}
+.howstep{display:flex;gap:14px;align-items:flex-start}
+.howstep .n{width:30px;height:30px;border-radius:10px;background:var(--ink);color:var(--gold);display:grid;place-items:center;font:700 14px var(--f-display);flex:none}
+.plan{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;position:relative}
+.plan.sel{outline:2px solid var(--gold);background:var(--gold-soft)}
+.radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);flex:none;display:grid;place-items:center}
+.plan.sel .radio{border-color:var(--gold-deep)}
+.plan.sel .radio::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--gold-deep)}
+.tag{position:absolute;top:-9px;right:14px;height:18px;padding:0 8px;border-radius:6px;background:var(--ink);color:var(--gold);font:700 9.5px var(--f-body);letter-spacing:.08em;display:flex;align-items:center}
+.field{display:flex;flex-direction:column;gap:6px}
+.input{min-height:48px;border-radius:12px;padding:0 14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+.input.ta{min-height:96px;align-items:flex-start;padding-top:13px;color:var(--muted);font-weight:400;line-height:1.4}
+.caret{width:1.5px;height:18px;background:var(--gold-deep);animation:blink 1s steps(2) infinite}
+.codebox{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.codebox span{aspect-ratio:1/1.15;border-radius:14px;display:grid;place-items:center;font:700 26px var(--f-display)}
+.codebox span.on{outline:2px solid var(--gold)}
+.qr{width:112px;height:112px;border-radius:14px;background:#fff;padding:10px;flex:none}
+.qr i{display:block;width:100%;height:100%;background:
+  conic-gradient(from 90deg at 3px 3px,#1B1813 25%,transparent 0) 0 0/9px 9px;opacity:.85;border-radius:4px}
+.stat{padding:14px;border-radius:18px;display:flex;flex-direction:column;gap:6px}
+.stat .v{font:700 30px/1 var(--f-display);letter-spacing:-.03em}
+.statgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.feed{display:flex;flex-direction:column;gap:6px}
+.bubble{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border-radius:14px}
+.bubble b{font:700 15px var(--f-display)}
+
+/* ad slot (planned) */
+.ad{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 10px;border-radius:16px;background:rgba(255,253,248,.62);border:1px dashed rgba(27,24,19,.16);flex:none}
+.ad-img{width:56px;height:56px;border-radius:12px;flex:none;background:repeating-linear-gradient(135deg,var(--bg2) 0 6px,var(--bg) 6px 12px)}
+.ad-tag{font:700 9px var(--f-body);letter-spacing:.1em;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:2px 5px;margin-right:6px}
+.ad .t{font-weight:600;font-size:13px}
+.ad .d{font-size:11.5px;color:var(--muted);margin-top:2px}
+.ad-cta{height:32px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--glass-hi);font:600 12px var(--f-body);color:var(--ink);flex:none}
+.annot{position:absolute;right:14px;z-index:5;background:var(--ink);color:var(--gold);font:700 10px var(--f-body);letter-spacing:.06em;padding:4px 8px;border-radius:6px}
+
+@keyframes blink{50%{opacity:0}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(1.12);opacity:.2}}
+@keyframes load{from{width:8%}to{width:78%}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- SINGLE SCREEN PAGES (true responsive preview / web) ---------- */
+body.single{min-height:100vh;min-height:100dvh;display:flex;justify-content:center;background:var(--page)}
+body.single .scr{width:100%;max-width:480px;height:100vh;height:100dvh;border-radius:0}
+body.single .status,body.single .island{display:none}
+body.single .body{padding-top:max(18px,env(safe-area-inset-top,0px))}
+@media (min-width:600px){
+  body.single{align-items:center;padding:24px}
+  body.single .scr{height:min(900px,calc(100dvh - 48px));border-radius:32px;box-shadow:0 40px 80px -40px rgba(var(--shadow),.5)}
+}
+
+</style>
+<style>
+.wrap{max-width:1500px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.top h1{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,54px);line-height:1;letter-spacing:-.03em;margin:0}
+.top h1 em{font-style:normal;color:var(--gold-deep)}
+.lede{color:var(--ink2);max-width:62ch;line-height:1.55;margin:10px 0 0}
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:4px;padding:6px;margin:0 0 8px;border-radius:16px;background:rgba(236,229,214,.86);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;border:0;background:none;height:40px;padding:0 16px;border-radius:11px;font:600 13.5px var(--f-body);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:8px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tabs button:focus-visible{outline:2px solid var(--gold-deep);outline-offset:2px}
+.tabs .n{font-size:11px;opacity:.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--page)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
+.toc a{font:600 12.5px var(--f-body);color:var(--ink);text-decoration:none;padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:var(--glass-hi)}
+.toc a:hover{border-color:var(--ink)}
+section.block{margin-top:56px}
+.bh{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.bh h2{font-family:var(--f-display);font-weight:700;font-size:28px;letter-spacing:-.02em;margin:0}
+.bh p{margin:0;color:var(--ink2);font-size:14px;max-width:72ch;line-height:1.5}
+.badge{font:700 10.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:var(--ink);color:var(--gold);white-space:nowrap}
+.badge.soft{background:var(--gold-soft);color:var(--gold-deep)}
+.badge.warn{background:#F6D6C9;color:#8A2E12}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:48px 28px;justify-items:center}
+figure{margin:0;display:flex;flex-direction:column;gap:14px;align-items:center;max-width:100%}
+figcaption{display:flex;gap:10px;align-items:baseline;width:340px;max-width:100%}
+figcaption b{font:700 12px var(--f-body);color:var(--gold-deep)}
+figcaption span{font-family:var(--f-display);font-weight:600;font-size:17px}
+figcaption small{margin-left:auto;color:var(--muted);font-size:12px;text-align:right}
+figcaption a{color:inherit}
+.resp{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-end;justify-content:center}
+.resp figcaption{width:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.card{padding:20px;border-radius:18px;background:var(--glass-hi);border:1px solid var(--line);min-width:0}
+.card h3{font-family:var(--f-display);font-weight:600;margin:0 0 8px;font-size:18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card p,.card li{margin:0;color:var(--ink2);line-height:1.55;font-size:14px}
+.card ul,.card ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.card .tagrow{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.card code,.doc code{font:500 12.5px ui-monospace,Menlo,monospace;background:rgba(27,24,19,.06);padding:1px 5px;border-radius:5px;word-break:break-word}
+.doc{max-width:980px}
+.tbl{overflow-x:auto;border-radius:16px;border:1px solid var(--line);background:var(--glass-hi)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+th{font:600 10.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:rgba(27,24,19,.03)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+.pre{font:500 12.5px/1.6 ui-monospace,Menlo,monospace;background:var(--ink);color:#EFE7D4;padding:16px 18px;border-radius:14px;overflow-x:auto;white-space:pre}
+.check{list-style:none;padding:0!important}
+.check li{display:flex;gap:10px;align-items:flex-start}
+.check li::before{content:"";flex:none;width:16px;height:16px;margin-top:3px;border-radius:5px;border:1.5px solid var(--muted)}
+.phase{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.phase .card{position:relative;padding-top:18px}
+.phase .when{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep)}
+.callout{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-radius:16px;background:var(--gold-soft);color:#4A3600;font-size:14px;line-height:1.5}
+.stack{display:flex;flex-direction:column;gap:20px}
+/* icon */
+.iconrow{display:flex;flex-wrap:wrap;gap:40px;align-items:center}
+.iconbig{width:220px;max-width:100%;filter:drop-shadow(0 30px 40px rgba(90,60,0,.3))}
+.masks{display:flex;gap:22px;align-items:flex-end;flex-wrap:wrap}
+.masks div{display:flex;flex-direction:column;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.circle svg{border-radius:50%}
+.homescreen{width:300px;max-width:100%;padding:22px;border-radius:28px;background:linear-gradient(160deg,#3B3326,#16130E);display:grid;grid-template-columns:repeat(4,1fr);gap:18px 10px}
+.homescreen div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:10px;color:#EDE6D6}
+.homescreen i{display:block;width:52px;height:52px;border-radius:13px;background:rgba(255,255,255,.12)}
+/* browser */
+.browser{width:100%;max-width:1200px;margin:0 auto;border-radius:18px;overflow:hidden;background:var(--bg);box-shadow:0 40px 80px -40px rgba(var(--shadow),.5);border:1px solid var(--line)}
+.bbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#E4DCCB}
+.bbar .dots{display:flex;gap:6px}.bbar .dots i{width:11px;height:11px;border-radius:50%;background:rgba(27,24,19,.18)}
+.bbar .url{flex:1;max-width:460px;margin:0 auto;height:30px;border-radius:9px;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:12.5px;color:var(--ink2)}
+.bstage{position:relative;display:grid;grid-template-columns:1fr minmax(320px,400px) 1fr;gap:32px;padding:32px;height:760px;isolation:isolate;overflow:hidden}
+.bstage::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(var(--dot) 1.1px,transparent 1.2px);background-size:16px 16px}
+.bstage .orb{filter:blur(70px)}
+.side{display:flex;flex-direction:column;gap:16px;justify-content:center;min-width:0}
+.bstage .scr{border-radius:28px;box-shadow:0 40px 80px -40px rgba(var(--shadow),.55);border:1px solid var(--stroke)}
+@media (max-width:980px){.bstage{grid-template-columns:minmax(0,400px);justify-content:center;height:auto}.bstage .side{display:none}.bstage .scr{height:720px}}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <header class="top">
+  <div style="min-width:0">
+   <span class="lab">Impostr &middot; Design v2 &middot; Honey and Cream</span>
+   <h1 style="margin-top:8px">Impostr <em>design board</em></h1>
+   <p class="lede">Screens, growth features, developer notes, security, testing and the roadmap in one place. Each screen also opens on its own page in the screens folder at real app size.</p>
+  </div>
+ </header>
+
+ <nav class="tabs" role="tablist" aria-label="Board sections">
+  <button role="tab" id="t-design" aria-controls="p-design" aria-selected="true">Design <span class="n">31</span></button>
+  <button role="tab" id="t-growth" aria-controls="p-growth" aria-selected="false">Growth and marketing <span class="n">5</span></button>
+  <button role="tab" id="t-dev" aria-controls="p-dev" aria-selected="false">Developer notes</button>
+  <button role="tab" id="t-security" aria-controls="p-security" aria-selected="false">Security</button>
+  <button role="tab" id="t-testing" aria-controls="p-testing" aria-selected="false">Testing</button>
+  <button role="tab" id="t-roadmap" aria-controls="p-roadmap" aria-selected="false">Roadmap and gaps</button>
+ </nav>
+
+ <!-- ================= DESIGN ================= -->
+ <div role="tabpanel" id="p-design" aria-labelledby="t-design">
+  <nav class="toc" aria-label="Design sections"><a href="#icon">App icon</a><a href="#core">Core game</a><a href="#extra">Phase 1 additions</a><a href="#store">Store listing</a><a href="#responsive">Responsive</a><a href="#ads">Ads</a><a href="#web">Web</a><a href="#online">Online (Phase 2)</a></nav>
+
+  <section class="block" id="icon">
+   <div class="bh"><h2>App icon</h2><p>A speech bubble for the clues, with three dots. One of them is a watching eye: the imposter hiding among friends. Reads clearly from 1024px down to 48px.</p></div>
+   <div class="iconrow"><img class="iconbig" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiIHdpZHRoPSIxMDI0IiBoZWlnaHQ9IjEwMjQiIHhtbG5zOmMycGE9Imh0dHA6Ly9jMnBhLm9yZy9tYW5pZmVzdCI+PG1ldGFkYXRhPjxjMnBhOm1hbmlmZXN0PkFBQVdnbXAxYldJQUFBQWVhblZ0WkdNeWNHRUFFUUFRZ0FBQXFnQTRtM0VEWXpKd1lRQUFBQlpjYW5WdFlnQUFBRWRxZFcxa1l6SnRZUUFSQUJDQUFBQ3FBRGliY1FOMWNtNDZZekp3WVRvNE9XRmlPVGt5WlMxaU1UWXpMVFEzWmpNdE9XTXpOQzB4TjJVMk56UXlaVGN5TlRVQUFBQURsMnAxYldJQUFBQXBhblZ0WkdNeVlYTUFFUUFRZ0FBQXFnQTRtM0VEWXpKd1lTNWhjM05sY25ScGIyNXpBQUFBQUx4cWRXMWlBQUFBUkdwMWJXUmpZbTl5QUJFQUVJQUFBS29BT0p0eEUyTXljR0V1YVc1bmNtVmthV1Z1ZEM1Mk13QUFBQUFZWXpKemFJeVZhS3Vsa2NLVFdMUVJtNGdjbVhzQUFBQndZMkp2Y3FOcFpHTTZabTl5YldGMGJXbHRZV2RsTDNOMlp5dDRiV3hxYVc1emRHRnVZMlZKUkhnc2VHMXdPbWxwWkRvNFlqVTNZalV3Tmkxall6YzRMVFEzTVdJdFlXSTNaaTAwTURRellqZ3hZakV3T0dOc2NtVnNZWFJwYjI1emFHbHdhSEJoY21WdWRFOW1BQUFCNG1wMWJXSUFBQUJCYW5WdFpHTmliM0lBRVFBUWdBQUFxZ0E0bTNFVFl6SndZUzVoWTNScGIyNXpMbll5QUFBQUFCaGpNbk5vWkhBTWZwVlFZcE9GeVY2eWhxdld6QUFBQVpsalltOXlvbWRoWTNScGIyNXpncUptWVdOMGFXOXVhMk15Y0dFdWIzQmxibVZrYW5CaGNtRnRaWFJsY25PaGEybHVaM0psWkdsbGJuUnpnYUpqZFhKc2VDMXpaV3htSTJwMWJXSm1QV015Y0dFdVlYTnpaWEowYVc5dWN5OWpNbkJoTG1sdVozSmxaR2xsYm5RdWRqTmthR0Z6YUZnZzlxRG9OVlQxRytaQWYvTjMzeGU0N0dsc0VXY2orM05KWDJXK0xmeGFqMnVrWm1GamRHbHZibmdkWTI5dExtRnVkR2h5YjNCcFl5NWpiR0YxWkdVdWNISnZkbWxrWldScWNHRnlZVzFsZEdWeWM2RjRIMk52YlM1aGJuUm9jbTl3YVdNdWIzSnBaMmx1TFdOdmJtWnBaR1Z1WTJWbmRXNXJibTkzYm10a1pYTmpjbWx3ZEdsdmJuaG1RMnhoZFdSbElIQnliM1pwWkdWa0lIUm9hWE1nWm1sc1pTQmhkQ0IwYUdVZ2NtVnhkV1Z6ZENCdlppQmhJSFZ6WlhJZ1lXNWtJRzFoZVNCb1lYWmxJR055WldGMFpXUWdiM0lnYlc5a2FXWnBaV1FnZEdobElHWnBiR1VnWTI5dWRHVnVkSE11YlhOdlpuUjNZWEpsUVdkbGJuU2haRzVoYldWbVEyeGhkV1JsY21Gc2JFRmpkR2x2Ym5OSmJtTnNkV1JsWlBVQUFBRElhblZ0WWdBQUFFQnFkVzFrWTJKdmNnQVJBQkNBQUFDcUFEaWJjUk5qTW5CaExtaGhjMmd1WkdGMFlRQUFBQUFZWXpKemFBRXhwTDVmZ04ra2NxR0tpaGIyczhZQUFBQ0FZMkp2Y3FWallXeG5abk5vWVRJMU5tTndZV1JOQUFBQUFBQUFBQUFBQUFBQUFHUm9ZWE5vV0NCaU1VU1pyRm5UYjFYWFZydW84OWZZU09jcEtJYmFpUGU5Qk5OczdkbUxVMlJ1WVcxbGJtcDFiV0ptSUcxaGJtbG1aWE4wYW1WNFkyeDFjMmx2Ym5PQm9tVnpkR0Z5ZEJpYVpteGxibWQwYUJrZUJBQUFBajVxZFcxaUFBQUFKMnAxYldSak1tTnNBQkVBRUlBQUFLb0FPSnR4QTJNeWNHRXVZMnhoYVcwdWRqSUFBQUFDRDJOaWIzS2xZMkZzWjJaemFHRXlOVFpwYzJsbmJtRjBkWEpsZUUxelpXeG1JMnAxYldKbVBTOWpNbkJoTDNWeWJqcGpNbkJoT2pnNVlXSTVPVEpsTFdJeE5qTXRORGRtTXkwNVl6TTBMVEUzWlRZM05ESmxOekkxTlM5ak1uQmhMbk5wWjI1aGRIVnlaV3BwYm5OMFlXNWpaVWxFZUN4NGJYQTZhV2xrT2pRMk5Ua3lNbVprTFdVNE4yRXROR1JpWWkxaU9UbGtMV05tTnpKbE1USTRPRFF3TW5KamNtVmhkR1ZrWDJGemMyVnlkR2x2Ym5PRG9tTjFjbXg0TFhObGJHWWphblZ0WW1ZOVl6SndZUzVoYzNObGNuUnBiMjV6TDJNeWNHRXVhVzVuY21Wa2FXVnVkQzUyTTJSb1lYTm9XQ0Qyb09nMVZQVWI1a0IvODNmZkY3anNhV3dSWnlQN2MwbGZaYjR0L0ZxUGE2SmpkWEpzZUNwelpXeG1JMnAxYldKbVBXTXljR0V1WVhOelpYSjBhVzl1Y3k5ak1uQmhMbUZqZEdsdmJuTXVkakprYUdGemFGZ2czTEV5ZVJDTmpUdFhtdjJieWQxU2lDRTh2L2w5cXBGem1PaFhweW9mdlJXaVkzVnliSGdwYzJWc1ppTnFkVzFpWmoxak1uQmhMbUZ6YzJWeWRHbHZibk12WXpKd1lTNW9ZWE5vTG1SaGRHRmthR0Z6YUZnZ05UTEtkUno4K09yRW9LTXVWeFRYS0tFSi9HcFcwSDk4V2V0eWNTMHo0RkYwWTJ4aGFXMWZaMlZ1WlhKaGRHOXlYMmx1Wm0ralpHNWhiV1Z2UVc1MGFISnZjR2xqSUVacGJHVnpaM1psY25OcGIyNWxNUzR3TGpCcmMzQmxZMVpsY25OcGIyNWxNaTQwTGpBQUFCQTRhblZ0WWdBQUFDaHFkVzFrWXpKamN3QVJBQkNBQUFDcUFEaWJjUU5qTW5CaExuTnBaMjVoZEhWeVpRQUFBQkFJWTJKdmN0S0VXUUlTb2dFbUdDRlpBZ293Z2dJR01JSUJqYUFEQWdFQ0FoUkE1YUFLN3NJNTBMNjRnL29HUWdVOVoxVVRBREFLQmdncWhrak9QUVFEQXpCSk1SY3dGUVlEVlFRS0V3NUJiblJvY205d2FXTXNJRkJDUXpFdU1Dd0dBMVVFQXhNbFFXNTBhSEp2Y0dsaklFTnZiblJsYm5RZ1EzSmxaR1Z1ZEdsaGJITWdVbTl2ZENCRFFUQWVGdzB5TmpBNE1EY3hPRFF6TlRaYUZ3MHlPREE0TURZeE9UUXpOVFphTUVReEZ6QVZCZ05WQkFvVERrRnVkR2h5YjNCcFl5d2dVRUpETVNrd0p3WURWUVFERXlCQmJuUm9jbTl3YVdNZ1EyeGhkV1JsSUVOdmJuUmxiblFnVTJsbmJtbHVaekJaTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEEwSUFCSmg2Q212TFVCZ0ZGTlUwdlVLbE9WdEU2ZGpkMTdMNVN1d1gwTGVtRmlzQk0zZGtkLzNjeWp4RkEzUW81UzQ2ZlgwL2loWTBWWjdtZmI5S0Y3MDN0NU9qV0RCV01BNEdBMVVkRHdFQi93UUVBd0lIZ0RBVkJnTlZIU1VFRGpBTUJnb3JCZ0VFQVlQb1hnSUJNQXdHQTFVZEV3RUIvd1FDTUFBd0h3WURWUjBqQkJnd0ZvQVV6bEhpQklGT1pGc2orT1BFejVvK25NSFhYTUl3Q2dZSUtvWkl6ajBFQXdNRFp3QXdaQUl3TVhNZEZKNEJldExMVlk3T1J1RTlub3FiYkFaT1puL2FBclh5VHdGQVpmS3JQenhGMnZQb0pOZjErVUNkZzFYR0FqQndYMXpkOVdHcVlrcW1MNVNGcXcxUXlTanIxekpmcEpNOSsxcmREd1NQTE1PUE9qS3VpWGpvVS9wVVVlRzlSd21oWTNCaFpGa05uZ0FBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQVBaWVFBOWxXdGVQaVdaRkViT2JqNUJtckZMais3NEM1MnBCNjFDZnFPUnhaNVAzYUV1N0xHamh6Zk15ZktzM1FNaHBJWXdENlVJMkoyckRualVYeEZTSGwrcz08L2MycGE6bWFuaWZlc3Q+PC9tZXRhZGF0YT4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwIiB5MT0iMCIgeDI9IjAuMzUiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjRkZEOTVBIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMC41NSIgc3RvcC1jb2xvcj0iI0YyQjcwNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNERTlFMDAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9Imdsb3ciIGN4PSIwLjI4IiBjeT0iMC4xOCIgcj0iMC42Ij4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjRkZGNkQ2IiBzdG9wLW9wYWNpdHk9IjAuODUiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRkZGNkQ2IiBzdG9wLW9wYWNpdHk9IjAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InNoZWVuIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI0ZGRkZGRiIgc3RvcC1vcGFjaXR5PSIwLjE2Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjRkZGRkZGIiBzdG9wLW9wYWNpdHk9IjAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJzaCIgeD0iLTIwJSIgeT0iLTIwJSIgd2lkdGg9IjE0MCUiIGhlaWdodD0iMTUwJSI+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIyOCIgc3RkRGV2aWF0aW9uPSIzMCIgZmxvb2QtY29sb3I9IiM1QTNDMDAiIGZsb29kLW9wYWNpdHk9IjAuMzUiLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAyNCIgaGVpZ2h0PSIxMDI0IiByeD0iMjMwIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDxyZWN0IHdpZHRoPSIxMDI0IiBoZWlnaHQ9IjEwMjQiIHJ4PSIyMzAiIGZpbGw9InVybCgjZ2xvdykiLz4KICA8ZyBmaWx0ZXI9InVybCgjc2gpIj4KICAgIDxwYXRoIGQ9Ik0zNjIgMjUyaDMwMGExNTAgMTUwIDAgMCAxIDE1MCAxNTB2MTQwYTE1MCAxNTAgMCAwIDEtMTUwIDE1MEg0MjBsLTExOCA5MmMtMTIgOS0yOCAwLTI2LTE1bDE0LTg3QTE1MCAxNTAgMCAwIDEgMjEyIDU0MlY0MDJhMTUwIDE1MCAwIDAgMSAxNTAtMTUweiIgZmlsbD0iIzFCMTgxMyIvPgogICAgPHBhdGggZD0iTTM2MiAyNTJoMzAwYTE1MCAxNTAgMCAwIDEgMTUwIDE1MHY0MEgyMTJ2LTQwYTE1MCAxNTAgMCAwIDEgMTUwLTE1MHoiIGZpbGw9InVybCgjc2hlZW4pIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjM1MiIgY3k9IjQ3MiIgcj0iNTYiIGZpbGw9IiNGNEVGRTQiLz4KICA8Y2lyY2xlIGN4PSI2NzIiIGN5PSI0NzIiIHI9IjU2IiBmaWxsPSIjRjRFRkU0Ii8+CiAgPGNpcmNsZSBjeD0iNTEyIiBjeT0iNDcyIiByPSI2MiIgZmlsbD0iI0YyQjcwNSIvPgogIDxlbGxpcHNlIGN4PSI1MTIiIGN5PSI0NzIiIHJ4PSIxNSIgcnk9IjQyIiBmaWxsPSIjMUIxODEzIi8+CiAgPGNpcmNsZSBjeD0iNDk0IiBjeT0iNDUyIiByPSI5IiBmaWxsPSIjRkZGNkQ2Ii8+Cjwvc3ZnPgo=" alt="Impostr app icon"><div class="masks" id="masks"></div><div class="homescreen" id="hs"></div></div>
+  </section>
+
+  <section class="block" id="core">
+   <div class="bh"><h2>Core game</h2><span class="badge">Phase 1</span><p>16 screens that replace the current app. Same game, cleaner flow.</p></div>
+   <div class="grid" id="g-core"></div>
+  </section>
+
+  <section class="block" id="extra">
+   <div class="bh"><h2>Phase 1 additions</h2><span class="badge">Phase 1</span><p>Pause and exit, help and support, and word updates without an app update. Settings (screen 14) now also has Accessibility, Word packs and Help sections, and the Clue round has a pause button. Full build spec: <code>design/specs/phase1-additions.md</code>.</p></div>
+   <div class="grid" id="g-extra"></div>
+  </section>
+
+  <section class="block" id="store">
+   <div class="bh"><h2>Store listing</h2><span class="badge">Phase 1</span><p>Six Play Store screenshots (1080 x 1920) and the feature graphic (1024 x 500), ready to upload from <code>design/store/</code>. Replace the screens with real captures once the app is rebuilt.</p></div>
+   <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:10px"><img src="store/screenshot-1.png" alt="Store screenshot 1" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-2.png" alt="Store screenshot 2" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-3.png" alt="Store screenshot 3" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-4.png" alt="Store screenshot 4" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-5.png" alt="Store screenshot 5" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"><img src="store/screenshot-6.png" alt="Store screenshot 6" style="width:200px;flex:none;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)"></div>
+   <img src="store/feature-graphic-1024x500.png" alt="Play Store feature graphic" style="margin-top:18px;width:100%;max-width:760px;border-radius:14px;box-shadow:0 20px 40px -24px rgba(var(--shadow),.5)">
+  </section>
+
+  <section class="block" id="responsive">
+   <div class="bh"><h2>Responsive check</h2><p>Headings, the timer ring and the grids scale with screen width. On short phones the content scrolls and the main button stays at the end of the content.</p></div>
+   <div class="resp" id="g-resp"></div>
+  </section>
+
+  <section class="block" id="ads">
+   <div class="bh"><h2>Ad placements</h2><span class="badge soft">Planned</span><p>One small card-sized ad, only where it cannot interrupt the game. It appears after the player scrolls to the bottom, or where the screen already has empty space.</p></div>
+   <div class="grid" id="g-ads"></div>
+   <div class="cards" style="margin-top:36px">
+    <div class="card"><h3>Where ads may appear</h3><ul><li>Home, below the categories</li><li>Result, below Play again</li><li>Stats and Settings, at the bottom</li></ul></div>
+    <div class="card"><h3>Where ads never appear</h3><ul><li>Pass the phone, word reveal, clue round, vote</li><li>Premium, setup steps, online rooms, rewards</li><li>Never as a pop-up or full-screen video</li></ul></div>
+    <div class="card"><h3>The ad card</h3><ul><li>Native ad, full content width, about 76px tall</li><li>Clearly marked AD, same corners as other cards</li><li>Hidden completely for Pro users</li></ul></div>
+   </div>
+  </section>
+
+  <section class="block" id="web">
+   <div class="bh"><h2>Web version</h2><p>On a laptop the app sits in a centred column with the same look. Side panels help people who arrive from a shared link: get the app or join with a code. On phones only the app column shows.</p></div>
+   <div class="browser"><div class="bbar"><span class="dots"><i></i><i></i><i></i></span><span class="url">impostr.app/play</span><span style="width:45px"></span></div>
+    <div class="bstage"><span class="orb o1" style="width:420px;height:420px;top:-160px;right:-100px"></span><span class="orb o2" style="width:480px;height:480px;bottom:-200px;left:-120px"></span><div class="side" id="wleft"></div><div id="wapp" style="min-width:0;height:100%"></div><div class="side" id="wright"></div></div></div>
+  </section>
+
+  <section class="block" id="online">
+   <div class="bh"><h2>Online play</h2><span class="badge soft">Phase 2 &middot; next iteration</span><p>Everyone plays on their own phone. The host shares a link in the group chat, friends tap it, install or open the app, and land in the room. Designed now so Phase 1 leaves room for it; build later.</p></div>
+   <div class="grid" id="g-online"></div>
+  </section>
+ </div>
+
+ <!-- ================= GROWTH ================= -->
+ <div role="tabpanel" id="p-growth" aria-labelledby="t-growth" hidden>
+  <section class="block">
+   <div class="bh"><h2>Play again and again</h2><span class="badge">Phase 1.5</span><p>Free players earn real content by playing, keep a streak going, and unlock packs by bringing friends. Every reward is something they would otherwise pay for, so it also shows the value of Pro.</p></div>
+   <div class="grid" id="g-growth"></div>
+  </section>
+
+  <section class="block">
+   <div class="bh"><h2>Reward ladder</h2><p>Simple, generous, and counted on the device. No account needed.</p></div>
+   <div class="tbl"><table>
+    <thead><tr><th>Goal</th><th>Reward</th><th>Why it works</th></tr></thead>
+    <tbody>
+     <tr><td>Play 5 games</td><td>Chaos difficulty</td><td>First win comes fast, inside the first party night</td></tr>
+     <tr><td>Play 10 games</td><td>Food pack, free forever</td><td>Brings the group back for a second night</td></tr>
+     <tr><td>3-day play streak</td><td>24-hour Pro pass</td><td>Lets free players feel every pack, then ask for Pro</td></tr>
+     <tr><td>Invite 2 friends who install</td><td>Bollywood pack, free forever</td><td>Turns each player into a recruiter</td></tr>
+     <tr><td>Win 5 times as imposter</td><td>Master of Disguise badge on the share card</td><td>Bragging rights people want to post</td></tr>
+     <tr><td>Play during a festival week</td><td>Limited festival pack (Diwali, Holi, IPL)</td><td>A reason to open the app on dates people party</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section class="block">
+   <div class="bh"><h2>Word of mouth</h2><p>The game is played in a group, so every session is a chance to reach new people. Make sharing the natural end of every game.</p></div>
+   <div class="cards">
+    <div class="card"><h3>Share card after each game</h3><p>A bright result card ("Kabir fooled no one. The word was Mango.") sized for chat and stories, with the app link on it. One tap from Result.</p></div>
+    <div class="card"><h3>Invite link with a reward</h3><p>Each player has a personal link. Two installs unlock Bollywood. Message is prewritten and fun: "One of us is lying."</p></div>
+    <div class="card"><h3>The phone is the ad</h3><p>Pass and play means everyone in the room sees the app. Show the app name and link on the Pass the phone screen footer.</p></div>
+    <div class="card"><h3>Share a custom pack</h3><p>Pro users share their own word pack as a link. Friends need the app to play it.</p></div>
+    <div class="card"><h3>Online rooms (Phase 2)</h3><p>Joining a room from a link is the strongest install driver. Each new player arrives with a friend already waiting.</p></div>
+    <div class="card"><h3>Ask for a rating at the high point</h3><p>After a crew win with 5 or more players, ask once with the store's own review prompt. Never after a loss.</p></div>
+   </div>
+  </section>
+
+  <section class="block">
+   <div class="bh"><h2>Marketing ideas</h2><p>Low cost, made for how groups in India find party games.</p></div>
+   <div class="cards">
+    <div class="card"><h3>Short videos</h3><ul><li>Reels and Shorts of real groups: the reveal moment, the worst clue</li><li>Weekly "guess the imposter" clip with the answer in comments</li></ul></div>
+    <div class="card"><h3>Creators</h3><ul><li>Small comedy and friend-group creators playing on camera</li><li>Give each a custom pack named after them</li></ul></div>
+    <div class="card"><h3>Places people gather</h3><ul><li>College fests, hostels, cafes and board game cafes</li><li>A QR standee: "Play Impostr at this table"</li></ul></div>
+    <div class="card"><h3>Seasonal moments</h3><ul><li>Diwali, Holi, New Year, IPL season packs</li><li>Push and social posts timed to party weekends</li></ul></div>
+    <div class="card"><h3>Store listing</h3><ul><li>Keywords: imposter game, party game, offline game, word game, Hindi</li><li>Screenshots from this design, with one-line captions</li></ul></div>
+    <div class="card"><h3>Language</h3><ul><li>Hindi and Hinglish word packs</li><li>Opens a much larger audience for a word game</li></ul></div>
+   </div>
+  </section>
+
+  <section class="block">
+   <div class="bh"><h2>What to measure</h2><p>Track a few numbers from day one so the team knows which ideas work. No personal data needed.</p></div>
+   <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th>Meaning</th><th>Healthy first target</th></tr></thead>
+    <tbody>
+     <tr><td>Games per session</td><td>Games played each time the app opens</td><td>3 or more</td></tr>
+     <tr><td>Day 7 return</td><td>Share of new users who play again within a week</td><td>20% or more</td></tr>
+     <tr><td>Share rate</td><td>Share card or invite sent per 10 games</td><td>1 or more</td></tr>
+     <tr><td>Invite conversion</td><td>Installs per invite link sent</td><td>15% or more</td></tr>
+     <tr><td>Pro conversion</td><td>Free users who buy any plan</td><td>2 to 4%</td></tr>
+    </tbody></table></div>
+   <p class="sub" style="margin-top:10px;font-size:12.5px">Targets are starting assumptions for a casual party game, not measured figures. Replace them with real data after the first month.</p>
+  </section>
+ </div>
+
+ <!-- ================= DEVELOPER ================= -->
+ <div role="tabpanel" id="p-dev" aria-labelledby="t-dev" hidden>
+  <div class="stack doc">
+  <section class="block">
+   <div class="bh"><h2>Developer notes</h2><p>How to turn this board into the React Native app. The HTML is a reference only; do not ship it.</p></div>
+   <div class="callout">Start with <code>design/README.md</code> and <code>design/tokens.json</code>. Build shared components first, then screens in the order of the game flow.</div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Stack and setup</h3>
+   <div class="tbl"><table><thead><tr><th>Area</th><th>Use</th><th>Note</th></tr></thead><tbody>
+    <tr><td>App</td><td>Expo SDK 54, Expo Router, TypeScript</td><td>Keep existing routes and game logic</td></tr>
+    <tr><td>Fonts</td><td><code>@expo-google-fonts/outfit</code>, <code>@expo-google-fonts/plus-jakarta-sans</code></td><td>Remove Nunito once replaced</td></tr>
+    <tr><td>Glass</td><td><code>expo-blur</code> BlurView, intensity 40, light tint</td><td>On slow Android phones, use the fill colour without blur</td></tr>
+    <tr><td>Icons</td><td>One library only (Lucide is closest to this board)</td><td>The project has three icon libraries today; remove the extra two</td></tr>
+    <tr><td>Purchases</td><td>RevenueCat (existing)</td><td>Entitlement check on every launch, not only from cache</td></tr>
+    <tr><td>Storage</td><td>AsyncStorage (existing keys)</td><td>Add keys for rewards: games played, streak, unlocked packs</td></tr>
+    <tr><td>Web</td><td>Expo web export</td><td>Centred column, max 480px; side panels from 980px</td></tr>
+   </tbody></table></div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Shared components to build first</h3>
+   <div class="cards">
+    <div class="card"><h3>Surfaces</h3><ul><li><code>ScreenBackground</code> (cream, orbs, dot pattern)</li><li><code>GlassCard</code></li><li><code>BottomSheet</code></li><li><code>GlassTabBar</code></li></ul></div>
+    <div class="card"><h3>Actions</h3><ul><li><code>PrimaryButton</code> (honey)</li><li><code>InkButton</code>, <code>GlassButton</code>, <code>TextButton</code></li><li><code>IconButton</code></li></ul></div>
+    <div class="card"><h3>Inputs</h3><ul><li><code>Toggle</code>, <code>Segmented</code>, <code>Stepper</code></li><li><code>Chip</code>, <code>TextField</code></li><li><code>PlanOption</code> (Premium)</li></ul></div>
+    <div class="card"><h3>Game pieces</h3><ul><li><code>Avatar</code>, <code>CategoryTile</code></li><li><code>RevealCard</code> (one component for crew and imposter)</li><li><code>TimerRing</code>, <code>VoteCard</code>, <code>ProgressBar</code></li></ul></div>
+   </div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Rules that are easy to get wrong</h3>
+   <div class="cards">
+    <div class="card"><h3>Reveal parity</h3><p>Crew and imposter use the same <code>RevealCard</code> with the same colours, size and timing. Only the strings change. Also match haptics and sound, or the imposter can be heard.</p></div>
+    <div class="card"><h3>One primary action</h3><p>Only one honey button per screen. Secondary actions are glass or text.</p></div>
+    <div class="card"><h3>Plain text</h3><p>Use straight apostrophes in all strings and save files as UTF-8, so broken characters never appear.</p></div>
+    <div class="card"><h3>Category names</h3><p>One word each. Change display names in the word data, not in screen code.</p></div>
+   </div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Clean-up found in the current code</h3>
+   <div class="card"><ul>
+    <li><code>utils</code> has both <code>.js</code> and <code>.ts</code> copies of <code>getWord</code> and <code>selectImposter</code>. Keep the TypeScript version only.</li>
+    <li><code>package.json</code> name is still <code>bolt-expo-starter</code>. Rename to <code>impostr</code>.</li>
+    <li>Player order is shuffled with <code>sort(() =&gt; Math.random() - 0.5)</code>, which is not a fair shuffle. Use Fisher-Yates.</li>
+    <li>The colour keys in <code>constants/theme.ts</code> are called <code>yellow</code> but hold green. Rename them to match the new tokens.</li>
+    <li>No test setup and no test script yet. See the Testing tab.</li>
+   </ul></div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Phase 1 additions</h3>
+   <p class="sub" style="margin-bottom:12px">Build spec with acceptance checks: <code>design/specs/phase1-additions.md</code>. Suggested order: 1, 2, 5, 8, 3, 7, 6, 4.</p>
+   <div class="tbl"><table><thead><tr><th>Item</th><th>What to build</th><th>Screens</th></tr></thead><tbody>
+    <tr><td>1. Pause and exit</td><td>Pause button, pause sheet, exit confirm; back button and backgrounding pause the game</td><td>10, 31, 32</td></tr>
+    <tr><td>2. Crash reporting</td><td>Sentry with its Expo plugin, release builds only, no personal data, source maps from EAS</td><td>None</td></tr>
+    <tr><td>3. Privacy and Data safety</td><td>Update the policy page and Play form from the table in the spec</td><td>None</td></tr>
+    <tr><td>4. Store screenshots</td><td>Upload the files in <code>design/store/</code></td><td>Store listing</td></tr>
+    <tr><td>5. Accessibility</td><td>Labels and roles, 44px targets, font scaling, Larger text and Reduce motion settings</td><td>14</td></tr>
+    <tr><td>6. Word updates</td><td>Fetch a validated JSON feed, cache it, fall back to bundled words; festival dates</td><td>14, 35</td></tr>
+    <tr><td>7. Age rating</td><td>IARC questionnaire, 13 and over, word check script</td><td>None</td></tr>
+    <tr><td>8. In-app support</td><td>Help screen, report form with device details, email shown as text</td><td>14, 33, 34</td></tr>
+   </tbody></table></div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Analytics events (no personal data)</h3>
+   <div class="pre">app_open
+game_start          { category, difficulty, players, mode: "pass" | "online" }
+game_end            { winner: "crew" | "imposter", rounds, skipped_vote }
+reward_unlocked     { reward_id }
+share_card_sent     { from: "result" | "reward" }
+invite_link_sent
+paywall_view        { from }
+purchase            { plan: "monthly" | "yearly" | "lifetime" }</div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Prompt for Code</h3>
+   <div class="pre">Read design/README.md and open design/index.html (Design and Developer notes tabs).
+Rebuild the 16 Phase 1 screens in React Native using design/tokens.json,
+replacing the green theme and Nunito font. Build the shared components first.
+Keep the existing game logic. Fix the clean-up items in Developer notes.
+Then build the 8 items in design/specs/phase1-additions.md, in the order given,
+and meet each "Done when" check. Remove the 7-tap reviewer unlock.
+Wire the new icons from design/icon into app.json.
+Do not build online play (Phase 2), rewards (Phase 1.5) or ads yet.</div>
+  </section>
+  </div>
+ </div>
+
+ <!-- ================= SECURITY ================= -->
+ <div role="tabpanel" id="p-security" aria-labelledby="t-security" hidden>
+  <div class="stack doc">
+  <section class="block">
+   <div class="bh"><h2>Security guide</h2><p>What protects revenue, user trust and store approval. Phase 1 is offline, so most risk is in purchases and builds. Phase 2 adds a server, which changes the picture.</p></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Phase 1 findings in the current code</h3>
+   <div class="tbl"><table><thead><tr><th>Finding</th><th>Risk</th><th>Action</th></tr></thead><tbody>
+    <tr><td>Reviewer unlock: tapping the version label 7 times turns on Premium locally</td><td><span class="badge warn">High</span> Anyone who learns the gesture gets every pack free</td><td>Remove it from release builds. Give Play reviewers access with license testers or a promo code instead.</td></tr>
+    <tr><td>Premium status is cached on the device</td><td><span class="badge soft">Medium</span> A rooted phone can edit the cache</td><td>Check the RevenueCat entitlement on every launch; use the cache only when offline, with a short expiry.</td></tr>
+    <tr><td>RevenueCat keys in <code>eas.json</code></td><td><span class="badge soft">Low</span> These are public SDK keys, designed to ship in the app</td><td>Fine to keep. Never add the secret API key anywhere in the app or repo.</td></tr>
+    <tr><td>Release signing key</td><td><span class="badge soft">Medium</span> Losing it blocks updates; leaking it allows fake updates</td><td>Keep it in EAS credentials only. Confirm no <code>.keystore</code> other than the debug one is in git.</td></tr>
+    <tr><td>Suggest a category form</td><td><span class="badge soft">Low</span> Free text from users</td><td>Limit length, strip links, and say in the privacy policy where suggestions go.</td></tr>
+   </tbody></table></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Phase 1 additions</h3>
+   <div class="cards">
+    <div class="card"><h3>Word feed</h3><p>HTTPS only. Validate the whole file (version, categories, plain short strings, under 1 MB) and reject it if anything fails. Treat words as text, never as code or HTML. Keep the bundled list as the fallback.</p></div>
+    <div class="card"><h3>Crash reports</h3><p>Turn off default PII in Sentry and strip player names. Keep the Sentry auth token in EAS secrets only.</p></div>
+    <div class="card"><h3>Support reports</h3><p>Send only what the user typed plus device model and versions. Limit length and rate. If a form endpoint is used, protect it from spam.</p></div>
+   </div>
+  </section>
+
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Rewards and invites (Phase 1.5)</h3>
+   <div class="card"><ul>
+    <li>Rewards counted on the device can be cheated on rooted phones. Keep rewards small (one pack), so cheating costs little.</li>
+    <li>Invite rewards need a trusted count of installs. Use the Play Install Referrer and a small server check, or reward the inviter only when the friend finishes one game.</li>
+    <li>Rate-limit invite rewards per device so one person cannot farm packs.</li>
+   </ul></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Online play (Phase 2)</h3>
+   <div class="cards">
+    <div class="card"><h3>Server decides roles</h3><p>The server picks the imposter and sends each phone only its own word. Never send the word to the imposter's phone, even hidden. Otherwise anyone can read it from the network.</p></div>
+    <div class="card"><h3>Room codes</h3><p>Use 5 or more characters without look-alike letters. Rooms expire after 2 hours. Limit join attempts per device to stop guessing.</p></div>
+    <div class="card"><h3>Names and clues</h3><p>Filter abusive words in names and typed clues. Let the host remove a player.</p></div>
+    <div class="card"><h3>Votes</h3><p>Votes are counted on the server, one per player per round. Phones never see who voted for whom until the reveal.</p></div>
+    <div class="card"><h3>Invite links</h3><p>Validate the code on the server before opening a room. Links carry only the room code, never a name or ID.</p></div>
+    <div class="card"><h3>No accounts needed</h3><p>Use an anonymous device ID. Collect no phone numbers, emails or contacts.</p></div>
+   </div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Ads, privacy and store policy</h3>
+   <div class="card"><ul>
+    <li>Set the target age to 13 and over in Play Console. If children are in the audience, Families policy limits which ad networks you can use.</li>
+    <li>Show the consent form for ads where the law requires it (Google's consent SDK handles this).</li>
+    <li>Keep the Play Data safety form and <code>public/privacy-policy.html</code> in step with every new feature: analytics, ads, invites, online.</li>
+    <li>Keep blocking unneeded permissions in <code>app.json</code>, as today. Online play needs internet only.</li>
+   </ul></div>
+  </section>
+  </div>
+ </div>
+
+ <!-- ================= TESTING ================= -->
+ <div role="tabpanel" id="p-testing" aria-labelledby="t-testing" hidden>
+  <div class="stack doc">
+  <section class="block">
+   <div class="bh"><h2>Testing guide</h2><p>What to test before each release. Automated tests cover the game rules; people test the feel on real phones.</p></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Automated</h3>
+   <div class="tbl"><table><thead><tr><th>Type</th><th>Tool</th><th>What to cover</th></tr></thead><tbody>
+    <tr><td>Unit</td><td>Jest with <code>jest-expo</code></td><td>Imposter pick is fair over 10,000 runs; no word repeats until a pack is used up; vote tally, ties and skipped votes; reward ladder counts and streak dates across midnight</td></tr>
+    <tr><td>Component</td><td>React Native Testing Library</td><td>RevealCard shows identical layout for crew and imposter; toggles save settings; locked categories open Premium</td></tr>
+    <tr><td>End to end</td><td>Maestro flows</td><td>Full game with 3, 5 and 12 players; purchase and restore in sandbox; app sent to background mid-round</td></tr>
+    <tr><td>Visual</td><td>Screenshots compared with <code>design/screens/*.html</code></td><td>Each Phase 1 screen at 360 x 640 and 430 x 932</td></tr>
+    <tr><td>Checks</td><td><code>npm run typecheck</code>, <code>npm run lint</code></td><td>Run on every change</td></tr>
+   </tbody></table></div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Device matrix</h3>
+   <div class="cards">
+    <div class="card"><h3>Small, low-end Android</h3><p>About 360 x 640, 3GB RAM. Check blur speed, scrolling and the timer staying accurate.</p></div>
+    <div class="card"><h3>Standard Android</h3><p>Android 13 or newer. Main test phone for all flows.</p></div>
+    <div class="card"><h3>Large phone</h3><p>About 430 x 932. Check spacing does not look empty.</p></div>
+    <div class="card"><h3>Web</h3><p>Chrome on a laptop and on a phone. Check the centred column and side panels.</p></div>
+   </div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Manual checklist</h3>
+   <div class="cards">
+    <div class="card"><h3>Game feel</h3><ul class="check"><li>In a dark room, crew and imposter screens look and sound the same</li><li>Pass the phone hides the word before handing over</li><li>Timer, tick and horn sounds respect the settings</li><li>Haptics respect the setting</li></ul></div>
+    <div class="card"><h3>Purchases</h3><ul class="check"><li>Buy each plan with a license tester</li><li>Restore on a second phone</li><li>Cancel and confirm packs lock again after expiry</li><li>No reviewer unlock in the release build</li></ul></div>
+    <div class="card"><h3>Edge cases</h3><ul class="check"><li>Airplane mode for a full game</li><li>Phone call during the clue round</li><li>Very long player names</li><li>Large system font size</li></ul></div>
+    <div class="card"><h3>Pause and exit</h3><ul class="check"><li>Pause stops the timer and sounds</li><li>Back button opens pause, not the previous screen</li><li>Exiting does not count in stats</li><li>Word never visible while paused</li></ul></div>
+    <div class="card"><h3>Word updates</h3><ul class="check"><li>Airplane mode uses bundled words</li><li>Broken or huge feed is ignored</li><li>Festival pack shows only on its dates</li><li>New words sheet shows once</li></ul></div>
+    <div class="card"><h3>Accessibility</h3><ul class="check"><li>TalkBack reads every button by name</li><li>Touch targets at least 44 x 44</li><li>Text contrast passes on cream and on glass</li><li>Reduced motion turns off pulses</li></ul></div>
+   </div>
+  </section>
+  <section>
+   <h3 class="h h-m" style="margin-bottom:12px">Release gate</h3>
+   <div class="card"><ul class="check"><li>All automated tests pass</li><li>Manual checklist done on two Android phones</li><li>Internal testing track for 2 days with no crashes</li><li>Data safety form and privacy policy updated</li><li>Store screenshots updated to the new design</li></ul></div>
+  </section>
+  </div>
+ </div>
+
+ <!-- ================= ROADMAP ================= -->
+ <div role="tabpanel" id="p-roadmap" aria-labelledby="t-roadmap" hidden>
+  <section class="block">
+   <div class="bh"><h2>Roadmap</h2><p>Ship the redesign first, then features that bring players back, then online play.</p></div>
+   <div class="phase">
+    <div class="card"><span class="when">Phase 1 &middot; now</span><h3>Redesign</h3><ul><li>16 core screens in Honey and Cream</li><li>New fonts and app icon</li><li>Reveal parity, one-word categories</li><li>Pause and exit, in-app support</li><li>Accessibility, word updates</li><li>Crash reporting, privacy, age rating</li><li>New store listing</li><li>Code clean-up, security fixes, tests</li></ul></div>
+    <div class="card"><span class="when">Phase 1.5 &middot; next</span><h3>Play again and grow</h3><ul><li>Reward ladder and streaks</li><li>Share result card</li><li>Invite friends link</li><li>Store review prompt</li><li>Analytics events</li></ul></div>
+    <div class="card"><span class="when">Phase 2 &middot; later</span><h3>Online play</h3><ul><li>Rooms, codes and invite links</li><li>Each player on their own phone</li><li>Server for roles, clues and votes</li><li>Web join page</li></ul></div>
+    <div class="card"><span class="when">Planned &middot; when ready</span><h3>Ads and more</h3><ul><li>Small native ad card for free users</li><li>Custom word pack editor</li><li>Hindi and Hinglish packs</li><li>Game modes: two imposters, similar word</li></ul></div>
+   </div>
+  </section>
+  <section class="block">
+   <div class="bh"><h2>Did we miss anything?</h2><p>Gaps found during design. Eight are now designed and specified for Phase 1.</p></div>
+   <div class="tbl"><table><thead><tr><th>Item</th><th>Status</th><th>Where</th></tr></thead><tbody>
+    <tr><td>Pause and exit</td><td><span class="badge">Phase 1</span> Designed and specified</td><td>Screens 10, 31, 32; spec item 1</td></tr>
+    <tr><td>Crash reporting</td><td><span class="badge">Phase 1</span> Specified</td><td>Spec item 2</td></tr>
+    <tr><td>Privacy policy and Data safety</td><td><span class="badge">Phase 1</span> Specified, with a data table per phase</td><td>Spec item 3</td></tr>
+    <tr><td>Store screenshots</td><td><span class="badge">Phase 1</span> Files ready</td><td><code>design/store/</code>; spec item 4</td></tr>
+    <tr><td>Accessibility</td><td><span class="badge">Phase 1</span> Designed and specified; colours fixed to pass contrast</td><td>Screen 14; spec item 5</td></tr>
+    <tr><td>Word updates without an app update</td><td><span class="badge">Phase 1</span> Designed and specified, example feed included</td><td>Screens 14, 35; spec item 6</td></tr>
+    <tr><td>Age rating</td><td><span class="badge">Phase 1</span> Specified</td><td>Spec item 7</td></tr>
+    <tr><td>In-app support</td><td><span class="badge">Phase 1</span> Designed and specified</td><td>Screens 14, 33, 34; spec item 8</td></tr>
+    <tr><td>First-time welcome</td><td><span class="badge soft">Phase 1.5</span> Not designed</td><td>Roadmap</td></tr>
+    <tr><td>Localisation (Hindi)</td><td><span class="badge soft">Planned</span> Not designed</td><td>Roadmap</td></tr>
+    <tr><td>iOS build</td><td><span class="badge warn">Decide</span> App is set up for iOS; only Android ships</td><td>Owner decision</td></tr>
+   </tbody></table></div>
+  </section>
+ </div>
+</div>
+
+<script>
+/* Impostr design v2: every screen as an HTML template.
+   Used by index.html (board) and screens/*.html (one full-size responsive screen each).
+   All text is ASCII or HTML entities so it renders the same everywhere. */
+(function(){
+const SPRITE=`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+<symbol id="chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+<symbol id="play" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></symbol>
+<symbol id="chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.6a3.5 3.5 0 010 6.8M18 14.8c2 .7 3.2 2.4 3.5 5.2"/></symbol>
+<symbol id="phone1" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></symbol>
+<symbol id="crown" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></symbol>
+<symbol id="eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="eyeoff" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0112 5c6.4 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.5 4.5-1.2M9.9 9.9a3 3 0 004.2 4.2"/></symbol>
+<symbol id="finger" viewBox="0 0 24 24"><path d="M12 11v3.5c0 2.5-.7 4.5-2 6M8.5 9.5A3.5 3.5 0 0115.5 10v4c0 2.6-.4 4.6-1.2 6.2M5.5 15.5c.3-1.4.5-3 .5-5a6 6 0 0111.5-2.4M18 11v2.5c0 1.6-.1 3-.4 4.3M7.5 4.2A9 9 0 0120.5 8"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.8 3.8 5.8 3.8 9s-1.2 6.2-3.8 9c-2.6-2.8-3.8-5.8-3.8-9S9.4 5.8 12 3z"/></symbol>
+<symbol id="car" viewBox="0 0 24 24"><path d="M5 16V11l2-5h10l2 5v5M3 11h18v5H3z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></symbol>
+<symbol id="bowl" viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 01-18 0zM8 7c0-1.5 1-2 1-3.5M12 7c0-1.5 1-2 1-3.5M16 7c0-1.5 1-2 1-3.5"/></symbol>
+<symbol id="film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></symbol>
+<symbol id="ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2 3-2 15 0 18M3.5 9c4 1.5 13 1.5 17 0M3.5 15c4-1.5 13-1.5 17 0"/></symbol>
+<symbol id="paw" viewBox="0 0 24 24"><circle cx="7" cy="9" r="1.8"/><circle cx="11" cy="5.5" r="1.8"/><circle cx="15.5" cy="6.5" r="1.8"/><circle cx="18.5" cy="10.5" r="1.8"/><path d="M8 17c0-3 2-5.5 4.5-5.5S17 14 17 17c0 2-1.5 3-3 3-1 0-1.5-.6-2-.6s-1 .6-2 .6c-1.3 0-2-1.2-2-3z"/></symbol>
+<symbol id="brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5h6v2M3 13h18"/></symbol>
+<symbol id="lamp" viewBox="0 0 24 24"><path d="M12 3c3 3 3 6 0 8-3-2-3-5 0-8z"/><path d="M5 14h14l-2 6H7z"/></symbol>
+<symbol id="vol" viewBox="0 0 24 24"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M16 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/></symbol>
+<symbol id="vib" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4 9v6M20 9v6"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15zM10 20.5h4"/></symbol>
+<symbol id="msg" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+<symbol id="trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 01-10 0zM7 6H4v1.5A3 3 0 007 10.5M17 6h3v1.5a3 3 0 01-3 3M12 14v3M9.5 17h5v3h-5z"/></symbol>
+<symbol id="refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/></symbol>
+<symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .6-1.5 1.2-1.5 2.3M12 17h0"/></symbol>
+<symbol id="wifi" viewBox="0 0 24 24"><path d="M2 9a15 15 0 0120 0M5.5 12.5a10 10 0 0113 0M9 16a5 5 0 016 0"/><circle cx="12" cy="19" r=".8"/></symbol>
+<symbol id="batt" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="3"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor" stroke="none"/><path d="M22 10.5v3"/></symbol>
+<symbol id="offline" viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 16a5 5 0 016.2-.6M5 12.5a10 10 0 014-2.2M2 9a15 15 0 014.2-2.8M12 4.9A15 15 0 0122 9M15.5 10.7a10 10 0 013 1.8"/></symbol>
+<symbol id="link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 006.4 0l3-3a4.5 4.5 0 00-6.4-6.4L11.5 6M14 10a4.5 4.5 0 00-6.4 0l-3 3a4.5 4.5 0 006.4 6.4l1.5-1.4"/></symbol>
+<symbol id="share" viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4M8.2 13.2l7.6 4"/></symbol>
+<symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0013.5 4h-7A2.5 2.5 0 004 6.5v7A2.5 2.5 0 006.5 16H8"/></symbol>
+<symbol id="send" viewBox="0 0 24 24"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></symbol>
+<symbol id="download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+<symbol id="gift" viewBox="0 0 24 24"><rect x="3.5" y="9" width="17" height="11.5" rx="2"/><path d="M2.5 9h19v-1a1 1 0 00-1-1h-17a1 1 0 00-1 1zM12 7v13.5M12 7c-1.5-3.5-6-4-6-1.2C6 7 8 7 12 7zM12 7c1.5-3.5 6-4 6-1.2C18 7 16 7 12 7z"/></symbol>
+<symbol id="flame" viewBox="0 0 24 24"><path d="M12 21c-4 0-7-2.8-7-6.6 0-3.3 2.3-5.4 3.7-7.4.5 1.6 1.5 2.6 2.6 3C11 7 12.5 4.5 14.5 3c-.3 2.6.8 4.4 2.3 6.1 1.3 1.5 2.2 3.1 2.2 5.3C19 18.2 16 21 12 21z"/><path d="M12 21c-1.7 0-3-1.2-3-2.9 0-1.6 1.3-2.7 2.2-3.6.3.9.9 1.4 1.6 1.6.3-1.2.9-2.1 1.7-2.6 0 1.4 1.5 2.4 1.5 4.6 0 1.7-1.3 2.9-4 2.9z"/></symbol>
+<symbol id="spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></symbol>
+<symbol id="pause" viewBox="0 0 24 24"><rect x="6.5" y="5" width="3.5" height="14" rx="1"/><rect x="14" y="5" width="3.5" height="14" rx="1"/></symbol>
+<symbol id="buoy" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></symbol>
+<symbol id="flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+<symbol id="textsize" viewBox="0 0 24 24"><path d="M3 19L8 6l5 13M4.8 14.5h6.4M15 19l3-7.5 3 7.5M15.9 17h4.2"/></symbol>
+<symbol id="motion" viewBox="0 0 24 24"><circle cx="15" cy="12" r="5"/><path d="M3 9h5M2 12h5M3 15h5"/></symbol>
+<symbol id="cloud" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 01-.6-9A6 6 0 0118 9.5 4 4 0 0117.5 18z"/><path d="M12 11v5M9.8 13.8L12 16l2.2-2.2"/></symbol>
+<symbol id="doc" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></symbol>
+<symbol id="home2" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20H4z"/></symbol>
+</defs></svg>`;
+
+const I=(n,st='')=>`<svg class="i" ${st?`style="${st}"`:''}><use href="#${n}"/></svg>`;
+const MARK=(s=40)=>`<svg width="${s}" height="${s}" viewBox="0 0 1024 1024" aria-hidden="true"><defs><linearGradient id="mbg${s}" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#FFD95A"/><stop offset=".55" stop-color="#F2B705"/><stop offset="1" stop-color="#DE9E00"/></linearGradient></defs><rect width="1024" height="1024" rx="230" fill="url(#mbg${s})"/><path d="M362 252h300a150 150 0 0 1 150 150v140a150 150 0 0 1-150 150H420l-118 92c-12 9-28 0-26-15l14-87A150 150 0 0 1 212 542V402a150 150 0 0 1 150-150z" fill="#1B1813"/><circle cx="352" cy="472" r="56" fill="#F4EFE4"/><circle cx="672" cy="472" r="56" fill="#F4EFE4"/><circle cx="512" cy="472" r="62" fill="#F2B705"/><ellipse cx="512" cy="472" rx="15" ry="42" fill="#1B1813"/></svg>`;
+const STATUS=`<div class="island"></div><div class="status"><span>9:41</span><span class="sicons">${I('wifi')}${I('batt')}</span></div>`;
+const ORBS=`<span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>`;
+const TABBAR=on=>`<nav class="tabbar glass">${[['play','Play'],['chart','Stats'],['sliders','Settings']].map(([i,l])=>`<div class="tab ${l===on?'on':''}">${I(i)}<span>${l}</span></div>`).join('')}</nav>`;
+const NAV=(step,title,icon='back')=>`<div class="navrow"><button class="iconbtn glass" aria-label="Back">${I(icon)}</button><div class="col center" style="gap:6px"><span class="lab">${title}</span>${step?`<div class="steps">${[1,2,3].map(n=>`<i class="${n<=step?'on':''}"></i>`).join('')}</div>`:''}</div><span style="width:40px"></span></div>`;
+const CATS=[['globe','General',0],['car','Vehicles',0],['home','Home',0],['bowl','Food',1],['film','Bollywood',1],['ball','Sports',1],['paw','Animals',1],['brief','Jobs',1],['lamp','Festivals',1]];
+const NAMES=['Aarav','Meera','Kabir','Diya','Rohan'];
+const AD=(where)=>`<div class="ad"><div class="ad-img"></div><div class="grow"><div class="t"><span class="ad-tag">AD</span>Sponsor headline</div><div class="d">One short line from the advertiser</div></div><button class="ad-cta">Open</button></div>`;
+const tg=(t,d,i,on)=>`<div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I(i)}</span><div class="grow"><div class="t">${t}</div><div class="d">${d}</div></div><button class="tog" aria-pressed="${on}" aria-label="${t}"></button></div>`;
+
+/* ---------- shared fragments ---------- */
+const homeTop=()=>`
+ <div class="navrow"><div class="row" style="gap:10px">${MARK(36)}<div class="col" style="gap:1px"><span class="lab">Party word game</span><span class="h h-m">Impostr</span></div></div><button class="iconbtn glass" aria-label="How to play">${I('help')}</button></div>
+ <div class="glass pad" style="padding:20px;border-radius:24px;display:flex;flex-direction:column;gap:16px">
+  <div class="row" style="gap:6px;flex-wrap:wrap"><span class="pill g">${I('users')}3 to 12 players</span><span class="pill">${I('offline')}Works offline</span></div>
+  <h2 class="h hero">Someone here<br>is <span class="gold">lying.</span></h2>
+  <p class="sub">Everyone gets the secret word except one. Give clues, stay sneaky, then vote.</p>
+  <button class="btn btn-gold">${I('play')}Play now</button></div>
+ <div class="glass list-row" style="border-radius:18px"><div class="tile-ic ink">${I('refresh')}</div><div class="grow"><div class="t">Play again</div><div class="d">Bollywood &middot; Medium &middot; 5 players</div></div>${I('chev')}</div>`;
+const homeCats=()=>`
+ <div class="navrow"><span class="lab">Categories</span><span class="lab gold">9 packs</span></div>
+ <div class="catgrid">${CATS.slice(0,6).map(c=>`<div class="glass" style="padding:10px;border-radius:14px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0"><span style="color:var(--gold-deep)">${I(c[0],'width:17px;height:17px')}</span><span style="font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis">${c[1]}</span></div>`).join('')}</div>`;
+
+const revealCard=(imp)=>`
+ <div class="navrow"><span style="width:40px"></span><span class="lab">${imp?'Kabir &middot; Player 3':'Meera &middot; Player 2'}</span><span style="width:40px"></span></div>
+ <div class="reveal-card glass">
+  <span class="pill g">${I('bowl')}Food &middot; Medium</span>
+  <span class="lab" style="margin-top:14px">${imp?'Your role':'Your secret word'}</span>
+  <span class="word">${imp?'Imposter':'Mango'}</span>
+  <p class="sub" style="max-width:24ch">${imp?'You do not know the word. Listen closely and blend in.':'Give clues that prove you know it, without giving it away.'}</p>
+  <div class="col center" style="width:150px;gap:6px;margin-top:16px"><div class="bar" style="width:100%"><i style="width:62%"></i></div><span style="font-size:11px;color:var(--muted)">Hides in 2s</span></div>
+ </div>
+ <button class="btn btn-ink">${I('eyeoff')}Hide and pass</button>`;
+
+const resultTop=()=>`
+ <div class="col center" style="gap:6px;margin-top:8px"><span class="pill g">${I('trophy')}Crew wins</span><h2 class="h h-xl" style="margin-top:6px">Caught them.</h2></div>
+ <div class="glass col center" style="border-radius:26px;padding:22px 18px;gap:10px">
+  <span class="lab">The imposter was</span>
+  <div style="position:relative"><span class="av a3" style="width:82px;height:82px;border-radius:26px;font-size:34px">K</span><span class="tile-ic ink" style="position:absolute;right:-8px;bottom:-8px;width:32px;height:32px;border-radius:10px;border:3px solid var(--bg)">${I('eye','width:15px;height:15px')}</span></div>
+  <span class="h h-l">Kabir</span><span class="sub">3 of 5 votes</span></div>
+ <div class="glass list-row" style="border-radius:18px"><div class="grow"><div class="lab">The word was</div><div class="h h-m">Mango</div></div><span class="pill">Food &middot; Medium</span></div>`;
+
+const statsTop=()=>`
+ <div class="col" style="gap:2px"><span class="lab">Your stats</span><span class="h h-l">Performance</span></div>
+ <div class="glass" style="border-radius:22px;padding:16px;display:flex;align-items:center;gap:16px"><div style="position:relative;width:92px;height:92px;flex:none"><svg viewBox="0 0 92 92" style="transform:rotate(-90deg);width:92px;height:92px"><circle cx="46" cy="46" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="46" cy="46" r="38" fill="none" stroke="var(--gold)" stroke-width="9" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="86"/></svg><span class="num" style="position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:22px">64%</span></div><div class="col" style="gap:4px;min-width:0"><span class="lab">Win rate</span><span class="h h-m">Sharp detective</span><span class="sub" style="font-size:12.5px">Up 8% over your last 10 games</span></div></div>
+ <div class="statgrid">${[['Games played','42','users'],['Crew wins','27','check'],['As imposter','9','eye'],['Imposter wins','5','trophy']].map(s=>`<div class="stat glass"><span style="color:var(--gold-deep)">${I(s[2])}</span><span class="v">${s[1]}</span><span class="lab">${s[0]}</span></div>`).join('')}</div>
+ <div class="glass list-row" style="border-radius:18px"><span class="tile-ic">${I('film')}</span><div class="grow"><div class="lab">Best category</div><div class="t">Bollywood &middot; 71% wins</div></div></div>`;
+
+const C=2*Math.PI*84;
+
+/* ---------- SCREENS ---------- */
+const S=[];
+const add=(o)=>S.push(o);
+
+/* CORE */
+add({id:'splash',group:'core',name:'Splash',note:'Launch',route:'app/_layout.tsx',html:()=>`<div class="body center" style="justify-content:center;gap:22px">
+ <div style="position:relative;width:116px;height:116px"><span style="position:absolute;inset:-14px;border-radius:40px;background:var(--gold);opacity:.4;filter:blur(18px);animation:pulse 2.6s ease-in-out infinite"></span><div style="position:relative;filter:drop-shadow(0 16px 24px rgba(90,60,0,.3))">${MARK(116)}</div></div>
+ <div class="col center" style="gap:8px"><h2 class="h h-xl">Impostr</h2><p class="sub">One word. One liar. Find them.</p></div>
+ <div style="width:120px" class="bar"><i style="animation:load 2.4s ease-out infinite alternate"></i></div>
+ <span class="lab" style="position:absolute;bottom:36px">Gooseberry Media</span></div>`});
+
+add({id:'home',group:'core',name:'Home',note:'Tab: Play',route:'app/(tabs)/index.tsx',tab:'Play',html:()=>`<div class="body tabbed">${homeTop()}${homeCats()}</div>`});
+
+add({id:'how-to-play',group:'core',name:'How to play',note:'Sheet over Home',route:'app/(tabs)/index.tsx (modal)',html:()=>`<div class="body">${homeTop()}</div><div class="dim"></div><div class="sheet glass">
+ <div style="width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center"></div>
+ <div class="navrow"><h2 class="h h-l">How to play</h2><button class="iconbtn" aria-label="Close">${I('x')}</button></div>
+ ${[['One word, one imposter','Everyone sees the same secret word except the imposter, who has to blend in.'],['Give one-word clues','Take turns. Say a clue about the word without saying the word itself.'],['Vote and reveal','Vote for the imposter. Crew wins by catching them. The imposter wins by surviving.']].map((s,i)=>`<div class="howstep"><span class="n">${i+1}</span><div class="col" style="gap:3px"><span class="h h-s">${s[0]}</span><p class="sub">${s[1]}</p></div></div>`).join('')}
+ <button class="btn btn-ink" style="margin-top:4px">Got it</button></div>`});
+
+add({id:'category',group:'core',name:'Choose category',note:'Setup step 1',route:'app/setup.tsx',html:()=>`<div class="body">${NAV(1,'Step 1 of 3')}
+ <div class="col" style="gap:4px"><h2 class="h h-l">Pick a category</h2><p class="sub">Words come from this pack.</p></div>
+ <div class="catgrid">${CATS.map((c,i)=>`<div class="cat glass ${i===0?'sel':''}">${c[2]?`<svg class="i lock"><use href="#lock"/></svg>`:''}<span class="tile-ic">${I(c[0])}</span><span class="n">${c[1]}</span><span class="c">150 words</span></div>`).join('')}</div>
+ <div class="col" style="gap:8px"><span class="lab">Difficulty</span><div class="seg glass"><button>Easy</button><button class="on">Medium</button><button>Chaos</button></div><p class="sub" style="font-size:12px">Standard words, no hints.</p></div>
+ <div class="spacer"></div><button class="btn btn-gold">Continue${I('arrow')}</button></div>`});
+
+add({id:'game-settings',group:'core',name:'Game settings',note:'Setup step 2',route:'app/game-settings.tsx',html:()=>`<div class="body">${NAV(2,'Step 2 of 3')}
+ <h2 class="h h-l">Game settings</h2>
+ <div class="glass pad col" style="gap:10px"><span class="lab">Players</span><div class="stepper"><button class="iconbtn" aria-label="Fewer">${I('minus')}</button><span class="big-num">5</span><button class="iconbtn" aria-label="More">${I('plus')}</button></div><div class="row" style="justify-content:center;gap:5px">${[1,2,3,4,5].map(n=>`<span class="av a${n}" style="width:22px;height:22px;border-radius:7px"></span>`).join('')}<span style="width:22px;height:22px;border-radius:7px;border:1.5px dashed var(--muted)"></span></div></div>
+ <div class="glass pad col" style="gap:10px"><div class="navrow"><span class="lab">Timer per clue</span><span class="gold" style="font-size:12.5px;font-weight:700">60 sec</span></div><div class="chips"><span class="chip">Off</span><span class="chip">30s</span><span class="chip on">60s</span><span class="chip">90s</span><span class="chip">Custom</span></div></div>
+ <div class="glass" style="border-radius:20px"><div class="list-row"><div class="grow"><div class="t">Clue rounds</div><div class="d">Turns before voting</div></div><div class="row" style="gap:6px"><button class="iconbtn glass" style="width:32px;height:32px" aria-label="Fewer">${I('minus')}</button><span class="num" style="font-weight:700;font-size:17px;width:16px;text-align:center">2</span><button class="iconbtn glass" style="width:32px;height:32px" aria-label="More">${I('plus')}</button></div></div>
+ <div class="list-row"><div class="grow"><div class="t">Team votes together</div><div class="d">One shared vote on this phone</div></div><button class="tog" aria-pressed="true" aria-label="Team votes together"></button></div></div>
+ <div class="spacer"></div><button class="btn btn-gold">Add player names${I('arrow')}</button></div>`});
+
+add({id:'player-names',group:'core',name:'Player names',note:'Setup step 3',route:'app/player-names.tsx',html:()=>`<div class="body">${NAV(3,'Step 3 of 3')}
+ <div class="col" style="gap:4px"><h2 class="h h-l">Who is playing?</h2><p class="sub">Names are saved for next time.</p></div>
+ <div class="glass" style="border-radius:20px">${NAMES.map((n,i)=>`<div class="list-row" style="padding:9px 12px"><span class="av a${i+1}">${n[0]}</span><div class="grow" style="font-weight:600;display:flex;align-items:center;gap:2px">${n}${i===4?'<span class="caret"></span>':''}</div><span style="font-size:11px;color:var(--muted)">P${i+1}</span></div>`).join('')}</div>
+ <div class="col" style="gap:8px"><span class="lab">Recent players</span><div class="chips"><span class="chip">${I('plus')}Ishaan</span><span class="chip">${I('plus')}Tara</span><span class="chip">${I('plus')}Vikram</span></div></div>
+ <div class="spacer"></div><button class="btn btn-gold">${I('play')}Start game</button></div>`});
+
+add({id:'pass-phone',group:'core',name:'Pass the phone',note:'Before each reveal',route:'app/reveal.tsx',html:()=>`<div class="body center">
+ <div class="navrow" style="width:100%"><button class="iconbtn glass" aria-label="Exit game">${I('x')}</button><span class="lab">Player 2 of 5</span><span style="width:40px"></span></div>
+ <div class="row" style="justify-content:center;gap:6px">${NAMES.map((n,i)=>`<span style="width:${i===1?22:8}px;height:8px;border-radius:4px;background:${i<1?'var(--ink)':i===1?'var(--gold)':'var(--line)'}"></span>`).join('')}</div>
+ <div class="col center" style="gap:6px;margin-top:14px"><span class="lab">Pass the phone to</span><h2 class="h hero" style="font-size:clamp(40px,15cqi,56px)">Meera</h2><p class="sub">Make sure nobody else can see the screen.</p></div>
+ <div class="reveal-card glass" style="width:100%"><div style="position:relative;width:96px;height:96px;display:grid;place-items:center"><span style="position:absolute;inset:0;border-radius:30px;background:var(--gold);opacity:.35;animation:pulse 2.2s ease-in-out infinite"></span><span class="tile-ic ink" style="width:76px;height:76px;border-radius:24px">${I('finger','width:38px;height:38px')}</span></div><span class="h h-s">Press and hold to see your word</span><span class="sub" style="font-size:12px">Let go to hide it again</span></div></div>`});
+
+add({id:'word-reveal',group:'core',name:'Word reveal',note:'Crew player',route:'app/reveal.tsx',html:()=>`<div class="body center">${revealCard(false)}</div>`});
+add({id:'imposter-reveal',group:'core',name:'Imposter reveal',note:'Same look as crew',route:'app/reveal.tsx',html:()=>`<div class="body center">${revealCard(true)}</div>`});
+
+add({id:'clue-round',group:'core',name:'Clue round',note:'Timer running',route:'app/clue-round.tsx',html:()=>`<div class="body">
+ <div class="navrow"><button class="iconbtn glass" aria-label="Pause game">${I('pause')}</button><span class="lab">Clue round 1 of 2</span><span class="pill g">${I('bowl')}Food</span></div>
+ <div class="ring"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="84" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="95" cy="95" r="84" fill="none" stroke="var(--gold)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*.6}"/></svg><div class="ctr"><span class="num" style="font-size:clamp(34px,12cqi,44px);font-weight:700;letter-spacing:-.03em">0:24</span><span class="lab">of 60s</span></div></div>
+ <div class="glass list-row" style="border-radius:18px;padding:14px"><span class="av a2" style="width:44px;height:44px;border-radius:14px;font-size:18px">M</span><div class="grow"><div class="lab">Now giving a clue</div><div class="h h-m">Meera</div></div><span style="font-size:12px;color:var(--muted)">2 of 5</span></div>
+ <div class="row" style="gap:6px;justify-content:center">${NAMES.map((n,i)=>`<span class="av a${i+1}" style="width:30px;height:30px;font-size:11px;${i>1?'opacity:.35;':''}${i===1?'outline:2px solid var(--gold);outline-offset:2px':''}">${i===0?I('check','width:14px;height:14px'):n[0]}</span>`).join('')}</div>
+ <div class="glass pad col" style="gap:6px;padding:12px 14px"><span class="lab">Rules</span><span class="sub" style="font-size:12.5px">One word only. Do not say the word itself.</span></div>
+ <div class="spacer"></div><div class="row" style="gap:8px"><button class="btn btn-glass" style="flex:1">Skip to vote</button><button class="btn btn-gold" style="flex:1.4">Next player${I('arrow')}</button></div></div>`});
+
+const votes=[1,0,3,0,1];
+add({id:'vote',group:'core',name:'Vote',note:'Who is it?',route:'app/vote.tsx',html:()=>`<div class="body">
+ <div class="navrow"><span style="width:40px"></span><span class="lab">Voting &middot; 5 of 5 in</span><span style="width:40px"></span></div>
+ <div class="col" style="gap:4px"><h2 class="h h-l">Who is the imposter?</h2><p class="sub">Tap a player. You can change your vote until the reveal.</p></div>
+ <div class="vote-grid">${NAMES.map((n,i)=>`<div class="vcard glass ${i===2?'sel':''}"><span class="av a${i+1}">${n[0]}</span><span style="font-weight:600">${n}</span><span class="cnt">${votes[i]}</span></div>`).join('')}<div class="vcard" style="border:1.5px dashed var(--line);justify-content:center;color:var(--muted);font-weight:600;font-size:12.5px">Skip vote</div></div>
+ <div class="glass pad col" style="gap:10px"><div class="navrow"><span class="lab">Vote tally</span><span class="gold" style="font-size:12.5px;font-weight:700">Kabir leads</span></div>
+ ${[['Kabir',60],['Aarav',20],['Rohan',20]].map(v=>`<div class="col" style="gap:5px"><div class="navrow" style="font-size:12.5px;font-weight:600"><span>${v[0]}</span><span class="num" style="color:var(--muted)">${v[1]}%</span></div><div class="bar"><i style="width:${v[1]}%"></i></div></div>`).join('')}</div>
+ <div class="spacer"></div><button class="btn btn-gold">${I('eye')}Reveal imposter</button></div>`});
+
+add({id:'result',group:'core',name:'Result',note:'Crew wins',route:'app/result.tsx',html:()=>`<div class="body center">${resultTop()}<div class="spacer"></div><button class="btn btn-gold">${I('refresh')}Play again</button><button class="btn btn-text">Change category</button></div>`});
+
+add({id:'stats',group:'core',name:'Stats',note:'Tab: Stats',route:'app/(tabs)/stats.tsx',tab:'Stats',html:()=>`<div class="body tabbed">${statsTop()}</div>`});
+
+const linkRow=(t,d,i)=>`<div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I(i)}</span><div class="grow"><div class="t">${t}</div>${d?`<div class="d">${d}</div>`:''}</div>${I('chev')}</div>`;
+add({id:'settings',group:'core',name:'Settings',note:'Tab: Settings (scrolls)',route:'app/(tabs)/settings.tsx',tab:'Settings',html:()=>`<div class="body tabbed" style="gap:12px">
+ <span class="h h-l">Settings</span>
+ <div style="border-radius:20px;padding:16px;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);box-shadow:0 16px 30px -18px rgba(var(--shadow),.7);flex:none"><span class="tile-ic" style="background:var(--gold);color:var(--on-gold)">${I('crown')}</span><div class="grow"><div style="font-weight:700">Go Premium</div><div style="font-size:12px;opacity:.65">All 9 categories, no ads</div></div><span style="color:var(--gold)">${I('chev')}</span></div>
+ <span class="lab">Gameplay</span><div class="glass" style="border-radius:18px;flex:none">${tg('Round timer','Show countdown in clue round','clock',true)}</div>
+ <span class="lab">Sound and feel</span><div class="glass" style="border-radius:18px;flex:none">${tg('Sound effects','Blip on reveal, fanfare at the end','vol',true)}${tg('Timer sounds','Tick in the last 10 seconds','bell',false)}${tg('Haptics','Buzz on every reveal, the same for everyone','vib',true)}</div>
+ <span class="lab">Accessibility</span><div class="glass" style="border-radius:18px;flex:none">${tg('Larger text','Bigger words and buttons','textsize',false)}${tg('Reduce motion','Turn off pulses and glows','motion',false)}</div>
+ <span class="lab">Word packs</span><div class="glass" style="border-radius:18px;flex:none"><div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I('cloud')}</span><div class="grow"><div class="t">Words up to date</div><div class="d">1,350 words &middot; updated 2 days ago</div></div><button class="ad-cta">Check</button></div></div>
+ <span class="lab">Help</span><div class="glass" style="border-radius:18px;flex:none">${linkRow('Help and support','Report a problem or a word','buoy')}${linkRow('Suggest a category','','msg')}${linkRow('Privacy policy','','doc')}</div>
+ <span style="text-align:center;font-size:11.5px;color:var(--muted)">Impostr 1.1.0 &middot; Gooseberry Media</span></div>`});
+
+add({id:'premium',group:'core',name:'Premium',note:'Paywall',route:'app/premium.tsx',html:()=>`<div class="body" style="gap:12px">
+ <div class="navrow"><button class="iconbtn glass" aria-label="Close">${I('x')}</button><button class="btn-text" style="background:none;border:0;font:600 13px var(--f-body);color:var(--ink2)">Restore</button></div>
+ <div class="col" style="gap:8px"><span class="tile-ic ink" style="width:52px;height:52px;border-radius:16px">${I('crown')}</span><h2 class="h h-l">Impostr <span class="gold">Pro</span></h2><p class="sub">Every pack, every mode, no ads.</p></div>
+ <div class="glass" style="border-radius:18px;padding:6px 0">${[['All 9 categories','Food, Bollywood, Sports and more'],['Custom word packs','Add your own inside jokes'],['No ads','A clean screen every game']].map(b=>`<div class="list-row" style="padding:9px 14px"><span style="color:var(--gold-deep)">${I('check')}</span><div class="grow"><div class="t" style="font-size:13.5px">${b[0]}</div><div class="d">${b[1]}</div></div></div>`).join('')}</div>
+ <div class="col" style="gap:10px;margin-top:4px">
+  <div class="plan glass"><span class="radio"></span><div class="grow"><div style="font-weight:700">Monthly</div><div style="font-size:12px;color:var(--muted)">Billed every month</div></div><span class="num" style="font-weight:700;font-size:16px">&#8377;49</span></div>
+  <div class="plan glass sel"><span class="tag">SAVE 66%</span><span class="radio"></span><div class="grow"><div style="font-weight:700">Yearly</div><div style="font-size:12px;color:var(--ink2)">&#8377;16.6 a month</div></div><span class="num" style="font-weight:700;font-size:16px">&#8377;199</span></div>
+  <div class="plan glass"><span class="radio"></span><div class="grow"><div style="font-weight:700">Lifetime</div><div style="font-size:12px;color:var(--muted)">Pay once, play forever</div></div><span class="num" style="font-weight:700;font-size:16px">&#8377;599</span></div>
+ </div><div class="spacer"></div><button class="btn btn-gold">Continue with Yearly</button><span style="text-align:center;font-size:11px;color:var(--muted)">Cancel any time in Play Store</span></div>`});
+
+add({id:'suggest',group:'core',name:'Suggest a category',note:'From Settings',route:'app/suggest.tsx',html:()=>`<div class="body">
+ <div class="navrow"><button class="iconbtn glass" aria-label="Back">${I('back')}</button><span class="lab">Feedback</span><span style="width:40px"></span></div>
+ <div class="col" style="gap:4px"><h2 class="h h-l">Suggest a category</h2><p class="sub">The best ideas become new packs.</p></div>
+ <div class="field"><span class="lab">Category name</span><div class="input glass"><span>Cricket legends</span><span class="caret"></span></div></div>
+ <div class="field"><span class="lab">Why would it be fun? (optional)</span><div class="input glass ta">Everyone in our group argues about who the greatest is...</div></div>
+ <div class="col" style="gap:8px"><span class="lab">Popular ideas</span><div class="chips"><span class="chip">Street food</span><span class="chip">90s cartoons</span><span class="chip">Indian cities</span><span class="chip">Board games</span></div></div>
+ <div class="spacer"></div><button class="btn btn-ink">${I('send')}Send suggestion</button></div>`});
+
+/* ONLINE (Phase 2) */
+add({id:'choose-mode',group:'online',name:'Choose how to play',note:'After Play now',route:'new: app/mode.tsx',html:()=>`<div class="body">${NAV(0,'New game')}
+ <div class="col" style="gap:4px"><h2 class="h h-l">How are you playing?</h2><p class="sub">Pick one. You can switch next game.</p></div>
+ <div class="glass" style="border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px;outline:2px solid var(--gold);background:var(--gold-soft)"><div class="row"><span class="tile-ic ink">${I('phone1')}</span><div class="grow"><div class="h h-s">Pass and play</div><div class="sub" style="font-size:12.5px">One phone, passed around the room</div></div><span class="radio" style="border-color:var(--gold-deep)"></span></div><div class="chips"><span class="chip">${I('offline')}No internet needed</span></div></div>
+ <div class="glass" style="border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px"><div class="row"><span class="tile-ic">${I('users')}</span><div class="grow"><div class="h h-s">Everyone on their own phone</div><div class="sub" style="font-size:12.5px">Share a link. Friends join from their phones</div></div><span class="radio"></span></div><div class="chips"><span class="chip">${I('wifi')}Same Wi-Fi or internet</span><span class="chip">${I('link')}Invite link</span></div></div>
+ <div class="spacer"></div><button class="btn btn-gold">Continue${I('arrow')}</button></div>`});
+
+add({id:'host-room',group:'online',name:'Host room',note:'Share the invite',route:'new: app/online/host.tsx',html:()=>`<div class="body">${NAV(0,'Online room')}
+ <div class="glass" style="border-radius:24px;padding:18px;display:flex;gap:14px;align-items:center"><div class="qr"><i></i></div><div class="col" style="gap:6px;min-width:0"><span class="lab">Room code</span><span class="h" style="font-size:clamp(28px,10cqi,36px);letter-spacing:.06em">HNY42</span><span class="sub" style="font-size:12px">Scan or enter the code in the app</span></div></div>
+ <div class="row" style="gap:8px"><button class="btn btn-gold" style="flex:1.4">${I('share')}Share invite link</button><button class="btn btn-glass" style="flex:1">${I('copy')}Copy</button></div>
+ <div class="navrow"><span class="lab">In the room &middot; 4</span><span class="lab gold">Waiting for more</span></div>
+ <div class="glass" style="border-radius:20px">${['Aarav (you, host)','Meera','Kabir','Diya'].map((n,i)=>`<div class="list-row" style="padding:9px 12px"><span class="av a${i+1}">${n[0]}</span><div class="grow t">${n}</div><span style="color:var(--gold-deep)">${I('check','width:18px;height:18px')}</span></div>`).join('')}<div class="list-row" style="padding:9px 12px;color:var(--muted)"><span class="av" style="border:1.5px dashed var(--muted)"></span><div class="grow" style="font-size:13px">Rohan is joining...</div></div></div>
+ <div class="spacer"></div><button class="btn btn-ink">${I('play')}Start game (4 players)</button></div>`});
+
+add({id:'join-room',group:'online',name:'Join room',note:'Enter code',route:'new: app/online/join.tsx',html:()=>`<div class="body">${NAV(0,'Join a game')}
+ <div class="col" style="gap:4px"><h2 class="h h-l">Enter room code</h2><p class="sub">Ask the host for the 5-letter code, or open their invite link.</p></div>
+ <div class="codebox">${['H','N','Y','4',''].map((c,i)=>`<span class="glass ${i===4?'on':''}">${c||'<span class="caret"></span>'}</span>`).join('')}</div>
+ <div class="field"><span class="lab">Your name</span><div class="input glass"><span class="av a5" style="width:28px;height:28px;border-radius:9px;font-size:11px">R</span><span>Rohan</span></div></div>
+ <div class="glass list-row" style="border-radius:18px"><span class="tile-ic">${I('users')}</span><div class="grow"><div class="t">Aarav's room</div><div class="d">4 players waiting &middot; Bollywood</div></div></div>
+ <div class="spacer"></div><button class="btn btn-gold">Join room${I('arrow')}</button></div>`});
+
+add({id:'invite-landing',group:'online',name:'Invite link page',note:'Opens in browser',route:'web: /join/HNY42',html:()=>`<div class="body center" style="justify-content:center;gap:18px">
+ <div style="filter:drop-shadow(0 16px 24px rgba(90,60,0,.3))">${MARK(84)}</div>
+ <div class="col center" style="gap:6px"><span class="lab">You are invited</span><h2 class="h h-l">Aarav wants you<br>in a game of Impostr</h2><p class="sub">Room HNY42 &middot; 4 players waiting</p></div>
+ <div class="row" style="justify-content:center;gap:4px">${['A','M','K','D'].map((c,i)=>`<span class="av a${i+1}" style="margin-left:${i?-8:0}px;border:2px solid var(--bg)">${c}</span>`).join('')}</div>
+ <div class="col" style="width:100%;gap:8px;margin-top:6px"><button class="btn btn-gold">Open in the app</button><button class="btn btn-ink">${I('download')}Get the app from Play Store</button><button class="btn btn-text">Play in this browser</button></div>
+ <span style="font-size:11px;color:var(--muted)">The link opens the room directly once the app is installed.</span></div>`});
+
+add({id:'online-clue',group:'online',name:'Online clue round',note:'On your own phone',route:'new: app/online/round.tsx',html:()=>`<div class="body">
+ <div class="navrow"><span class="pill ink">${I('wifi')}HNY42</span><span class="lab">Round 1 of 2</span><span class="num" style="font-weight:700">0:24</span></div>
+ <div class="glass row" style="border-radius:18px;padding:12px 14px"><span class="tile-ic">${I('eye')}</span><div class="grow"><div class="lab">Your word</div><div class="h h-m">Mango</div></div><button class="iconbtn" aria-label="Hide word">${I('eyeoff')}</button></div>
+ <span class="lab">Clues so far</span>
+ <div class="feed">${[['Aarav','Yellow',1],['Meera','Summer',2],['Kabir','Sweet',3]].map(c=>`<div class="bubble glass"><span class="av a${c[2]}" style="width:30px;height:30px;font-size:11px">${c[0][0]}</span><span style="font-size:12.5px;color:var(--muted);flex:1">${c[0]}</span><b>${c[1]}</b></div>`).join('')}<div class="bubble" style="border:1.5px dashed var(--line)"><span class="av a4" style="width:30px;height:30px;font-size:11px">D</span><span style="font-size:12.5px;color:var(--muted);flex:1">Diya is typing...</span></div></div>
+ <div class="spacer"></div>
+ <div class="glass" style="border-radius:18px;padding:8px 8px 8px 14px;display:flex;align-items:center;gap:8px"><span style="flex:1;color:var(--muted)">Your clue is next</span><button class="iconbtn" style="background:var(--line)" aria-label="Send clue" disabled>${I('send')}</button></div></div>`});
+
+add({id:'online-vote',group:'online',name:'Online vote',note:'Votes stay private',route:'new: app/online/vote.tsx',html:()=>`<div class="body">
+ <div class="navrow"><span class="pill ink">${I('wifi')}HNY42</span><span class="lab">Voting</span><span style="width:60px"></span></div>
+ <div class="col" style="gap:4px"><h2 class="h h-l">Who is the imposter?</h2><p class="sub">Your vote is hidden until everyone has voted.</p></div>
+ <div class="vote-grid">${NAMES.map((n,i)=>`<div class="vcard glass ${i===2?'sel':''}"><span class="av a${i+1}">${n[0]}</span><span style="font-weight:600">${i===4?'You':n}</span></div>`).join('')}</div>
+ <div class="glass pad col" style="gap:10px"><div class="navrow"><span class="lab">Votes in</span><span class="num" style="font-weight:700">3 of 5</span></div><div class="bar"><i style="width:60%"></i></div><div class="row" style="gap:6px">${NAMES.map((n,i)=>`<span class="av a${i+1}" style="width:26px;height:26px;font-size:10px;${i>2?'opacity:.3':''}">${i<3?I('check','width:13px;height:13px'):n[0]}</span>`).join('')}</div></div>
+ <div class="spacer"></div><button class="btn btn-gold">${I('check')}Lock my vote</button></div>`});
+
+/* ADS (planned) */
+add({id:'ad-home',group:'ads',name:'Home, scrolled',note:'Ad below categories',route:'app/(tabs)/index.tsx',tab:'Play',scroll:true,html:()=>`<div class="body tabbed">${homeTop()}${homeCats()}<span class="lab">Sponsored</span>${AD()}</div><span class="annot" style="bottom:170px">AD SLOT</span>`});
+add({id:'ad-result',group:'ads',name:'Result, scrolled',note:'Ad after the buttons',route:'app/result.tsx',scroll:true,html:()=>`<div class="body center">${resultTop()}<button class="btn btn-gold">${I('refresh')}Play again</button><button class="btn btn-text">Change category</button><div style="width:100%;text-align:left">${AD()}</div></div><span class="annot" style="bottom:110px">AD SLOT</span>`});
+add({id:'ad-stats',group:'ads',name:'Stats, extra space',note:'Ad fills empty space',route:'app/(tabs)/stats.tsx',tab:'Stats',html:()=>`<div class="body tabbed">${statsTop()}<div class="spacer"></div>${AD()}</div><span class="annot" style="bottom:170px">AD SLOT</span>`});
+
+/* GROWTH (Phase 1.5: play again and again, word of mouth) */
+const ladder=[['check','Play 5 games','Chaos difficulty unlocked',1,5,5],['bowl','Play 10 games','Food pack free forever',0,7,10],['flame','3-day streak','24-hour Pro pass',0,2,3],['gift','Invite 2 friends','Bollywood pack free forever',0,1,2],['trophy','Win 5 as imposter','Master of Disguise badge',0,3,5]];
+const progRow=(r)=>`<div class="list-row" style="padding:11px 14px;align-items:flex-start"><span class="tile-ic ${r[3]?'ink':''}" style="width:36px;height:36px;border-radius:11px">${I(r[3]?'check':r[0],'width:18px;height:18px')}</span><div class="grow col" style="gap:6px"><div class="navrow"><span class="t" style="font-size:13.5px">${r[1]}</span><span class="num" style="font-size:12px;color:var(--muted);font-weight:600">${r[3]?'Done':r[4]+' of '+r[5]}</span></div><span class="d" style="margin:0">${r[2]}</span>${r[3]?'':`<div class="bar"><i style="width:${Math.round(r[4]/r[5]*100)}%"></i></div>`}</div></div>`;
+add({id:'home-rewards',group:'growth',name:'Home with rewards',note:'Progress card',route:'app/(tabs)/index.tsx',tab:'Play',html:()=>`<div class="body tabbed">${homeTop()}
+ <div class="glass" style="border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;flex:none"><div class="row"><span class="tile-ic">${I('gift')}</span><div class="grow"><div class="t" style="font-weight:700">3 games to unlock Food</div><div style="font-size:12px;color:var(--muted)">Free forever, no payment</div></div><span class="pill g">${I('flame')}2 days</span></div><div class="bar"><i style="width:70%"></i></div></div>
+ ${homeCats()}</div>`});
+add({id:'rewards',group:'growth',name:'Rewards',note:'Unlock by playing',route:'new: app/rewards.tsx',html:()=>`<div class="body">${NAV(0,'Rewards')}
+ <div class="glass" style="border-radius:22px;padding:16px;display:flex;align-items:center;gap:14px;flex:none"><span class="tile-ic ink" style="width:52px;height:52px;border-radius:16px">${I('flame','width:26px;height:26px')}</span><div class="grow"><div class="lab">Play streak</div><div class="h h-l">2 days</div><div class="sub" style="font-size:12px">Play tomorrow for a 24-hour Pro pass</div></div></div>
+ <div class="row" style="justify-content:space-between;gap:4px">${['M','T','W','T','F','S','S'].map((d,i)=>`<div class="col center" style="gap:4px"><span style="width:30px;height:30px;border-radius:10px;display:grid;place-items:center;${i<2?'background:var(--gold);color:var(--on-gold)':i===2?'border:1.5px dashed var(--gold-deep)':'background:var(--line)'}">${i<2?I('check','width:14px;height:14px'):''}</span><span style="font-size:10.5px;color:var(--muted);font-weight:600">${d}</span></div>`).join('')}</div>
+ <span class="lab">Unlock by playing</span>
+ <div class="glass" style="border-radius:20px">${ladder.map(progRow).join('')}</div></div>`});
+add({id:'reward-unlocked',group:'growth',name:'Reward unlocked',note:'Celebration moment',route:'new: modal',html:()=>`<div class="body center" style="justify-content:center;gap:18px">
+ <div style="position:relative;width:140px;height:140px;display:grid;place-items:center"><span style="position:absolute;inset:0;border-radius:44px;background:var(--gold);opacity:.35;filter:blur(14px);animation:pulse 2.4s ease-in-out infinite"></span>${[[-60,-50],[64,-40],[-54,58],[60,56],[0,-78]].map(([x,y])=>`<span style="position:absolute;left:calc(50% + ${x}px);top:calc(50% + ${y}px);color:var(--gold-deep)">${I('spark','width:16px;height:16px')}</span>`).join('')}<span class="tile-ic ink" style="position:relative;width:104px;height:104px;border-radius:32px">${I('bowl','width:50px;height:50px')}</span></div>
+ <div class="col center" style="gap:6px"><span class="pill g">${I('gift')}Reward unlocked</span><h2 class="h h-xl">Food pack</h2><p class="sub" style="max-width:26ch">You played 10 games. 150 new words are now free, forever.</p></div>
+ <div class="col" style="width:100%;gap:8px;margin-top:10px"><button class="btn btn-gold">${I('play')}Play with Food</button><button class="btn btn-glass">${I('share')}Tell the group</button></div>
+ <span style="font-size:12px;color:var(--muted)">Next: 3-day streak for a 24-hour Pro pass</span></div>`});
+add({id:'share-result',group:'growth',name:'Share result',note:'Sheet over Result',route:'app/result.tsx (sheet)',html:()=>`<div class="body center">${resultTop()}</div><div class="dim"></div><div class="sheet glass" style="gap:12px">
+ <div style="width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center"></div>
+ <div class="navrow"><h2 class="h h-m">Share the moment</h2><button class="iconbtn" aria-label="Close">${I('x')}</button></div>
+ <div style="border-radius:20px;padding:18px;background:linear-gradient(160deg,#FFD95A,#F2B705 60%,#E3A400);color:#1B1813;display:flex;flex-direction:column;gap:10px;box-shadow:0 18px 30px -18px rgba(120,80,0,.6)">
+  <div class="row" style="gap:8px">${MARK(28)}<span style="font:700 14px var(--f-display)">Impostr</span><span style="margin-left:auto;font-size:11px;font-weight:600;opacity:.7">Game night</span></div>
+  <div style="font:800 26px/1.05 var(--f-display);letter-spacing:-.02em">Kabir fooled no one.</div>
+  <div style="font-size:12.5px;font-weight:600;opacity:.8">The word was Mango. Crew wins, 3 votes to 2.</div>
+  <div class="row" style="gap:6px;margin-top:2px">${['A','M','K','D','R'].map((c,i)=>`<span class="av a${i+1}" style="width:26px;height:26px;font-size:10px;border:2px solid rgba(255,255,255,.7)">${c}</span>`).join('')}<span style="margin-left:auto;font-size:10.5px;font-weight:700;background:#1B1813;color:#F2B705;padding:4px 7px;border-radius:6px">Play free: impostr.app</span></div>
+ </div>
+ <div class="row" style="gap:8px"><button class="btn btn-gold" style="flex:1.4">${I('share')}Share to chat</button><button class="btn btn-glass" style="flex:1">${I('download')}Save</button></div></div>`});
+add({id:'invite-friends',group:'growth',name:'Invite friends',note:'From Home, Settings, Result',route:'new: app/invite.tsx',html:()=>`<div class="body">${NAV(0,'Invite friends')}
+ <div class="col" style="gap:6px"><h2 class="h h-l">Bring the group,<br>get <span class="gold">Bollywood</span> free</h2><p class="sub">When 2 friends install Impostr with your link, the Bollywood pack unlocks for you.</p></div>
+ <div class="glass pad col" style="gap:12px"><div class="navrow"><span class="lab">Friends joined</span><span class="num" style="font-weight:700">1 of 2</span></div><div class="row" style="gap:8px"><span class="av a4">D</span><span class="av" style="border:1.5px dashed var(--muted)"></span><span class="grow" style="font-size:12.5px;color:var(--ink2)">Diya joined yesterday</span></div><div class="bar"><i style="width:50%"></i></div></div>
+ <div class="field"><span class="lab">Your invite link</span><div class="input glass"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">impostr.app/i/aarav7</span><button class="iconbtn" style="width:32px;height:32px" aria-label="Copy link">${I('copy','width:17px;height:17px')}</button></div></div>
+ <div class="glass pad col" style="gap:6px;padding:12px 14px"><span class="lab">Message preview</span><span class="sub" style="font-size:12.5px">One of us is lying. Join me on Impostr, the party word game. It's free: impostr.app/i/aarav7</span></div>
+ <div class="spacer"></div><button class="btn btn-gold">${I('share')}Share invite</button></div>`});
+
+/* PHASE 1 ADDITIONS */
+add({id:'pause',group:'extra',name:'Pause game',note:'Sheet over Clue round',route:'app/clue-round.tsx (sheet)',html:()=>`<div class="body">
+ <div class="navrow"><button class="iconbtn glass" aria-label="Pause game">${I('pause')}</button><span class="lab">Clue round 1 of 2</span><span class="pill g">${I('bowl')}Food</span></div>
+ <div class="ring"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="84" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="95" cy="95" r="84" fill="none" stroke="var(--gold)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*.6}"/></svg><div class="ctr"><span class="num" style="font-size:44px;font-weight:700">0:24</span><span class="lab">Paused</span></div></div></div>
+ <div class="dim"></div><div class="sheet glass">
+ <div style="width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center"></div>
+ <div class="col" style="gap:4px"><h2 class="h h-l">Game paused</h2><p class="sub">The timer has stopped. Nobody can see the word.</p></div>
+ <button class="btn btn-gold">${I('play')}Resume</button>
+ <div class="glass" style="border-radius:18px">
+  <div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I('refresh')}</span><div class="grow"><div class="t">Restart round</div><div class="d">Same word, clues start again</div></div>${I('chev')}</div>
+  <div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I('eye')}</span><div class="grow"><div class="t">End and reveal</div><div class="d">Show the imposter and the word</div></div>${I('chev')}</div>
+  <div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I('home2')}</span><div class="grow"><div class="t">Exit to home</div><div class="d">This game will not count in stats</div></div>${I('chev')}</div>
+ </div></div>`});
+add({id:'exit-confirm',group:'extra',name:'Exit confirm',note:'Before leaving a game',route:'app/clue-round.tsx (dialog)',html:()=>`<div class="body">
+ <div class="navrow"><button class="iconbtn glass" aria-label="Pause game">${I('pause')}</button><span class="lab">Clue round 1 of 2</span><span style="width:40px"></span></div></div>
+ <div class="dim"></div>
+ <div class="glass" style="position:absolute;left:24px;right:24px;top:50%;transform:translateY(-50%);z-index:5;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px;background:var(--glass-hi)">
+  <span class="tile-ic ink" style="width:46px;height:46px;border-radius:14px">${I('home2')}</span>
+  <h2 class="h h-m">Leave this game?</h2><p class="sub">Players will lose this round. The word is not shown.</p>
+  <div class="row" style="gap:8px;margin-top:4px"><button class="btn btn-glass" style="flex:1;min-height:48px">Keep playing</button><button class="btn btn-ink" style="flex:1;min-height:48px">Leave</button></div>
+ </div>`});
+add({id:'help',group:'extra',name:'Help and support',note:'From Settings',route:'new: app/help.tsx',html:()=>`<div class="body">${NAV(0,'Help')}
+ <h2 class="h h-l">How can we help?</h2>
+ <div class="glass" style="border-radius:20px;flex:none">
+  <div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I('flag')}</span><div class="grow"><div class="t">Report a problem</div><div class="d">Something broke or looks wrong</div></div>${I('chev')}</div>
+  <div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I('x')}</span><div class="grow"><div class="t">Report a word</div><div class="d">Wrong, unfair or not suitable</div></div>${I('chev')}</div>
+  <div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">${I('crown')}</span><div class="grow"><div class="t">Purchase help</div><div class="d">Restore, refunds, manage plan</div></div>${I('chev')}</div>
+ </div>
+ <span class="lab">Quick answers</span>
+ <div class="glass" style="border-radius:20px;flex:none">${['Does it need internet?','How many players can play?','How do I get my purchase back on a new phone?'].map(q=>`<div class="list-row"><div class="grow t" style="font-weight:500">${q}</div>${I('chev')}</div>`).join('')}</div>
+ <div class="glass pad col" style="gap:6px;padding:14px"><span class="lab">Email us</span><div class="navrow"><span style="font-weight:600">support@gooseberry.media</span><button class="iconbtn" style="width:32px;height:32px" aria-label="Copy email">${I('copy','width:17px;height:17px')}</button></div><span class="d" style="font-size:12px;color:var(--muted)">Placeholder address. We reply within 2 working days.</span></div></div>`});
+add({id:'report',group:'extra',name:'Report a problem',note:'Form',route:'new: app/report.tsx',html:()=>`<div class="body">${NAV(0,'Report')}
+ <div class="col" style="gap:4px"><h2 class="h h-l">Report a problem</h2><p class="sub">Tell us what happened. Device details are added for you.</p></div>
+ <div class="col" style="gap:8px"><span class="lab">What kind?</span><div class="chips"><span class="chip on">Bug</span><span class="chip">Bad word</span><span class="chip">Purchase</span><span class="chip">Other</span></div></div>
+ <div class="field"><span class="lab">What happened?</span><div class="input glass ta" style="color:var(--ink);font-weight:500">The timer kept running after I paused<span class="caret" style="display:inline-block;vertical-align:middle;margin-left:2px"></span></div></div>
+ <div class="glass list-row" style="border-radius:16px"><div class="grow"><div class="t">Include device details</div><div class="d">Phone model, Android version, app version</div></div><button class="tog" aria-pressed="true" aria-label="Include device details"></button></div>
+ <div class="spacer"></div><button class="btn btn-ink">${I('send')}Send report</button><span style="text-align:center;font-size:11.5px;color:var(--muted)">No names or personal details are sent.</span></div>`});
+add({id:'new-words',group:'extra',name:'New words added',note:'Sheet on Home after update',route:'app/(tabs)/index.tsx (sheet)',tab:'Play',html:()=>`<div class="body tabbed">${homeTop()}</div><div class="dim"></div><div class="sheet glass">
+ <div style="width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center"></div>
+ <div class="row"><span class="tile-ic ink" style="width:48px;height:48px;border-radius:15px">${I('lamp','width:24px;height:24px')}</span><div class="grow"><span class="pill g">${I('cloud')}New words</span><h2 class="h h-m" style="margin-top:6px">Diwali pack is here</h2></div></div>
+ <p class="sub">60 festival words added to Festivals, plus 40 new words across General and Home. Free for everyone until 15 Nov.</p>
+ <button class="btn btn-gold">${I('play')}Play Diwali pack</button><button class="btn btn-text">Later</button></div>`});
+
+add({id:'settings-scrolled',group:'extra',name:'Settings, scrolled',note:'Accessibility, words, help',route:'app/(tabs)/settings.tsx',tab:'Settings',scroll:true,html:()=>S.find(x=>x.id==='settings').html()});
+window.IMP={S,SPRITE,STATUS,ORBS,TABBAR,MARK,
+  phone(s,{w=340,h=736,frame=true}={}){
+    const inner=`<div class="scr">${ORBS}${frame?STATUS:''}${s.html()}${s.tab?TABBAR(s.tab):''}</div>`;
+    return frame?`<div class="phone ${w<320?'sm':''}" style="--pw:${w}px;--pr:${w}/${h}">${inner}</div>`:inner;
+  },
+  injectSprite(){document.body.insertAdjacentHTML('afterbegin',SPRITE)},
+  renderSingle(id){
+    this.injectSprite();
+    const s=S.find(x=>x.id===id)||S[0];
+    document.title='Impostr - '+s.name.replace(/&[a-z]+;/g,'');
+    document.body.classList.add('single');
+    document.body.insertAdjacentHTML('beforeend',this.phone(s,{frame:false}));
+    if(s.scroll){const b=document.querySelector('.body');b.scrollTop=b.scrollHeight}
+  }
+};
+document.addEventListener('click',e=>{const t=e.target.closest('.tog');if(t)t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')!=='true')});
+})();
+
+</script>
+<script>
+IMP.injectSprite();
+const fig=(s,opt={})=>`<figure><figcaption><b>${s.n}</b><span><a href="screens/${String(s.n).padStart(2,'0')}-${s.id}.html">${s.name}</a></span><small>${opt.cap||s.note}</small></figcaption>${IMP.phone(s,opt)}</figure>`;
+IMP.S.forEach((s,i)=>s.n=i+1);
+['core','extra','online','ads','growth'].forEach(g=>{document.getElementById('g-'+g).innerHTML=IMP.S.filter(s=>s.group===g).map(s=>fig(s)).join('')});
+const by=id=>IMP.S.find(s=>s.id===id);
+document.getElementById('g-resp').innerHTML=[[by('home'),{w:270,h:480,cap:'Small phone 360 x 640'}],[by('vote'),{w:270,h:480,cap:'Small phone 360 x 640'}],[by('home'),{w:340,h:736,cap:'Standard 390 x 844'}],[by('clue-round'),{w:380,h:826,cap:'Large 430 x 932'}]].map(([s,o])=>fig(s,o)).join('');
+document.querySelectorAll('#g-ads .body, #g-extra figure:last-child .body').forEach(b=>b.scrollTop=b.scrollHeight);
+document.getElementById('masks').innerHTML=[[96,'Squircle'],[96,'Circle (Android)'],[64,''],[48,''],[32,'Favicon']].map(([s,l],i)=>`<div class="${i===1?'circle':''}">${IMP.MARK(s)}<span>${l||s+'px'}</span></div>`).join('');
+document.getElementById('hs').innerHTML=['Photos','Maps','','Music','Notes','Impostr','Clock','Mail'].map(l=>`<div>${l==='Impostr'?IMP.MARK(52):'<i></i>'}<span>${l}</span></div>`).join('');
+document.getElementById('wapp').innerHTML=IMP.phone(by('home'),{frame:false});
+document.getElementById('wleft').innerHTML=`<div class="row" style="gap:12px">${IMP.MARK(52)}<div><div class="h h-l">Impostr</div><div class="sub">The party word game</div></div></div><p class="sub" style="font-size:15px;max-width:30ch">One word. One liar. Play on this screen, or get the app for the best experience.</p><div class="glass" style="padding:16px;display:flex;gap:14px;align-items:center;max-width:320px"><div class="qr" style="width:92px;height:92px"><i></i></div><div class="col" style="gap:4px"><span class="h h-s">Get the app</span><span class="sub" style="font-size:12.5px">Scan with your phone camera</span></div></div>`;
+document.getElementById('wright').innerHTML=`<div class="glass" style="padding:18px;display:flex;flex-direction:column;gap:12px;max-width:320px"><span class="lab">Have a room code? (Phase 2)</span><div class="codebox" style="gap:6px">${['H','N','Y','4','2'].map(c=>`<span class="glass" style="font-size:20px">${c}</span>`).join('')}</div><button class="btn btn-gold" style="min-height:46px">Join room</button></div><div class="glass" style="padding:18px;display:flex;flex-direction:column;gap:10px;max-width:320px"><span class="lab">How it works</span>${['Everyone gets the word except one','Give one-word clues','Vote out the imposter'].map((t,i)=>`<div class="howstep" style="gap:10px;align-items:center"><span class="n" style="width:26px;height:26px">${i+1}</span><span style="font-size:13px;font-weight:600">${t}</span></div>`).join('')}</div>`;
+// tabs
+const tabs=[...document.querySelectorAll('[role=tab]')];
+function show(id,push){tabs.forEach(t=>{const on=t.id==='t-'+id;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!on});if(push){try{history.replaceState(null,'','#'+id)}catch(e){}}}
+tabs.forEach((t,i)=>{t.addEventListener('click',()=>{show(t.id.slice(2),true);window.scrollTo({top:0})});t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const n=tabs[(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length];n.focus();n.click()}})});
+const h=(location.hash||'').slice(1);if(tabs.some(t=>t.id==='t-'+h))show(h);
+</script>
+</body>
+</html>

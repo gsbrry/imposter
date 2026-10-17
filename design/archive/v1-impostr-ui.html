@@ -1,0 +1,444 @@
+<title>Impostr UI Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a design-board of phone frames on a warm ground; each phone is a liquid-glass world (orbs + dot pattern behind frosted panels). */
+:root{
+  --bg:#F4EFE4; --bg2:#EAE2CF; --page:#EFE9DC;
+  --ink:#1B1813; --ink2:#5C5547; --muted:#968D7C;
+  --gold:#F2B705; --gold-deep:#B98400; --gold-soft:#FBE7A1; --on-gold:#1B1813;
+  --glass:rgba(255,252,245,.52); --glass-hi:rgba(255,253,248,.78); --stroke:rgba(255,255,255,.85);
+  --line:rgba(27,24,19,.08); --dot:rgba(27,24,19,.07);
+  --orb1:#FFD13D; --orb2:#F6DCA0; --orb3:#FFF6DC;
+  --shadow:28,20,4; --rose:#D9433B; --rose-soft:#FBE1DC; --ok:#2F8F5B;
+  --frame:#1B1813;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r-lg:20px; --r-md:14px; --r-sm:10px;
+  color-scheme:light;
+}
+[data-palette="stone"]{
+  --bg:#ECEBE7; --bg2:#DEDCD5; --page:#E4E2DC;
+  --ink:#1D1D1B; --ink2:#5A5852; --muted:#94918A;
+  --gold:#D9A93A; --gold-deep:#9C7417; --gold-soft:#F1E2B8; --on-gold:#1D1D1B;
+  --glass:rgba(255,255,253,.5); --glass-hi:rgba(255,255,253,.78); --stroke:rgba(255,255,255,.9);
+  --line:rgba(29,29,27,.08); --dot:rgba(29,29,27,.07);
+  --orb1:#E8C46A; --orb2:#D7D3C8; --orb3:#F7F5EF; --shadow:20,20,18; --frame:#1D1D1B;
+}
+[data-palette="midnight"]{
+  --bg:#13110D; --bg2:#1E1B15; --page:#0D0C09;
+  --ink:#F6EFDF; --ink2:#BDB4A1; --muted:#81796A;
+  --gold:#F6C33A; --gold-deep:#F6C33A; --gold-soft:rgba(246,195,58,.16); --on-gold:#17140E;
+  --glass:rgba(255,248,230,.06); --glass-hi:rgba(255,248,230,.1); --stroke:rgba(255,240,205,.16);
+  --line:rgba(255,240,205,.09); --dot:rgba(255,240,205,.06);
+  --orb1:#B47F07; --orb2:#4A3A14; --orb3:#2A2416; --shadow:0,0,0;
+  --rose:#FF6B5E; --rose-soft:rgba(255,107,94,.14); --frame:#000;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--ink);font-family:var(--f-body);margin:0;transition:background .3s}
+.wrap{max-width:1500px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;justify-content:space-between;margin-bottom:36px}
+.brandline{display:flex;flex-direction:column;gap:8px;min-width:0}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,5vw,52px);line-height:1;letter-spacing:-.03em;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--gold-deep)}
+.lede{color:var(--ink2);max-width:58ch;line-height:1.5;margin:4px 0 0}
+.switch{display:flex;flex-direction:column;gap:10px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:12px;border:1px solid var(--line);background:var(--glass-hi);color:var(--ink);font:600 13px var(--f-body);cursor:pointer}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.sw:focus-visible,.phone button:focus-visible{outline:2px solid var(--gold-deep);outline-offset:2px}
+.chip-dots{display:flex}
+.chip-dots i{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,.8);margin-left:-5px}
+.chip-dots i:first-child{margin-left:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:48px 28px;justify-items:center}
+figure{margin:0;display:flex;flex-direction:column;gap:14px;align-items:center}
+figcaption{display:flex;gap:10px;align-items:baseline;width:340px;max-width:100%}
+figcaption b{font-family:var(--f-mono);font-size:12px;color:var(--gold-deep)}
+figcaption span{font-family:var(--f-display);font-weight:700;font-size:17px}
+figcaption small{margin-left:auto;color:var(--muted);font-size:12px}
+
+/* ---------- PHONE ---------- */
+.phone{width:340px;max-width:100%;aspect-ratio:340/736;border-radius:52px;padding:9px;background:var(--frame);
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.08) inset,0 40px 60px -30px rgba(var(--shadow),.45),0 12px 24px -12px rgba(var(--shadow),.3)}
+.scr{position:relative;height:100%;border-radius:44px;overflow:hidden;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;isolation:isolate;font-size:14px}
+.scr::before{content:"";position:absolute;inset:0;z-index:-1;
+  background-image:radial-gradient(var(--dot) 1.1px,transparent 1.2px);background-size:14px 14px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 55%);mask-image:linear-gradient(180deg,#000 0%,transparent 55%)}
+.orb{position:absolute;border-radius:50%;filter:blur(38px);z-index:-2;pointer-events:none}
+.o1{width:230px;height:230px;background:var(--orb1);top:-70px;right:-80px;opacity:.75}
+.o2{width:260px;height:260px;background:var(--orb2);bottom:-90px;left:-90px;opacity:.9}
+.o3{width:150px;height:150px;background:var(--orb3);top:42%;left:55%;opacity:.9}
+.status{display:flex;justify-content:space-between;align-items:center;padding:16px 28px 6px;font:600 13px var(--f-body);flex:none}
+.island{width:96px;height:28px;background:#000;border-radius:20px;position:absolute;left:50%;top:10px;transform:translateX(-50%)}
+.sicons{display:flex;gap:5px;align-items:center}
+.sicons svg{width:15px;height:15px}
+.body{flex:1;display:flex;flex-direction:column;padding:10px 18px 20px;gap:14px;min-height:0}
+
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* liquid glass */
+.glass{position:relative;background:var(--glass);border:1px solid var(--stroke);border-radius:var(--r-lg);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 1px 2px rgba(var(--shadow),.06),0 14px 30px -16px rgba(var(--shadow),.28)}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.45) 0%,rgba(255,255,255,0) 38%,rgba(255,255,255,0) 70%,rgba(255,255,255,.18) 100%);mix-blend-mode:soft-light}
+[data-palette="midnight"] .glass{box-shadow:inset 0 1px 0 rgba(255,240,205,.12),0 14px 30px -16px rgba(0,0,0,.6)}
+.pad{padding:16px}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:54px;border-radius:var(--r-md);border:0;font:700 15px var(--f-body);cursor:pointer;width:100%;letter-spacing:.01em}
+.btn-gold{background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 82%,#fff) 0%,var(--gold) 55%,color-mix(in srgb,var(--gold) 88%,#000) 100%);color:var(--on-gold);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(0,0,0,.08),0 12px 24px -10px color-mix(in srgb,var(--gold) 80%,transparent)}
+.btn-ink{background:var(--ink);color:var(--bg);box-shadow:0 12px 22px -12px rgba(var(--shadow),.6)}
+.btn-glass{background:var(--glass-hi);color:var(--ink);border:1px solid var(--stroke);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.btn-text{background:none;color:var(--ink2);height:40px;font-weight:600}
+.iconbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--ink);cursor:pointer;padding:0}
+
+.navrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.steps{display:flex;gap:4px;align-items:center}
+.steps i{width:22px;height:4px;border-radius:2px;background:var(--line)}
+.steps i.on{background:var(--gold)}
+.lab{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.h{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;line-height:1.02;margin:0;text-wrap:balance}
+.h-xl{font-size:38px}.h-l{font-size:28px}.h-m{font-size:20px}.h-s{font-size:16px;letter-spacing:-.01em}
+.sub{color:var(--ink2);line-height:1.45;margin:0;font-size:13.5px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.gold{color:var(--gold-deep)}
+.spacer{flex:1}
+.row{display:flex;align-items:center;gap:12px}
+.col{display:flex;flex-direction:column;gap:12px}
+.pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:8px;font:600 11.5px var(--f-body);background:var(--glass-hi);border:1px solid var(--stroke);color:var(--ink2)}
+.pill.g{background:var(--gold-soft);border-color:transparent;color:var(--gold-deep)}
+.tile-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--gold-soft);color:var(--gold-deep);flex:none}
+.tile-ic.ink{background:var(--ink);color:var(--gold)}
+.divider{height:1px;background:var(--line)}
+
+/* tab bar */
+.tabbar{position:absolute;left:16px;right:16px;bottom:16px;height:64px;display:flex;justify-content:space-around;align-items:center;border-radius:22px;padding:0 8px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font:600 10.5px var(--f-body);color:var(--muted);flex:1;padding:8px 0;border-radius:16px}
+.tab.on{color:var(--ink);background:var(--glass-hi);box-shadow:0 4px 12px -6px rgba(var(--shadow),.3)}
+.tab.on svg{color:var(--gold-deep)}
+
+/* toggles */
+.tog{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;border:0;cursor:pointer;flex:none;padding:0}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);transition:transform .2s}
+.tog[aria-pressed="true"]{background:var(--gold)}
+.tog[aria-pressed="true"]::after{transform:translateX(18px)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:14px}
+.seg button{border:0;background:none;height:38px;border-radius:10px;font:600 13px var(--f-body);color:var(--ink2);cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg);box-shadow:0 6px 14px -8px rgba(var(--shadow),.6)}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.list-row + .list-row{border-top:1px solid var(--line)}
+.list-row .t{font-weight:600;font-size:14px}
+.list-row .d{font-size:12px;color:var(--muted);margin-top:2px}
+.list-row .grow{flex:1;min-width:0}
+
+.av{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font:700 13px var(--f-display);flex:none;color:#1B1813}
+.a1{background:#FFD866}.a2{background:#F4C7A1}.a3{background:#CFE3B0}.a4{background:#BFD8EE}.a5{background:#E6CBEA}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:10px;font:600 12.5px var(--f-body);border:1px solid var(--line);background:var(--glass-hi);color:var(--ink)}
+
+/* specific */
+.catgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.cat{padding:12px 10px;border-radius:16px;display:flex;flex-direction:column;gap:8px;position:relative;min-height:96px}
+.cat .n{font-weight:700;font-size:12.5px;line-height:1.2}
+.cat .c{font:500 10px var(--f-mono);color:var(--muted)}
+.cat.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cat.sel .tile-ic{background:var(--gold);color:var(--on-gold)}
+.cat.sel .c{color:color-mix(in srgb,var(--bg) 60%,transparent)}
+.cat .lock{position:absolute;top:10px;right:10px;width:14px;height:14px;color:var(--muted)}
+.cat .tile-ic{width:32px;height:32px;border-radius:10px}
+.cat .tile-ic svg{width:17px;height:17px}
+
+.stepper{display:flex;align-items:center;justify-content:space-between}
+.stepper .iconbtn{background:var(--glass-hi);border:1px solid var(--stroke)}
+.big-num{font:800 56px/1 var(--f-display);letter-spacing:-.04em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.reveal-card{flex:1;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+.word{font:800 48px/1 var(--f-display);letter-spacing:-.04em}
+.ring{position:relative;width:190px;height:190px;margin:0 auto}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.vote-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vcard{padding:12px;border-radius:16px;display:flex;align-items:center;gap:10px;position:relative}
+.vcard.sel{outline:2px solid var(--gold);background:var(--gold-soft)}
+.vcard .cnt{margin-left:auto;font:700 12px var(--f-mono);color:var(--ink2)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:3px}
+.sheet{position:absolute;left:8px;right:8px;bottom:8px;border-radius:34px;padding:22px 20px 18px;display:flex;flex-direction:column;gap:14px;background:var(--glass-hi)}
+.dim{position:absolute;inset:0;background:rgba(20,16,8,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.howstep{display:flex;gap:14px;align-items:flex-start}
+.howstep .num{width:30px;height:30px;border-radius:10px;background:var(--ink);color:var(--gold);display:grid;place-items:center;font:700 13px var(--f-mono);flex:none}
+.plan{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;position:relative}
+.plan.sel{outline:2px solid var(--gold);background:var(--gold-soft)}
+.radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);flex:none;display:grid;place-items:center}
+.plan.sel .radio{border-color:var(--gold-deep)}
+.plan.sel .radio::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--gold-deep)}
+.tag{position:absolute;top:-9px;right:14px;height:18px;padding:0 8px;border-radius:6px;background:var(--ink);color:var(--gold);font:700 9.5px var(--f-mono);letter-spacing:.08em;display:flex;align-items:center}
+.field{display:flex;flex-direction:column;gap:6px}
+.input{height:48px;border-radius:12px;padding:0 14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+.input.ta{height:96px;align-items:flex-start;padding-top:13px;color:var(--muted);font-weight:400;line-height:1.4}
+.caret{width:1.5px;height:18px;background:var(--gold-deep);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(1.12);opacity:.2}}
+@keyframes load{from{width:8%}to{width:78%}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.stat{padding:14px;border-radius:18px;display:flex;flex-direction:column;gap:6px}
+.stat .v{font:800 30px/1 var(--f-display);letter-spacing:-.03em}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.notes{margin-top:56px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.note{padding:20px;border-radius:18px;background:var(--glass-hi);border:1px solid var(--line)}
+.note h3{font-family:var(--f-display);margin:0 0 8px;font-size:17px}
+.note p{margin:0;color:var(--ink2);line-height:1.5;font-size:14px}
+@media (max-width:420px){.grid{grid-template-columns:1fr}.phone{border-radius:46px}.scr{border-radius:38px}}
+</style>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <defs>
+  <symbol id="back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="play" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></symbol>
+  <symbol id="chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.8c2 .7 3.2 2.4 3.5 5.2"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></symbol>
+  <symbol id="spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></symbol>
+  <symbol id="crown" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></symbol>
+  <symbol id="mask" viewBox="0 0 24 24"><path d="M3 6c3 1.2 6 1.2 9 0 3 1.2 6 1.2 9 0v5c0 5-4 8.5-9 9.5C7 19.5 3 16 3 11z"/><path d="M7 11.5c.8-.8 2.2-.8 3 0M14 11.5c.8-.8 2.2-.8 3 0M9.5 16c1.5 1 3.5 1 5 0"/></symbol>
+  <symbol id="eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="eyeoff" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0112 5c6.4 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.5 4.5-1.2"/><path d="M9.9 9.9a3 3 0 004.2 4.2"/></symbol>
+  <symbol id="finger" viewBox="0 0 24 24"><path d="M12 11v3.5c0 2.5-.7 4.5-2 6M8.5 9.5A3.5 3.5 0 0115.5 10v4c0 2.6-.4 4.6-1.2 6.2M5.5 15.5c.3-1.4.5-3 .5-5a6 6 0 0111.5-2.4M18 11v2.5c0 1.6-.1 3-.4 4.3M7.5 4.2A9 9 0 0120.5 8"/></symbol>
+  <symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.8 3.8 5.8 3.8 9s-1.2 6.2-3.8 9c-2.6-2.8-3.8-5.8-3.8-9S9.4 5.8 12 3z"/></symbol>
+  <symbol id="car" viewBox="0 0 24 24"><path d="M5 16V11l2-5h10l2 5v5M3 11h18v5H3z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+  <symbol id="home" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="bowl" viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 01-18 0zM8 7c0-1.5 1-2 1-3.5M12 7c0-1.5 1-2 1-3.5M16 7c0-1.5 1-2 1-3.5"/></symbol>
+  <symbol id="film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></symbol>
+  <symbol id="ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2 3-2 15 0 18M3.5 9c4 1.5 13 1.5 17 0M3.5 15c4-1.5 13-1.5 17 0"/></symbol>
+  <symbol id="paw" viewBox="0 0 24 24"><circle cx="7" cy="9" r="1.8"/><circle cx="11" cy="5.5" r="1.8"/><circle cx="15.5" cy="6.5" r="1.8"/><circle cx="18.5" cy="10.5" r="1.8"/><path d="M8 17c0-3 2-5.5 4.5-5.5S17 14 17 17c0 2-1.5 3-3 3-1 0-1.5-.6-2-.6s-1 .6-2 .6c-1.3 0-2-1.2-2-3z"/></symbol>
+  <symbol id="brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5h6v2M3 13h18"/></symbol>
+  <symbol id="lamp" viewBox="0 0 24 24"><path d="M12 3c3 3 3 6 0 8-3-2-3-5 0-8z"/><path d="M5 14h14l-2 6H7z"/></symbol>
+  <symbol id="pen" viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></symbol>
+  <symbol id="vol" viewBox="0 0 24 24"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M16 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/></symbol>
+  <symbol id="vib" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4 9v6M20 9v6"/></symbol>
+  <symbol id="bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15zM10 20.5h4"/></symbol>
+  <symbol id="msg" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></symbol>
+  <symbol id="star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/></symbol>
+  <symbol id="trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 01-10 0zM7 6H4v1.5A3 3 0 007 10.5M17 6h3v1.5a3 3 0 01-3 3M12 14v3M8 20h8M9.5 17h5v3h-5z"/></symbol>
+  <symbol id="refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/></symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .6-1.5 1.2-1.5 2.3M12 17h0"/></symbol>
+  <symbol id="wifi" viewBox="0 0 24 24"><path d="M2 9a15 15 0 0120 0M5.5 12.5a10 10 0 0113 0M9 16a5 5 0 016 0"/><circle cx="12" cy="19" r=".8"/></symbol>
+  <symbol id="batt" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="3"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor" stroke="none"/><path d="M22 10.5v3"/></symbol>
+  <symbol id="offline" viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 16a5 5 0 016.2-.6M5 12.5a10 10 0 014-2.2M2 9a15 15 0 014.2-2.8M12 4.9A15 15 0 0122 9M15.5 10.7a10 10 0 013 1.8"/></symbol>
+ </defs>
+</svg>
+
+<div class="wrap" id="root" data-palette="honey">
+ <header class="top">
+  <div class="brandline">
+   <span class="eyebrow">Impostr · Redesign concept · 16 screens</span>
+   <h1>Honey, cream <em>&amp;</em> liquid glass</h1>
+   <p class="lede">A calm, premium take on the party word game. Frosted glass panels float over warm honey light, with one bold accent and tighter corners. Switch palettes to compare the three colour directions.</p>
+  </div>
+  <div class="switch">
+   <span class="eyebrow">Colour direction</span>
+   <div class="swatches" role="group" aria-label="Colour direction">
+    <button class="sw" id="p-honey" data-p="honey" aria-pressed="true"><span class="chip-dots"><i style="background:#F4EFE4"></i><i style="background:#F2B705"></i><i style="background:#1B1813"></i></span>Honey &amp; Cream</button>
+    <button class="sw" id="p-stone" data-p="stone" aria-pressed="false"><span class="chip-dots"><i style="background:#ECEBE7"></i><i style="background:#D9A93A"></i><i style="background:#1D1D1B"></i></span>Champagne &amp; Stone</button>
+    <button class="sw" id="p-midnight" data-p="midnight" aria-pressed="false"><span class="chip-dots"><i style="background:#13110D"></i><i style="background:#F6C33A"></i><i style="background:#F6EFDF"></i></span>Midnight Gold</button>
+   </div>
+  </div>
+ </header>
+
+ <main class="grid" id="grid"></main>
+
+ <section class="notes">
+  <div class="note"><h3>Why honey, not green</h3><p>Warm yellow reads as celebration and value, and pairs with cream and ink for a quiet, expensive feel. Green made the old app look like a utility.</p></div>
+  <div class="note"><h3>Glass with a job</h3><p>Glass is reserved for floating layers: cards, sheets and the tab bar. Primary actions stay solid so the next step is always obvious.</p></div>
+  <div class="note"><h3>Less curve, more calm</h3><p>Corners drop from 28px to 14–20px. One accent per screen, ink for selected states, and rose only when the imposter is revealed.</p></div>
+  <div class="note"><h3>Fewer taps per round</h3><p>Setup is three clear steps with a progress bar. In-game screens hide everything except the one action the holder of the phone needs.</p></div>
+ </section>
+</div>
+
+<script>
+const I=(n,c='')=>`<svg class="i ${c}"><use href="#${n}"/></svg>`;
+const status=`<div class="island"></div><div class="status"><span class="mono" style="font-family:var(--f-body)">9:41</span><span class="sicons">${I('wifi')}${I('batt')}</span></div>`;
+const orbs=`<span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>`;
+const tabbar=(on)=>`<nav class="tabbar glass">${[['play','Play'],['chart','Stats'],['sliders','Settings']].map(([i,l])=>`<div class="tab ${l===on?'on':''}">${I(i)}<span>${l}</span></div>`).join('')}</nav>`;
+const nav=(step,title)=>`<div class="navrow"><button class="iconbtn glass" aria-label="Back">${I('back')}</button><div class="col" style="gap:6px;align-items:center"><span class="lab">${title}</span>${step?`<div class="steps">${[1,2,3].map(n=>`<i class="${n<=step?'on':''}"></i>`).join('')}</div>`:''}</div><span style="width:40px"></span></div>`;
+const cats=[['globe','General',150,0],['car','Vehicles',150,0],['home','Home',150,0],['bowl','Food &amp; Drinks',150,1],['film','Bollywood',150,1],['ball','Sports',150,1],['paw','Animals',150,1],['brief','Jobs',150,1],['lamp','Festivals',150,1]];
+
+const S=[];
+const add=(name,note,html)=>S.push({name,note,html});
+
+/* 1 Splash */
+add('Splash','Launch','<div class="body" style="align-items:center;justify-content:center;gap:22px;text-align:center">'+
+ '<div style="position:relative;width:112px;height:112px"><span style="position:absolute;inset:-14px;border-radius:38px;background:var(--gold);opacity:.4;filter:blur(18px);animation:pulse 2.6s ease-in-out infinite"></span>'+
+ '<div class="glass" style="width:112px;height:112px;border-radius:32px;display:grid;place-items:center;color:var(--ink)"><svg class="i" style="width:58px;height:58px;stroke-width:1.5"><use href="#mask"/></svg></div></div>'+
+ '<div class="col" style="gap:8px;align-items:center"><h2 class="h h-xl">Impostr</h2><p class="sub">One word. One liar. Find them.</p></div>'+
+ '<div style="width:120px" class="bar"><i style="animation:load 2.4s ease-out infinite alternate"></i></div>'+
+ '<span class="lab" style="position:absolute;bottom:36px">Gooseberry Media</span></div>');
+
+/* 2 Home */
+add('Home','Tab · Play','<div class="body" style="padding-bottom:96px">'+
+ '<div class="navrow"><div class="col" style="gap:2px"><span class="lab">Party word game</span><span class="h h-m">Impostr</span></div><button class="iconbtn glass" aria-label="How to play">'+I('help')+'</button></div>'+
+ '<div class="glass pad" style="padding:20px;border-radius:24px;display:flex;flex-direction:column;gap:16px;overflow:hidden">'+
+  '<div class="row" style="gap:6px"><span class="pill g">'+I('users','')+'3–12 players</span><span class="pill">'+I('offline')+'Offline</span></div>'+
+  '<h2 class="h" style="font-size:40px">Someone here<br>is <span class="gold">lying.</span></h2>'+
+  '<p class="sub">Everyone gets the secret word except one. Give clues, stay sneaky, then vote.</p>'+
+  '<button class="btn btn-gold">'+I('play')+'Play now</button></div>'+
+ '<div class="glass list-row" style="border-radius:18px"><div class="tile-ic ink">'+I('refresh')+'</div><div class="grow"><div class="t">Play again</div><div class="d">Bollywood · Medium · 5 players</div></div>'+I('chev')+'</div>'+
+ '<div class="navrow"><span class="lab">Categories</span><span class="lab gold">9 packs</span></div>'+
+ '<div class="row" style="gap:8px;overflow:hidden">'+cats.slice(0,4).map(c=>'<div class="glass" style="padding:10px 12px;border-radius:14px;display:flex;align-items:center;gap:8px;flex:none"><span style="color:var(--gold-deep)">'+I(c[0])+'</span><span style="font-weight:600;font-size:12.5px">'+c[1]+'</span></div>').join('')+'</div>'+
+ '</div>'+tabbar('Play'));
+
+/* 3 How to play */
+add('How to play','Sheet over Home','<div class="body"><div class="navrow"><div class="col" style="gap:2px"><span class="lab">Party word game</span><span class="h h-m">Impostr</span></div></div><div class="glass" style="height:250px;border-radius:24px"></div></div>'+
+ '<div class="dim"></div><div class="sheet glass">'+
+ '<div style="width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center"></div>'+
+ '<div class="navrow"><h2 class="h h-l">How to play</h2><button class="iconbtn" aria-label="Close">'+I('x')+'</button></div>'+
+ [['One word, one imposter','Everyone sees the same secret word except the imposter, who has to blend in.'],['Give one-word clues','Take turns. Say a clue about the word without saying the word itself.'],['Vote and reveal','Vote for the imposter. Crew wins by catching them. The imposter wins by surviving.']].map((s,i)=>'<div class="howstep"><span class="num">'+(i+1)+'</span><div class="col" style="gap:3px"><span class="h h-s">'+s[0]+'</span><p class="sub">'+s[1]+'</p></div></div>').join('')+
+ '<button class="btn btn-ink" style="margin-top:4px">Got it</button></div>');
+
+/* 4 Category */
+add('Choose category','Setup · Step 1','<div class="body">'+nav(1,'Step 1 of 3')+
+ '<div class="col" style="gap:4px"><h2 class="h h-l">Pick a category</h2><p class="sub">Words come from this pack.</p></div>'+
+ '<div class="catgrid">'+cats.map((c,i)=>'<div class="cat glass '+(i===0?'sel':'')+'">'+(c[3]?'<svg class="i lock"><use href="#lock"/></svg>':'')+'<span class="tile-ic">'+I(c[0])+'</span><span class="n">'+c[1]+'</span><span class="c">'+c[2]+' words</span></div>').join('')+'</div>'+
+ '<div class="col" style="gap:8px"><span class="lab">Difficulty</span><div class="seg glass"><button>Easy</button><button class="on">Medium</button><button>Chaos</button></div><p class="sub" style="font-size:12px">Standard words, no hints.</p></div>'+
+ '<div class="spacer"></div><button class="btn btn-gold">Continue'+I('arrow')+'</button></div>');
+
+/* 5 Game settings */
+add('Game settings','Setup · Step 2','<div class="body">'+nav(2,'Step 2 of 3')+
+ '<h2 class="h h-l">Game settings</h2>'+
+ '<div class="glass pad col" style="gap:10px"><span class="lab">Players</span><div class="stepper"><button class="iconbtn" aria-label="Fewer">'+I('minus')+'</button><span class="big-num mono" style="font-family:var(--f-display)">5</span><button class="iconbtn" aria-label="More">'+I('plus')+'</button></div><div class="row" style="justify-content:center;gap:5px">'+[1,2,3,4,5].map(()=>'<span class="av a1" style="width:22px;height:22px;border-radius:7px;font-size:0"></span>').join('')+'<span style="width:22px;height:22px;border-radius:7px;border:1.5px dashed var(--muted)"></span></div></div>'+
+ '<div class="glass pad col" style="gap:10px"><div class="navrow"><span class="lab">Timer per clue</span><span class="mono gold" style="font-size:12px;font-weight:700">60 sec</span></div><div class="chips"><span class="chip">Off</span><span class="chip">30s</span><span class="chip on">60s</span><span class="chip">90s</span><span class="chip">Custom</span></div></div>'+
+ '<div class="glass" style="border-radius:20px"><div class="list-row"><div class="grow"><div class="t">Clue rounds</div><div class="d">Turns before voting</div></div><div class="row" style="gap:6px"><button class="iconbtn" style="width:32px;height:32px" aria-label="Fewer">'+I('minus')+'</button><span class="mono" style="font-weight:700;font-size:16px;width:16px;text-align:center">2</span><button class="iconbtn" style="width:32px;height:32px" aria-label="More">'+I('plus')+'</button></div></div>'+
+ '<div class="list-row"><div class="grow"><div class="t">Team votes together</div><div class="d">One shared vote on this phone</div></div><button class="tog" aria-pressed="true" aria-label="Team votes together"></button></div></div>'+
+ '<div class="spacer"></div><button class="btn btn-gold">Add player names'+I('arrow')+'</button></div>');
+
+/* 6 Player names */
+const names=['Aarav','Meera','Kabir','Diya','Rohan'];
+add('Player names','Setup · Step 3','<div class="body">'+nav(3,'Step 3 of 3')+
+ '<div class="col" style="gap:4px"><h2 class="h h-l">Who’s playing?</h2><p class="sub">Names are saved for next time.</p></div>'+
+ '<div class="glass" style="border-radius:20px">'+names.map((n,i)=>'<div class="list-row" style="padding:9px 12px"><span class="av a'+(i+1)+'">'+n[0]+'</span><div class="grow" style="font-weight:600;display:flex;align-items:center;gap:2px">'+n+(i===4?'<span class="caret"></span>':'')+'</div><span class="mono" style="font-size:11px;color:var(--muted)">P'+(i+1)+'</span></div>').join('')+'</div>'+
+ '<div class="col" style="gap:8px"><span class="lab">Recent players</span><div class="chips"><span class="chip">'+I('plus')+'Ishaan</span><span class="chip">'+I('plus')+'Tara</span><span class="chip">'+I('plus')+'Vikram</span></div></div>'+
+ '<div class="spacer"></div><button class="btn btn-gold">'+I('play')+'Start game</button></div>');
+
+/* 7 Pass */
+add('Pass the phone','Reveal · hand-off','<div class="body" style="text-align:center">'+
+ '<div class="navrow"><button class="iconbtn glass" aria-label="Exit">'+I('x')+'</button><span class="lab">Player 2 of 5</span><span style="width:40px"></span></div>'+
+ '<div class="row" style="justify-content:center;gap:6px">'+names.map((n,i)=>'<span style="width:'+(i===1?22:8)+'px;height:8px;border-radius:4px;background:'+(i<1?'var(--ink)':i===1?'var(--gold)':'var(--line)')+'"></span>').join('')+'</div>'+
+ '<div class="col" style="gap:6px;margin-top:18px;align-items:center"><span class="lab">Pass the phone to</span><h2 class="h" style="font-size:54px">Meera</h2><p class="sub">Make sure nobody else can see the screen.</p></div>'+
+ '<div class="reveal-card glass" style="margin-top:6px"><div style="position:relative;width:96px;height:96px;display:grid;place-items:center"><span style="position:absolute;inset:0;border-radius:30px;background:var(--gold);opacity:.35;animation:pulse 2.2s ease-in-out infinite"></span><span class="tile-ic ink" style="width:76px;height:76px;border-radius:24px"><svg class="i" style="width:38px;height:38px"><use href="#finger"/></svg></span></div><span class="h h-s">Press and hold to see your word</span><span class="sub" style="font-size:12px">Let go to hide it again</span></div>'+
+ '</div>');
+
+/* 8 Word reveal */
+add('Word reveal','Crew view','<div class="body" style="text-align:center">'+
+ '<div class="navrow"><span style="width:40px"></span><span class="lab">Meera · Player 2</span><span style="width:40px"></span></div>'+
+ '<div class="reveal-card glass">'+
+  '<span class="pill g">'+I('bowl')+'Food &amp; Drinks · Medium</span>'+
+  '<span class="lab" style="margin-top:14px">Your secret word</span><span class="word">Mango</span>'+
+  '<p class="sub" style="max-width:24ch">Give clues that prove you know it, without giving it away.</p>'+
+  '<div class="col" style="width:150px;gap:6px;margin-top:16px"><div class="bar"><i style="width:62%"></i></div><span class="mono" style="font-size:11px;color:var(--muted)">Hides in 2s</span></div>'+
+ '</div>'+
+ '<button class="btn btn-ink">'+I('eyeoff')+'Hide and pass</button></div>');
+
+/* 9 Imposter */
+add('Imposter reveal','Imposter view','<div class="body" style="text-align:center">'+
+ '<div class="navrow"><span style="width:40px"></span><span class="lab">Kabir · Player 3</span><span style="width:40px"></span></div>'+
+ '<div class="reveal-card glass" style="background:linear-gradient(180deg,var(--rose-soft),var(--glass))">'+
+  '<span class="tile-ic" style="width:72px;height:72px;border-radius:22px;background:var(--rose);color:#fff"><svg class="i" style="width:38px;height:38px"><use href="#mask"/></svg></span>'+
+  '<span class="lab" style="color:var(--rose);margin-top:8px">You are the</span><span class="word" style="color:var(--rose)">Imposter</span>'+
+  '<p class="sub" style="max-width:24ch">You don’t know the word. Listen closely and blend in.</p>'+
+  '<span class="pill" style="margin-top:6px">Category hint · Food &amp; Drinks</span>'+
+ '</div>'+
+ '<button class="btn btn-ink">'+I('eyeoff')+'Hide and pass</button></div>');
+
+/* 10 Clue round */
+const C=2*Math.PI*84;
+add('Clue round','Timer running','<div class="body">'+
+ '<div class="navrow"><button class="iconbtn glass" aria-label="Pause">'+I('x')+'</button><div class="col" style="gap:4px;align-items:center"><span class="lab">Clue round 1 of 2</span></div><span class="pill g">'+I('bowl')+'Food</span></div>'+
+ '<div class="ring"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="84" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="95" cy="95" r="84" fill="none" stroke="var(--gold)" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*.6)+'"/></svg><div class="ctr"><span class="mono" style="font-size:42px;font-weight:700;letter-spacing:-.04em">0:24</span><span class="lab">of 60s</span></div></div>'+
+ '<div class="glass list-row" style="border-radius:18px;padding:14px"><span class="av a2" style="width:44px;height:44px;border-radius:14px;font-size:18px">M</span><div class="grow"><div class="lab">Now giving a clue</div><div class="h h-m">Meera</div></div><span class="mono" style="font-size:12px;color:var(--muted)">2/5</span></div>'+
+ '<div class="row" style="gap:6px;justify-content:center">'+names.map((n,i)=>'<span class="av a'+(i+1)+'" style="width:30px;height:30px;font-size:11px;'+(i>1?'opacity:.35':'')+';'+(i===1?'outline:2px solid var(--gold);outline-offset:2px':'')+'">'+(i===0?'<svg class="i" style="width:14px;height:14px"><use href="#check"/></svg>':n[0])+'</span>').join('')+'</div>'+
+ '<div class="glass pad col" style="gap:6px;padding:12px 14px"><span class="lab">Rules</span><span class="sub" style="font-size:12.5px">One word only. Don’t say the word itself.</span></div>'+
+ '<div class="spacer"></div><div class="row" style="gap:8px"><button class="btn btn-glass" style="flex:1">Skip to vote</button><button class="btn btn-gold" style="flex:1.4">Next player'+I('arrow')+'</button></div></div>');
+
+/* 11 Vote */
+const votes=[1,0,3,0,1];
+add('Vote','Who is it?','<div class="body">'+
+ '<div class="navrow"><span style="width:40px"></span><span class="lab">Voting · 5 of 5 in</span><span style="width:40px"></span></div>'+
+ '<div class="col" style="gap:4px"><h2 class="h h-l">Who is the imposter?</h2><p class="sub">Tap a player. Change your mind any time before reveal.</p></div>'+
+ '<div class="vote-grid">'+names.map((n,i)=>'<div class="vcard glass '+(i===2?'sel':'')+'"><span class="av a'+(i+1)+'">'+n[0]+'</span><span style="font-weight:600">'+n+'</span><span class="cnt">'+votes[i]+'</span></div>').join('')+'<div class="vcard" style="border:1.5px dashed var(--line);justify-content:center;color:var(--muted);font-weight:600;font-size:12.5px">Skip vote</div></div>'+
+ '<div class="glass pad col" style="gap:10px"><div class="navrow"><span class="lab">Vote tally</span><span class="mono gold" style="font-size:12px;font-weight:700">Kabir leads</span></div>'+
+ [['Kabir',60],['Aarav',20],['Rohan',20]].map(v=>'<div class="col" style="gap:5px"><div class="navrow" style="font-size:12.5px;font-weight:600"><span>'+v[0]+'</span><span class="mono" style="color:var(--muted)">'+v[1]+'%</span></div><div class="bar"><i style="width:'+v[1]+'%"></i></div></div>').join('')+'</div>'+
+ '<div class="spacer"></div><button class="btn btn-gold">'+I('eye')+'Reveal imposter</button></div>');
+
+/* 12 Result */
+add('Result','Crew wins','<div class="body" style="text-align:center">'+
+ '<div class="col" style="gap:6px;align-items:center;margin-top:8px"><span class="pill g">'+I('trophy')+'Crew wins</span><h2 class="h h-xl" style="margin-top:6px">Caught them.</h2></div>'+
+ '<div class="glass" style="border-radius:26px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:10px">'+
+  '<span class="lab">The imposter was</span>'+
+  '<div style="position:relative"><span class="av a3" style="width:82px;height:82px;border-radius:26px;font-size:34px">K</span><span class="tile-ic" style="position:absolute;right:-8px;bottom:-8px;width:32px;height:32px;border-radius:10px;background:var(--rose);color:#fff;border:3px solid var(--bg)"><svg class="i" style="width:16px;height:16px"><use href="#mask"/></svg></span></div>'+
+  '<span class="h h-l">Kabir</span><span class="sub">3 of 5 votes</span></div>'+
+ '<div class="glass list-row" style="border-radius:18px"><div class="grow" style="text-align:left"><div class="lab">The word was</div><div class="h h-m">Mango</div></div><span class="pill">Food · Medium</span></div>'+
+ '<div class="spacer"></div><button class="btn btn-gold">'+I('refresh')+'Play again</button><button class="btn btn-text">Change category</button></div>');
+
+/* 13 Stats */
+add('Stats','Tab · Stats','<div class="body" style="padding-bottom:96px">'+
+ '<div class="navrow"><div class="col" style="gap:2px"><span class="lab">Your stats</span><span class="h h-l">Performance</span></div></div>'+
+ '<div class="glass" style="border-radius:22px;padding:16px;display:flex;align-items:center;gap:16px"><div style="position:relative;width:92px;height:92px;flex:none"><svg viewBox="0 0 92 92" style="transform:rotate(-90deg);width:92px;height:92px"><circle cx="46" cy="46" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="46" cy="46" r="38" fill="none" stroke="var(--gold)" stroke-width="9" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="86"/></svg><span class="mono" style="position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:20px">64%</span></div><div class="col" style="gap:4px"><span class="lab">Win rate</span><span class="h h-m">Sharp detective</span><span class="sub" style="font-size:12.5px">Up 8% over your last 10 games</span></div></div>'+
+ '<div class="statgrid">'+[['Games played','42','users'],['Crew wins','27','check'],['As imposter','9','mask'],['Imposter wins','5','trophy']].map(s=>'<div class="stat glass"><span style="color:var(--gold-deep)">'+I(s[2])+'</span><span class="v mono" style="font-family:var(--f-display)">'+s[1]+'</span><span class="lab">'+s[0]+'</span></div>').join('')+'</div>'+
+ '<div class="glass list-row" style="border-radius:18px"><span class="tile-ic">'+I('film')+'</span><div class="grow"><div class="lab">Best category</div><div class="t">Bollywood · 71% wins</div></div></div>'+
+ '</div>'+tabbar('Stats'));
+
+/* 14 Settings */
+const tg=(t,d,i,on)=>'<div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">'+I(i)+'</span><div class="grow"><div class="t">'+t+'</div><div class="d">'+d+'</div></div><button class="tog" aria-pressed="'+on+'" aria-label="'+t+'"></button></div>';
+add('Settings','Tab · Settings','<div class="body" style="padding-bottom:96px;gap:12px">'+
+ '<span class="h h-l">Settings</span>'+
+ '<div style="border-radius:20px;padding:16px;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);box-shadow:0 16px 30px -18px rgba(var(--shadow),.7)"><span class="tile-ic" style="background:var(--gold);color:var(--on-gold)">'+I('crown')+'</span><div style="flex:1"><div style="font-weight:700">Go Premium</div><div style="font-size:12px;opacity:.65">All 9 categories, custom words</div></div><span style="color:var(--gold)">'+I('chev')+'</span></div>'+
+ '<span class="lab">Gameplay</span><div class="glass" style="border-radius:18px">'+tg('Round timer','Show countdown in clue round','clock',true)+'</div>'+
+ '<span class="lab">Sound &amp; feel</span><div class="glass" style="border-radius:18px">'+tg('Sound effects','Blip on reveal, fanfare at the end','vol',true)+tg('Timer sounds','Tick in the last 10 seconds','bell',false)+tg('Haptics','Buzz when the imposter is revealed','vib',true)+'</div>'+
+ '<div class="glass" style="border-radius:18px"><div class="list-row"><span class="tile-ic" style="width:34px;height:34px;border-radius:10px">'+I('msg')+'</span><div class="grow t">Suggest a category</div>'+I('chev')+'</div></div>'+
+ '</div>'+tabbar('Settings'));
+
+/* 15 Premium */
+add('Premium','Paywall','<div class="body" style="gap:12px">'+
+ '<div class="navrow"><button class="iconbtn glass" aria-label="Close">'+I('x')+'</button><button class="btn-text" style="background:none;border:0;font:600 13px var(--f-body);color:var(--ink2)">Restore</button></div>'+
+ '<div class="col" style="gap:8px"><span class="tile-ic ink" style="width:52px;height:52px;border-radius:16px">'+I('crown')+'</span><h2 class="h h-l">Impostr <span class="gold">Pro</span></h2><p class="sub">Every pack, every mode. Pay once or subscribe.</p></div>'+
+ '<div class="glass" style="border-radius:18px;padding:6px 0">'+[['All 9 categories','Food, Bollywood, Sports and more'],['Custom word packs','Add your own inside jokes'],['Chaos difficulty','Trickier words for veterans']].map(b=>'<div class="list-row" style="padding:9px 14px"><span style="color:var(--gold-deep)">'+I('check')+'</span><div class="grow"><div class="t" style="font-size:13.5px">'+b[0]+'</div><div class="d">'+b[1]+'</div></div></div>').join('')+'</div>'+
+ '<div class="col" style="gap:10px;margin-top:4px">'+
+  '<div class="plan glass"><span class="radio"></span><div style="flex:1"><div class="t" style="font-weight:700">Monthly</div><div class="d" style="font-size:12px;color:var(--muted)">Billed every month</div></div><span class="mono" style="font-weight:700">₹49</span></div>'+
+  '<div class="plan glass sel"><span class="tag">SAVE 66%</span><span class="radio"></span><div style="flex:1"><div style="font-weight:700">Yearly</div><div style="font-size:12px;color:var(--ink2)">₹16.6 a month</div></div><span class="mono" style="font-weight:700">₹199</span></div>'+
+  '<div class="plan glass"><span class="radio"></span><div style="flex:1"><div style="font-weight:700">Lifetime</div><div style="font-size:12px;color:var(--muted)">Pay once, play forever</div></div><span class="mono" style="font-weight:700">₹599</span></div>'+
+ '</div><div class="spacer"></div><button class="btn btn-gold">Continue with Yearly</button><span style="text-align:center;font-size:11px;color:var(--muted)">Cancel any time in Play Store</span></div>');
+
+/* 16 Suggest */
+add('Suggest a category','From Settings','<div class="body">'+
+ '<div class="navrow"><button class="iconbtn glass" aria-label="Back">'+I('back')+'</button><span class="lab">Feedback</span><span style="width:40px"></span></div>'+
+ '<div class="col" style="gap:4px"><h2 class="h h-l">Suggest a category</h2><p class="sub">The best ideas become new packs.</p></div>'+
+ '<div class="field"><label class="lab" for="cn">Category name</label><div class="input glass" id="cn"><span>Cricket legends</span><span class="caret"></span></div></div>'+
+ '<div class="field"><label class="lab" for="why">Why would it be fun? (optional)</label><div class="input glass ta" id="why">Everyone in our group argues about who the GOAT is…</div></div>'+
+ '<div class="col" style="gap:8px"><span class="lab">Popular ideas</span><div class="chips"><span class="chip">Street food</span><span class="chip">90s cartoons</span><span class="chip">Indian cities</span><span class="chip">Board games</span></div></div>'+
+ '<div class="spacer"></div><button class="btn btn-ink">'+I('arrow')+'Send suggestion</button></div>');
+
+document.getElementById('grid').innerHTML=S.map((s,i)=>`<figure><figcaption><b>${String(i+1).padStart(2,'0')}</b><span>${s.name}</span><small>${s.note}</small></figcaption><div class="phone"><div class="scr">${orbs}${status}${s.html}</div></div></figure>`).join('');
+
+const root=document.getElementById('root');
+const setP=p=>{root.dataset.palette=p;document.documentElement.dataset.palette=p;document.querySelectorAll('.sw').forEach(b=>b.setAttribute('aria-pressed',b.dataset.p===p));try{localStorage.setItem('impostr-pal',p)}catch(e){}};
+document.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>setP(b.dataset.p)));
+try{const p=localStorage.getItem('impostr-pal');if(p)setP(p)}catch(e){}
+document.addEventListener('click',e=>{const t=e.target.closest('.tog');if(t)t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')!=='true')});
+</script>
