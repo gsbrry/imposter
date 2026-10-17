@@ -142,7 +142,11 @@ export default function ResultScreen() {
                   </View>
                 </View>
                 <AppText style={styles.imposterName} numberOfLines={1}>{imposter?.name}</AppText>
-                {!skippedVote && votesFor && totalVotes && (
+                {/* The count is the votes against whoever was voted out, so
+                    it only belongs under the imposter when the imposter is
+                    who the table picked. Otherwise the line below says who
+                    they actually voted out. */}
+                {caughtImposter && votesFor && totalVotes && (
                   <AppText style={styles.sub}>{votesFor} of {totalVotes} votes</AppText>
                 )}
               </GlassCard>
