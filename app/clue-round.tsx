@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, Platform, useWindowDimensions,
+  View, StyleSheet, Animated, Platform, useWindowDimensions,
+  BackHandler, AppState,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
-  ArrowRight, Check, Pause,
+  ArrowRight, Check, Pause, Play, RefreshCw, Eye, ChevronRight,
   Brain, Car, House, UtensilsCrossed, Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
 } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
@@ -15,10 +17,10 @@ import Avatar from '../components/Avatar';
 import TimerRing from '../components/TimerRing';
 import PrimaryButton from '../components/PrimaryButton';
 import GlassButton from '../components/GlassButton';
-import InkButton from '../components/InkButton';
-import TextButton from '../components/TextButton';
 import IconButton from '../components/IconButton';
 import BottomSheet from '../components/BottomSheet';
+import ConfirmDialog from '../components/ConfirmDialog';
+import ListRow, { listRowStyles } from '../components/ListRow';
 import Pill from '../components/Pill';
 import { useGame } from '../context/GameContext';
 import { useRequireGame } from '../hooks/useRequireGame';
@@ -113,6 +115,7 @@ export default function ClueRoundScreen() {
   const [timerSoundEnabled, setTimerSoundEnabled] = useState(true);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [confirmExit, setConfirmExit] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(16)).current;
@@ -145,6 +148,27 @@ export default function ClueRoundScreen() {
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
   }, [entryAnim, entryY]);
+
+  // Android back during a round opens the pause sheet instead of leaving.
+  // BottomSheet and ConfirmDialog register their own handlers while open,
+  // and the last one registered wins, so this only fires when neither is up.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setPaused(true);
+      return true;
+    });
+    return () => sub.remove();
+  }, []);
+
+  // Sending the app to the background pauses the game, so the timer is not
+  // still running when the phone comes back out of a pocket.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', state => {
+      if (state !== 'active') setPaused(true);
+    });
+    return () => sub.remove();
+  }, []);
 
   // Reset fired ticks when player changes
   useEffect(() => {
@@ -204,6 +228,19 @@ export default function ClueRoundScreen() {
     setProgress(oneMoreRound(progress));
   };
 
+  /**
+   * Back to the first clue of round 1 with the same word and the same
+   * imposter. Only the position in the clue rounds resets, so the game
+   * state the reveal set up is untouched.
+   */
+  const restartRound = () => {
+    clearInterval(timerRef.current);
+    setProgress(startProgress(progress.totalRounds));
+    setTimeLeft(maxTime);
+    firedAt.current = new Set();
+    setPaused(false);
+  };
+
   const goToVote = () => {
     clearInterval(timerRef.current);
     router.push('/vote');
@@ -214,8 +251,13 @@ export default function ClueRoundScreen() {
     router.push('/result');
   };
 
+  /**
+   * Leaving mid-game. Stats are only ever written on the result screen, so
+   * a game abandoned here never counts towards games played or wins.
+   */
   const exitGame = () => {
     clearInterval(timerRef.current);
+    setConfirmExit(false);
     setPaused(false);
     resetGame();
     router.replace('/(tabs)');
@@ -258,7 +300,7 @@ export default function ClueRoundScreen() {
             <IconButton onPress={() => setPaused(true)} accessibilityLabel="Pause game">
               <Pause size={20} color={COLORS.ink} />
             </IconButton>
-            <Text style={styles.label}>CLUE ROUND {progress.round} OF {progress.totalRounds}</Text>
+            <AppText style={styles.label}>CLUE ROUND {progress.round} OF {progress.totalRounds}</AppText>
             <Pill
               tone="honey"
               label={category?.label ?? 'General'}
@@ -270,15 +312,15 @@ export default function ClueRoundScreen() {
           <View style={styles.ringWrap}>
             <TimerRing size={ringSize} progress={timerProgress} strokeWidth={10}>
               <View style={styles.ringCentre}>
-                <Text
+                <AppText
                   style={[styles.clock, timeCritical && styles.clockCritical]}
                   maxFontSizeMultiplier={1.3}
                 >
                   {clock}
-                </Text>
-                <Text style={styles.label}>
-                  {timerEnabled ? `OF ${maxTime}S` : 'NO TIMER'}
-                </Text>
+                </AppText>
+                <AppText style={styles.label}>
+                  {paused ? 'PAUSED' : timerEnabled ? `OF ${maxTime}S` : 'NO TIMER'}
+                </AppText>
               </View>
             </TimerRing>
           </View>
@@ -287,12 +329,12 @@ export default function ClueRoundScreen() {
           <GlassCard style={styles.nowCard}>
             <Avatar name={player.name} index={seat} size={44} />
             <View style={styles.nowText}>
-              <Text style={styles.label}>NOW GIVING A CLUE</Text>
-              <Text style={styles.nowName} numberOfLines={1}>{player.name}</Text>
+              <AppText style={styles.label}>NOW GIVING A CLUE</AppText>
+              <AppText style={styles.nowName} numberOfLines={1}>{player.name}</AppText>
             </View>
-            <Text style={styles.nowCount}>
+            <AppText style={styles.nowCount}>
               {currentIndex + 1} of {order.length}
-            </Text>
+            </AppText>
           </GlassCard>
 
           {/* Turn order */}
@@ -319,8 +361,8 @@ export default function ClueRoundScreen() {
 
           {/* Rules */}
           <GlassCard style={styles.rules}>
-            <Text style={styles.label}>RULES</Text>
-            <Text style={styles.rulesText}>One word only. Do not say the word itself.</Text>
+            <AppText style={styles.label}>RULES</AppText>
+            <AppText style={styles.rulesText}>One word only. Do not say the word itself.</AppText>
           </GlassCard>
 
           <View style={styles.spacer} />
@@ -346,17 +388,59 @@ export default function ClueRoundScreen() {
         </Animated.View>
       </SafeAreaView>
 
-      {/* Pause sheet. The countdown and its ticks stop while this is open. */}
+      {/* Pause sheet. The countdown and its ticks stop while this is open,
+          and the secret word is never on screen behind it. */}
       <BottomSheet visible={paused} onClose={() => setPaused(false)}>
-        <Text style={styles.sheetTitle}>Paused</Text>
-        <Text style={styles.sheetSub}>The timer is stopped. Nobody can see the word from here.</Text>
-        <InkButton label="Resume" onPress={() => setPaused(false)} />
-        <GlassButton
-          label="Skip to the reveal"
-          onPress={() => { setPaused(false); revealImposter(); }}
+        <View style={styles.sheetHead}>
+          <AppText style={styles.sheetTitle} maxFontSizeMultiplier={1.4}>Game paused</AppText>
+          <AppText style={styles.sheetSub}>
+            The timer has stopped. Nobody can see the word.
+          </AppText>
+        </View>
+
+        <PrimaryButton
+          label="Resume"
+          onPress={() => setPaused(false)}
+          icon={<Play size={18} color={COLORS.onHoney} />}
         />
-        <TextButton label="Exit game" onPress={exitGame} />
+
+        <GlassCard style={styles.sheetList}>
+          <ListRow
+            icon={<RefreshCw size={17} color={COLORS.honeyText} />}
+            title="Restart round"
+            description="Same word, clues start again"
+            trailing={<ChevronRight size={18} color={COLORS.textMuted} />}
+            onPress={restartRound}
+          />
+          <View style={listRowStyles.divider} />
+          <ListRow
+            icon={<Eye size={17} color={COLORS.honeyText} />}
+            title="End and reveal"
+            description="Show the imposter and the word"
+            trailing={<ChevronRight size={18} color={COLORS.textMuted} />}
+            onPress={() => { setPaused(false); revealImposter(); }}
+          />
+          <View style={listRowStyles.divider} />
+          <ListRow
+            icon={<House size={17} color={COLORS.honeyText} />}
+            title="Exit to home"
+            description="This game will not count in stats"
+            trailing={<ChevronRight size={18} color={COLORS.textMuted} />}
+            onPress={() => setConfirmExit(true)}
+          />
+        </GlassCard>
       </BottomSheet>
+
+      <ConfirmDialog
+        visible={confirmExit}
+        icon={<House size={20} color={COLORS.honey} />}
+        title="Leave this game?"
+        message="Players will lose this round. The word is not shown."
+        cancelLabel="Keep playing"
+        confirmLabel="Leave"
+        onCancel={() => setConfirmExit(false)}
+        onConfirm={exitGame}
+      />
     </View>
   );
 }
@@ -459,6 +543,8 @@ const styles = StyleSheet.create({
   actionMore: { flex: 1.25 },
   actionVote: { flex: 1 },
 
+  sheetHead: { gap: 4 },
+  sheetList: { borderRadius: 18 },
   sheetTitle: {
     fontFamily: FONTS.displayBold,
     fontSize: 26,
@@ -470,6 +556,5 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     lineHeight: 19.6,
     color: COLORS.textBody,
-    marginTop: -6,
   },
 });
