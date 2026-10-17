@@ -33,8 +33,8 @@ export default function SplashScreen() {
       ).start();
       Animated.loop(
         Animated.sequence([
-          Animated.timing(load, { toValue: 1, duration: 2400, easing: Easing.out(Easing.ease), useNativeDriver: false }),
-          Animated.timing(load, { toValue: 0, duration: 2400, easing: Easing.out(Easing.ease), useNativeDriver: false }),
+          Animated.timing(load, { toValue: 1, duration: 2400, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+          Animated.timing(load, { toValue: 0, duration: 2400, easing: Easing.out(Easing.ease), useNativeDriver: true }),
         ])
       ).start();
     };
@@ -54,9 +54,11 @@ export default function SplashScreen() {
   const glowOpacity = prefersReduced
     ? 0
     : pulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.18] });
-  const barWidth = prefersReduced
-    ? ('40%' as const)
-    : load.interpolate({ inputRange: [0, 1], outputRange: ['8%', '78%'] });
+  // scaleX of a full-width bar, so the loader runs on the UI thread during
+  // startup, when the JS thread is busiest.
+  const barScale = prefersReduced
+    ? 0.4
+    : load.interpolate({ inputRange: [0, 1], outputRange: [0.08, 0.78] });
 
   return (
     <View style={styles.container}>
@@ -76,7 +78,7 @@ export default function SplashScreen() {
         </View>
 
         <View style={styles.barTrack}>
-          <Animated.View style={[styles.barFill, { width: barWidth }]} />
+          <Animated.View style={[styles.barFill, { transform: [{ scaleX: barScale }] }]} />
         </View>
       </View>
 
@@ -140,9 +142,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.divider,
   },
   barFill: {
+    width: '100%',
     height: '100%',
     borderRadius: 3,
     backgroundColor: COLORS.honey,
+    transformOrigin: 'left',
   },
   credit: {
     position: 'absolute',

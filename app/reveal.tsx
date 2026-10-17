@@ -162,7 +162,7 @@ export default function RevealScreen() {
       toValue: 0,
       duration: PEEK_MS,
       easing: Easing.linear,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start();
 
     clearTimeout(peekTimer.current);
@@ -292,16 +292,10 @@ export default function RevealScreen() {
                 footer={
                   <View style={styles.peekWrap}>
                     <View style={styles.peekBar}>
+                      {/* scaleX anchored left, not width, so the countdown
+                          runs on the UI thread rather than the JS thread. */}
                       <Animated.View
-                        style={[
-                          styles.peekFill,
-                          {
-                            width: peekAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: ['0%', '100%'],
-                            }),
-                          },
-                        ]}
+                        style={[styles.peekFill, { transform: [{ scaleX: peekAnim }] }]}
                       />
                     </View>
                     <AppText style={styles.peekText}>Let go to hide it</AppText>
@@ -483,9 +477,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.divider,
   },
   peekFill: {
+    width: '100%',
     height: '100%',
     borderRadius: 3,
     backgroundColor: COLORS.honey,
+    // scaleX shrinks towards this origin, matching the old width animation.
+    transformOrigin: 'left',
   },
   peekText: {
     fontFamily: FONTS.bodyRegular,
