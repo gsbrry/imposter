@@ -27,7 +27,7 @@ import ScreenBackground from '../components/ScreenBackground';
 import { useContentSize } from '../components/ContentSize';
 import GlassCard from '../components/GlassCard';
 import Avatar from '../components/Avatar';
-import TimerRing from '../components/TimerRing';
+import ClueTimer from '../components/ClueTimer';
 import PrimaryButton from '../components/PrimaryButton';
 import GlassButton from '../components/GlassButton';
 import IconButton from '../components/IconButton';
@@ -56,62 +56,6 @@ const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
   party: PartyPopper,
 };
 
-// ---------------------------------------------------------------------------
-// Web Audio sound helpers (no external files needed)
-// ---------------------------------------------------------------------------
-function playTick(volume = 0.6) {
-  if (Platform.OS !== 'web') return;
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    gain.gain.setValueAtTime(volume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.08);
-    osc.onended = () => ctx.close();
-  } catch { /* silently ignore */ }
-}
-
-function playTimeUp(volume = 0.8) {
-  if (Platform.OS !== 'web') return;
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const play = (freq: number, startAt: number, dur: number) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + startAt);
-      gain.gain.setValueAtTime(volume, ctx.currentTime + startAt);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startAt + dur);
-      osc.start(ctx.currentTime + startAt);
-      osc.stop(ctx.currentTime + startAt + dur);
-    };
-    play(1200, 0, 0.06);
-    play(800, 0.08, 0.06);
-    setTimeout(() => ctx.close(), 300);
-  } catch { /* silently ignore */ }
-}
-
-async function triggerHaptic(style: 'light' | 'heavy') {
-  if (Platform.OS === 'web') return;
-  try {
-    const Haptics = await import('expo-haptics');
-    if (style === 'heavy') {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    } else {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  } catch { /* silently ignore */ }
-}
-
-
 export default function ClueRoundScreen() {
   const router = useRouter();
   const { game, resetGame } = useGame();
@@ -123,17 +67,12 @@ export default function ClueRoundScreen() {
   const currentIndex = progress.index;
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [maxTime, setMaxTime] = useState(30);
-  const [timeLeft, setTimeLeft] = useState(30);
   const [teamVote, setTeamVote] = useState(false);
   const [timerSoundEnabled, setTimerSoundEnabled] = useState(true);
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [paused, setPaused] = useState(false);
   const [confirmExit, setConfirmExit] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(16)).current;
-  // Track which countdown ticks we've already fired
-  const firedAt = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     Promise.all([
@@ -150,11 +89,9 @@ export default function ClueRoundScreen() {
       }
       setTimerEnabled(!noTimer);
       setMaxTime(seconds);
-      setTimeLeft(seconds);
       setTeamVote(tv);
       setProgress(startProgress(gs.turnsBeforeGuess ?? defaultGameSettings.turnsBeforeGuess));
       setTimerSoundEnabled(ts);
-      setSettingsLoaded(true);
     });
     Animated.parallel([
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
@@ -183,51 +120,7 @@ export default function ClueRoundScreen() {
     return () => sub.remove();
   }, []);
 
-  // Reset fired ticks when player changes
-  useEffect(() => {
-    firedAt.current = new Set();
-  }, [currentIndex]);
-
-  useEffect(() => {
-    if (!settingsLoaded) return;
-    clearInterval(timerRef.current);
-    if (!timerEnabled) return;
-    // Pausing stops the countdown, and with it the tick sounds.
-    if (paused) return;
-    timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) { clearInterval(timerRef.current); return 0; }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timerRef.current);
-  }, [timerEnabled, maxTime, currentIndex, settingsLoaded, paused]);
-
-  // Restart the clock for each new player
-  useEffect(() => {
-    if (!settingsLoaded || !timerEnabled) return;
-    firedAt.current = new Set();
-    setTimeLeft(maxTime);
-  }, [currentIndex, settingsLoaded, timerEnabled, maxTime]);
-
-  // Countdown sound + haptic effects
-  useEffect(() => {
-    if (!timerEnabled || paused) return;
-    if (timeLeft <= 3 && timeLeft > 0 && !firedAt.current.has(timeLeft)) {
-      firedAt.current.add(timeLeft);
-      if (timerSoundEnabled) playTick();
-      triggerHaptic('light');
-    }
-    if (timeLeft === 0 && !firedAt.current.has(0)) {
-      firedAt.current.add(0);
-      if (timerSoundEnabled) playTimeUp();
-      triggerHaptic('heavy');
-    }
-  }, [timeLeft, timerEnabled, timerSoundEnabled, paused]);
-
   const goToNext = () => {
-    clearInterval(timerRef.current);
-    setTimeLeft(maxTime);
     // Same order every round, so everyone gives one clue per round.
     const next = nextTurn(progress, order.length);
     if (next) setProgress(next);
@@ -236,8 +129,6 @@ export default function ClueRoundScreen() {
 
   /** One more full pass in the same order, as many times as the table likes. */
   const addRound = () => {
-    clearInterval(timerRef.current);
-    setTimeLeft(maxTime);
     setProgress(oneMoreRound(progress));
   };
 
@@ -247,20 +138,15 @@ export default function ClueRoundScreen() {
    * state the reveal set up is untouched.
    */
   const restartRound = () => {
-    clearInterval(timerRef.current);
     setProgress(startProgress(progress.totalRounds));
-    setTimeLeft(maxTime);
-    firedAt.current = new Set();
     setPaused(false);
   };
 
   const goToVote = () => {
-    clearInterval(timerRef.current);
     router.push('/vote');
   };
 
   const revealImposter = () => {
-    clearInterval(timerRef.current);
     router.push('/result');
   };
 
@@ -269,7 +155,6 @@ export default function ClueRoundScreen() {
    * a game abandoned here never counts towards games played or wins.
    */
   const exitGame = () => {
-    clearInterval(timerRef.current);
     setConfirmExit(false);
     setPaused(false);
     resetGame();
@@ -280,9 +165,7 @@ export default function ClueRoundScreen() {
   const order = clueOrder(game.players, game.starterId);
   const player = order[currentIndex];
   const seat = player ? game.players.findIndex(p => p.id === player.id) : 0;
-  const timerProgress = timerEnabled ? timeLeft / maxTime : 1;
   const isLast = isFinalTurn(progress, order.length);
-  const timeCritical = timerEnabled && timeLeft <= 10 && timeLeft > 0;
 
   const handlePrimary = () => {
     if (teamVote && isLast) revealImposter();
@@ -294,9 +177,6 @@ export default function ClueRoundScreen() {
   const category = CATEGORIES.find(c => c.id === game.category);
   const CategoryIconCmp = category ? CATEGORY_ICONS[category.icon] : Brain;
   const ringSize = Math.min(190, width * 0.56);
-  const mins = Math.floor(timeLeft / 60);
-  const secs = timeLeft % 60;
-  const clock = timerEnabled ? `${mins}:${String(secs).padStart(2, '0')}` : '--';
   const primaryLabel = teamVote && isLast
     ? 'Reveal imposter'
     : isLast ? 'Go to vote' : 'Next player';
@@ -321,22 +201,16 @@ export default function ClueRoundScreen() {
             />
           </View>
 
-          {/* Timer ring */}
-          <View style={styles.ringWrap}>
-            <TimerRing size={ringSize} progress={timerProgress} strokeWidth={10}>
-              <View style={styles.ringCentre}>
-                <AppText
-                  style={[styles.clock, timeCritical && styles.clockCritical]}
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {clock}
-                </AppText>
-                <AppText style={styles.label}>
-                  {paused ? 'PAUSED' : timerEnabled ? `OF ${maxTime}S` : 'NO TIMER'}
-                </AppText>
-              </View>
-            </TimerRing>
-          </View>
+          {/* Owns the ticking second, so the rest of this screen does not
+              re-render once a second. The key restarts it each turn. */}
+          <ClueTimer
+            key={`${progress.round}-${progress.index}`}
+            size={ringSize}
+            enabled={timerEnabled}
+            maxTime={maxTime}
+            paused={paused}
+            soundEnabled={timerSoundEnabled}
+          />
 
           {/* Who is speaking */}
           <GlassCard style={styles.nowCard}>
@@ -482,16 +356,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
   },
 
-  ringWrap: { alignItems: 'center', paddingVertical: 4 },
-  ringCentre: { alignItems: 'center', gap: 2 },
-  clock: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 40,
-    letterSpacing: -1.2,
-    color: COLORS.ink,
-  },
-  // Urgency reads through weight and contrast; no red on this screen.
-  clockCritical: { color: COLORS.honeyText },
 
   nowCard: {
     flexDirection: 'row',
