@@ -21,6 +21,20 @@ body{background:var(--page);margin:0}
 .fg p{font:600 22px var(--f-body);color:rgba(27,24,19,.75);margin:10px 0 0}
 .fg .ph{position:absolute}.fg .phone{box-shadow:0 30px 50px -20px rgba(80,50,0,.55)}
 .gallery{display:flex;flex-wrap:wrap;gap:24px;padding:24px}
+/* Tablets: 7-inch exported at 3.5x (1260 x 2240), 10-inch at 4x (1440 x 2560). Both 9:16 portrait. */
+.tshot{width:360px;height:640px;position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(170deg,#FFE48A 0%,#F7C731 38%,#F2B705 70%,#E3A200 100%);display:flex;flex-direction:column;align-items:center}
+.tshot::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(27,24,19,.08) 1.1px,transparent 1.2px);background-size:14px 14px}
+.tframe{position:absolute;left:50%;top:150px;transform-origin:top center;border-radius:44px;padding:16px;background:#1B1813;box-shadow:0 0 0 1.5px rgba(255,255,255,.08) inset,0 50px 80px -30px rgba(80,50,0,.6)}
+.tframe .tscr{position:relative;width:100%;height:100%;border-radius:30px;overflow:hidden;background:var(--bg);isolation:isolate;display:flex;justify-content:center}
+.tframe .tscr::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(var(--dot) 1.1px,transparent 1.2px);background-size:16px 16px}
+.tframe .tscr .orb{filter:blur(60px)}
+.tframe .tscr > .scr{background:transparent;border-radius:0;max-width:460px;width:100%;height:100%}
+.tframe .tscr > .scr::before{display:none}
+.tframe .tscr > .scr > .orb{display:none}
+.t7{width:600px;height:960px;transform:translateX(-50%) scale(.5)}
+.t10{width:800px;height:1280px;transform:translateX(-50%) scale(.37)}
+.t10 .tscr > .scr{max-width:520px}
+.tstatus{position:absolute;top:10px;left:24px;right:24px;display:flex;justify-content:space-between;font:600 13px var(--f-body);color:var(--ink);z-index:3}
 </style>
 </head>
 <body>
@@ -40,6 +54,10 @@ const by=id=>IMP.S.find(s=>s.id===id);
 const g=document.getElementById('g');
 g.innerHTML=SHOTS.map(([id,h,p],i)=>`<div class="shot" id="shot-${i+1}"><div class="cap"><h1>${h}</h1><p>${p}</p></div>${IMP.phone(by(id),{w:290,h:628})}</div>`).join('')+
  `<div class="fg" id="feature"><div style="display:flex;flex-direction:column;gap:6px;max-width:470px"><div style="filter:drop-shadow(0 14px 20px rgba(80,50,0,.35));width:84px">${IMP.MARK(84)}</div><h1 style="margin-top:14px">Impostr</h1><p>One word. One liar. Find them.</p></div><div class="ph" style="right:300px;top:70px;transform:rotate(-6deg)">${IMP.phone(by('word-reveal'),{w:250,h:540})}</div><div class="ph" style="right:40px;top:40px;transform:rotate(5deg)">${IMP.phone(by('vote'),{w:250,h:540})}</div></div>`;
+
+const tab=(kind,i,[id,h,p])=>`<div class="tshot" id="${kind}-${i+1}"><div class="cap"><h1>${h}</h1><p>${p}</p></div><div class="tframe ${kind==='tab7'?'t7':'t10'}"><div class="tscr"><span class="orb" style="width:520px;height:520px;background:var(--orb1);top:-200px;right:-160px;opacity:.75;position:absolute;border-radius:50%;z-index:-2"></span><span class="orb" style="width:600px;height:600px;background:var(--orb2);bottom:-240px;left:-200px;opacity:.9;position:absolute;border-radius:50%;z-index:-2"></span><div class="tstatus"><span>9:41</span><span>100%</span></div>${IMP.phone(by(id),{frame:false})}</div></div></div>`;
+g.insertAdjacentHTML('beforeend',SHOTS.map((s,i)=>tab('tab7',i,s)).join('')+SHOTS.map((s,i)=>tab('tab10',i,s)).join(''));
+document.querySelectorAll('.tscr .scr').forEach(sc=>{sc.style.paddingTop='28px'});
 </script>
 </body>
 </html>
