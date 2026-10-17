@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
-  View, StyleSheet, Animated, Keyboard,
+  View, StyleSheet, Animated, Keyboard, Linking,
 } from 'react-native';
 import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ import Chip from '../components/Chip';
 import InkButton from '../components/InkButton';
 import GlassButton from '../components/GlassButton';
 import { storage } from '../utils/storage';
+import { SUPPORT_EMAIL } from '../constants/support';
 
 const POPULAR_IDEAS = ['Street food', '90s cartoons', 'Indian cities', 'Board games'];
 
@@ -25,6 +26,7 @@ export default function SuggestCategoryScreen() {
   const [reason, setReason] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [mailed, setMailed] = useState(false);
 
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(16)).current;
@@ -37,11 +39,28 @@ export default function SuggestCategoryScreen() {
   }, [entryAnim, entryY]);
 
   const handleSubmit = async () => {
-    if (!categoryName.trim()) return;
+    const name = categoryName.trim();
+    if (!name) return;
     Keyboard.dismiss();
     setSaving(true);
-    // Suggestions stay on the device. Nothing about this app leaves the phone.
-    await storage.addSuggestion(categoryName.trim(), reason.trim());
+    // Kept on the device either way, so the idea survives a failed send.
+    await storage.addSuggestion(name, reason.trim());
+
+    // Then offer to send it, the same way Report a problem does. Only what
+    // was typed goes in: no player names, no words from the game.
+    const body = [name, '', reason.trim()].join('\n');
+    const url =
+      `mailto:${SUPPORT_EMAIL}`
+      + `?subject=${encodeURIComponent(`Category suggestion: ${name}`)}`
+      + `&body=${encodeURIComponent(body)}`;
+    try {
+      await Linking.openURL(url);
+      setMailed(true);
+    } catch {
+      // No mail app. The idea is still saved, and the copy below says so.
+      setMailed(false);
+    }
+
     setSaving(false);
     setSubmitted(true);
   };
@@ -60,10 +79,13 @@ export default function SuggestCategoryScreen() {
               <View style={styles.doneTile}>
                 <Check size={26} color={COLORS.honeyText} />
               </View>
-              <AppText style={styles.title} maxFontSizeMultiplier={1.3}>Saved.</AppText>
+              <AppText style={styles.title} maxFontSizeMultiplier={1.3}>
+                {mailed ? 'Thank you.' : 'Saved.'}
+              </AppText>
               <AppText style={[styles.sub, styles.doneSub]}>
-                Your idea is kept on this phone. We gather suggestions with each
-                update, so watch for new packs.
+                {mailed
+                  ? 'Your suggestion is in your mail app, ready to send, and kept on this phone too. The best ideas become new packs.'
+                  : 'Your idea is kept on this phone. No mail app was found, so nothing was sent; you can email it to us from the Help screen.'}
               </AppText>
               <GlassButton
                 label="Back to settings"
