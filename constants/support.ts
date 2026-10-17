@@ -12,17 +12,18 @@ export const PLAY_SUBSCRIPTIONS_URL =
   'https://play.google.com/store/account/subscriptions';
 
 /**
- * The Vercel deploy that serves this repo's `public/` folder. One place to
- * change if the domain moves; the privacy policy and the words feed both
- * hang off it.
+ * The marketing site. One place to change if the domain moves: the policy,
+ * terms, support page and the words feed all hang off it.
  */
-export const WEB_ORIGIN = 'https://impostr.vercel.app';
+export const WEB_ORIGIN = 'https://apps.obio.in/imposter';
 
-/** public/privacy-policy.html, as served by the web deploy. */
-export const PRIVACY_URL = `${WEB_ORIGIN}/privacy-policy.html`;
+/** Sections of the one-page site. There is no second copy of the policy. */
+export const PRIVACY_URL = `${WEB_ORIGIN}/#privacy`;
+export const TERMS_URL = `${WEB_ORIGIN}/#terms`;
+export const SUPPORT_URL = `${WEB_ORIGIN}/#support`;
 
 /**
- * public/words/feed.json. The app reads EXPO_PUBLIC_WORDS_FEED_URL in
+ * The hosted word feed. The app reads EXPO_PUBLIC_WORDS_FEED_URL in
  * preference to this, so a build can be pointed elsewhere without a code
  * change; this is the default the repo ships with.
  */
