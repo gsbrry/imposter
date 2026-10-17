@@ -21,6 +21,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GameProvider, useGame } from '../context/GameContext';
 import { AccessibilityProvider } from '../context/AccessibilityContext';
+import { initCrashReporting } from '@/utils/crashReporting';
 import PhoneFrame from '@/components/PhoneFrame';
 import AppSplash from '@/components/SplashScreen';
 import { usePremium } from '@/hooks/usePremium';
@@ -33,6 +34,10 @@ import type { CustomerInfo } from 'react-native-purchases';
 const PREMIUM_CACHE_KEY = 'IMPOSTR_PREMIUM_CACHE';
 
 SplashScreen.preventAutoHideAsync();
+
+// Before anything else, so a crash during startup is still captured.
+// Does nothing in development or without a DSN.
+initCrashReporting();
 
 function RCInitialiser() {
   const { setIsPremium } = useGame();

@@ -19,6 +19,7 @@ import ProgressBar from '../components/ProgressBar';
 import { useGame } from '../context/GameContext';
 import { useRequireGame } from '../hooks/useRequireGame';
 import { useAccessibility } from '../context/AccessibilityContext';
+import { setSensitiveStrings } from '../utils/crashReporting';
 import { storage } from '../utils/storage';
 import { getWord } from '../utils/getWord';
 import { selectImposter, selectTwoImposters } from '../utils/selectImposter';
@@ -126,6 +127,8 @@ export default function RevealScreen() {
       ];
 
       await storage.setImposterHistory(newHistory);
+      // Keep the names and the secret word out of any crash report.
+      setSensitiveStrings([word, ...game.players.map(p => p.name)]);
       setGame(g => ({ ...g, word, imposterIds, hint }));
       setSetupDone(true);
     }
