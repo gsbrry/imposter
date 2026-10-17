@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View, TouchableOpacity, StyleSheet,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS, SHADOW } from '../constants/theme';
 
 interface SegmentedOption<T extends string> {
@@ -28,7 +31,7 @@ export default function Segmented<T extends string>({ options, value, onChange }
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
           >
-            <Text style={[styles.label, active && styles.labelActive]}>{opt.label}</Text>
+            <AppText style={[styles.label, active && styles.labelActive]}>{opt.label}</AppText>
           </TouchableOpacity>
         );
       })}

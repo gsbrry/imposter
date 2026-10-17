@@ -1,5 +1,8 @@
 import React from 'react';
-import { Text, StyleSheet, StyleProp, TextStyle } from 'react-native';
+import {
+  StyleSheet, StyleProp, TextStyle,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS } from '../constants/theme';
 
 /** The small uppercase caption above a card. Matches impostr.css `.lab`. */
@@ -9,7 +12,7 @@ export default function SectionLabel({
   children: string;
   style?: StyleProp<TextStyle>;
 }) {
-  return <Text style={[styles.label, style]}>{children.toUpperCase()}</Text>;
+  return <AppText style={[styles.label, style]}>{children.toUpperCase()}</AppText>;
 }
 
 const styles = StyleSheet.create({

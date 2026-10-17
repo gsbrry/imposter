@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import {
+  View, StyleSheet,
+} from 'react-native';
+import AppText from './AppText';
 import { ChevronLeft } from 'lucide-react-native';
 import { COLORS, FONTS, SIZE } from '../constants/theme';
 import IconButton from './IconButton';
@@ -27,7 +30,7 @@ export default function StepHeader({
       </IconButton>
 
       <View style={styles.center}>
-        <Text style={styles.label}>{label.toUpperCase()}</Text>
+        <AppText style={styles.label}>{label.toUpperCase()}</AppText>
         {step !== undefined && (
           <View style={styles.steps}>
             {Array.from({ length: totalSteps }, (_, i) => (

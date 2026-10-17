@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View, TouchableOpacity, StyleSheet,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS } from '../constants/theme';
 import Avatar from './Avatar';
 
@@ -25,11 +28,11 @@ export default function VoteCard({ name, avatarIndex, voteCount, selected, onPre
     >
       {typeof voteCount === 'number' && voteCount > 0 && (
         <View style={styles.count}>
-          <Text style={styles.countText}>{voteCount}</Text>
+          <AppText style={styles.countText}>{voteCount}</AppText>
         </View>
       )}
       <Avatar name={name} index={avatarIndex} size={34} />
-      <Text style={styles.name} numberOfLines={1}>{name}</Text>
+      <AppText style={styles.name} numberOfLines={1}>{name}</AppText>
     </TouchableOpacity>
   );
 }

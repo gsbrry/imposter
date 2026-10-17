@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, Modal, Pressable, Platform,
+  View, StyleSheet, Modal, Pressable, Platform,
 } from 'react-native';
+import AppText from './AppText';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { House } from 'lucide-react-native';
@@ -44,8 +45,8 @@ export default function HomeButton() {
               <View style={styles.iconWrap}>
                 <House size={28} color={COLORS.honey} />
               </View>
-              <Text style={styles.heading}>End this game?</Text>
-              <Text style={styles.sub}>Current game progress will be lost.</Text>
+              <AppText style={styles.heading}>End this game?</AppText>
+              <AppText style={styles.sub}>Current game progress will be lost.</AppText>
 
               <PrimaryButton label="YES, GO HOME" onPress={confirm} style={styles.fullWidth} />
               <GlassButton label="Keep Playing" onPress={() => setVisible(false)} style={styles.fullWidth} />

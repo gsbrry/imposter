@@ -1,5 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import {
+  View, StyleSheet, Animated,
+} from 'react-native';
+import AppText from '../../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import {
@@ -83,26 +86,26 @@ export default function StatsScreen() {
         >
           <View style={styles.header}>
             <SectionLabel>Your stats</SectionLabel>
-            <Text style={styles.title} maxFontSizeMultiplier={1.4}>Performance</Text>
+            <AppText style={styles.title} maxFontSizeMultiplier={1.4}>Performance</AppText>
           </View>
 
           {/* Win rate */}
           <GlassCard style={styles.rateCard}>
             <View style={styles.ringWrap}>
               <TimerRing size={92} progress={winRate / 100} strokeWidth={9}>
-                <Text style={styles.ringValue}>{winRate}%</Text>
+                <AppText style={styles.ringValue}>{winRate}%</AppText>
               </TimerRing>
             </View>
             <View style={styles.rateText}>
               <SectionLabel>Win rate</SectionLabel>
-              <Text style={styles.rateTitle} numberOfLines={2}>
+              <AppText style={styles.rateTitle} numberOfLines={2}>
                 {rankFor(winRate, played)}
-              </Text>
-              <Text style={styles.rateSub}>
+              </AppText>
+              <AppText style={styles.rateSub}>
                 {played === 0
                   ? 'Play a game to start the count.'
                   : `Across ${played} game${played === 1 ? '' : 's'} on this phone.`}
-              </Text>
+              </AppText>
             </View>
           </GlassCard>
 
@@ -112,7 +115,7 @@ export default function StatsScreen() {
               <View key={label} style={styles.cell}>
                 <GlassCard style={styles.statCard}>
                   <Icon size={16} color={COLORS.honeyText} />
-                  <Text style={styles.statValue}>{value}</Text>
+                  <AppText style={styles.statValue}>{value}</AppText>
                   <SectionLabel>{label}</SectionLabel>
                 </GlassCard>
               </View>
@@ -126,9 +129,9 @@ export default function StatsScreen() {
             </View>
             <View style={styles.bestText}>
               <SectionLabel>Best category</SectionLabel>
-              <Text style={styles.bestValue} numberOfLines={1}>
+              <AppText style={styles.bestValue} numberOfLines={1}>
                 {bestCategory ? `${bestCategory.label} · ${bestRate}% wins` : 'Not enough games yet'}
-              </Text>
+              </AppText>
             </View>
           </GlassCard>
         </Animated.ScrollView>

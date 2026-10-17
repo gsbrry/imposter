@@ -1,7 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform, useWindowDimensions } from 'react-native';
+import {
+  View, StyleSheet, Platform, useWindowDimensions,
+} from 'react-native';
+import AppText from './AppText';
 import { BlurView } from 'expo-blur';
 import { COLORS, FONTS, BLUR, SHADOW } from '../constants/theme';
+import { useAccessibility } from '../context/AccessibilityContext';
 
 interface RevealCardProps {
   /** Rendered above the eyebrow — the category pill in the reveal flow. */
@@ -23,8 +27,13 @@ interface RevealCardProps {
  */
 export default function RevealCard({ badge, eyebrow, title, subtitle, footer }: RevealCardProps) {
   const { width } = useWindowDimensions();
+  const { textScale } = useAccessibility();
   // Matches the design's clamp(38px, 14.5cqi, 54px).
   const titleSize = Math.max(38, Math.min(54, width * 0.145));
+  // The subtitle box is pinned to three lines so the card is the same
+  // height whoever is holding it. That pin has to grow with the text, or
+  // the third line is clipped at Larger text.
+  const subtitleHeight = SUBTITLE_LINE_HEIGHT * 3 * textScale;
 
   return (
     <View style={styles.shadowWrap}>
@@ -34,8 +43,8 @@ export default function RevealCard({ badge, eyebrow, title, subtitle, footer }: 
         )}
         <View style={styles.content}>
           {badge}
-          <Text style={styles.eyebrow}>{eyebrow.toUpperCase()}</Text>
-          <Text
+          <AppText style={styles.eyebrow}>{eyebrow.toUpperCase()}</AppText>
+          <AppText
             style={[styles.title, { fontSize: titleSize, lineHeight: titleSize * 1.02 }]}
             numberOfLines={2}
             adjustsFontSizeToFit
@@ -43,9 +52,9 @@ export default function RevealCard({ badge, eyebrow, title, subtitle, footer }: 
             maxFontSizeMultiplier={1.4}
           >
             {title}
-          </Text>
+          </AppText>
           {subtitle && (
-            <Text style={styles.subtitle} numberOfLines={3}>{subtitle}</Text>
+            <AppText style={[styles.subtitle, { height: subtitleHeight }]} numberOfLines={3}>{subtitle}</AppText>
           )}
           {footer}
         </View>
@@ -53,6 +62,9 @@ export default function RevealCard({ badge, eyebrow, title, subtitle, footer }: 
     </View>
   );
 }
+
+/** One line of subtitle, matching the design's 19.6px leading. */
+const SUBTITLE_LINE_HEIGHT = 19.6;
 
 const styles = StyleSheet.create({
   shadowWrap: {
@@ -100,7 +112,6 @@ const styles = StyleSheet.create({
     maxWidth: 260,
     // Reserved at three lines so a longer string for one role cannot make
     // that card taller than the other. See the note on this component.
-    height: 19.6 * 3,
     textAlign: 'center',
     color: COLORS.textBody,
   },

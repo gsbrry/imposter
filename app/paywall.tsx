@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import {
+  View, StyleSheet, TouchableOpacity, Platform,
+} from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
@@ -30,10 +33,10 @@ export default function PaywallScreen() {
             <X size={20} color={COLORS.textFaint} />
           </IconButton>
           <View style={styles.center}>
-            <Text style={styles.title}>Premium is available on Android</Text>
-            <Text style={styles.sub}>Download the app to unlock all features.</Text>
+            <AppText style={styles.title}>Premium is available on Android</AppText>
+            <AppText style={styles.sub}>Download the app to unlock all features.</AppText>
             <TouchableOpacity style={styles.btn} onPress={() => router.push('/premium')} activeOpacity={0.85}>
-              <Text style={styles.btnText}>View Plans</Text>
+              <AppText style={styles.btnText}>View Plans</AppText>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

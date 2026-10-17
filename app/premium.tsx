@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Animated, ActivityIndicator, Platform, Linking,
+  View, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Platform, Linking,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { X, Crown, Check } from 'lucide-react-native';
@@ -56,10 +56,10 @@ function WebFallback({ onClose }: { onClose: () => void }) {
             <View style={styles.crownTile}>
               <Crown size={24} color={COLORS.honey} />
             </View>
-            <Text style={styles.title}>
-              Impostr <Text style={styles.titleAccent}>Pro</Text>
-            </Text>
-            <Text style={styles.sub}>Premium is bought inside the Android app.</Text>
+            <AppText style={styles.title}>
+              Impostr <AppText style={styles.titleAccent}>Pro</AppText>
+            </AppText>
+            <AppText style={styles.sub}>Premium is bought inside the Android app.</AppText>
             <PrimaryButton
               label="Open the Play Store"
               onPress={() => Linking.openURL('https://play.google.com/store').catch(() => {})}
@@ -177,8 +177,8 @@ export default function PremiumScreen() {
             <View style={styles.crownTile}>
               <Crown size={24} color={COLORS.honey} />
             </View>
-            <Text style={styles.title}>Welcome to Pro.</Text>
-            <Text style={styles.sub}>Every category and mode is unlocked.</Text>
+            <AppText style={styles.title}>Welcome to Pro.</AppText>
+            <AppText style={styles.sub}>Every category and mode is unlocked.</AppText>
           </Animated.View>
         </SafeAreaView>
       </View>
@@ -212,10 +212,10 @@ export default function PremiumScreen() {
               <View style={styles.crownTile}>
                 <Crown size={24} color={COLORS.honey} />
               </View>
-              <Text style={styles.title} maxFontSizeMultiplier={1.3}>
-                Impostr <Text style={styles.titleAccent}>Pro</Text>
-              </Text>
-              <Text style={styles.sub}>Every pack, every mode, no ads.</Text>
+              <AppText style={styles.title} maxFontSizeMultiplier={1.3}>
+                Impostr <AppText style={styles.titleAccent}>Pro</AppText>
+              </AppText>
+              <AppText style={styles.sub}>Every pack, every mode, no ads.</AppText>
             </View>
 
             {/* What you get */}
@@ -224,8 +224,8 @@ export default function PremiumScreen() {
                 <View key={title} style={styles.benefitRow}>
                   <Check size={16} color={COLORS.honeyText} />
                   <View style={styles.benefitText}>
-                    <Text style={styles.benefitTitle}>{title}</Text>
-                    <Text style={styles.benefitDesc}>{desc}</Text>
+                    <AppText style={styles.benefitTitle}>{title}</AppText>
+                    <AppText style={styles.benefitDesc}>{desc}</AppText>
                   </View>
                 </View>
               ))}
@@ -250,15 +250,15 @@ export default function PremiumScreen() {
                       {isSelected && <View style={styles.radioDot} />}
                     </View>
                     <View style={styles.planText}>
-                      <Text style={styles.planLabel}>{plan.label}</Text>
-                      <Text style={[styles.planSub, isSelected && styles.planSubSelected]}>
+                      <AppText style={styles.planLabel}>{plan.label}</AppText>
+                      <AppText style={[styles.planSub, isSelected && styles.planSubSelected]}>
                         {plan.sub}
-                      </Text>
+                      </AppText>
                     </View>
-                    <Text style={styles.planPrice}>{price}</Text>
+                    <AppText style={styles.planPrice}>{price}</AppText>
                     {plan.badge && (
                       <View style={styles.planBadge}>
-                        <Text style={styles.planBadgeText}>{plan.badge}</Text>
+                        <AppText style={styles.planBadgeText}>{plan.badge}</AppText>
                       </View>
                     )}
                   </TouchableOpacity>
@@ -273,14 +273,14 @@ export default function PremiumScreen() {
               onPress={handlePurchase}
               disabled={loading}
             />
-            <Text style={styles.note}>Cancel any time in Play Store</Text>
+            <AppText style={styles.note}>Cancel any time in Play Store</AppText>
           </ScrollView>
         </View>
       </SafeAreaView>
 
       {toast && (
         <Animated.View style={[styles.toast, { opacity: toastAnim }]}>
-          <Text style={styles.toastText}>{toast}</Text>
+          <AppText style={styles.toastText}>{toast}</AppText>
         </Animated.View>
       )}
     </View>

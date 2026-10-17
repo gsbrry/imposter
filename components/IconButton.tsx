@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, View, StyleSheet, StyleProp, ViewStyle, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { COLORS, RADIUS, SIZE, BLUR } from '../constants/theme';
+import { useAccessibility } from '../context/AccessibilityContext';
 
 interface IconButtonProps {
   onPress: () => void;
@@ -21,7 +22,10 @@ interface IconButtonProps {
 export default function IconButton({
   onPress, children, accessibilityLabel, size = SIZE.iconButton, glass = true, style,
 }: IconButtonProps) {
-  const pad = Math.max(0, (44 - size) / 2);
+  const { textScale } = useAccessibility();
+  const visual = Math.round(size * textScale);
+  // hitSlop tops the touch target up to the 44x44 minimum.
+  const pad = Math.max(0, (44 - visual) / 2);
 
   return (
     <TouchableOpacity
@@ -30,7 +34,7 @@ export default function IconButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={{ top: pad, bottom: pad, left: pad, right: pad }}
-      style={[styles.btn, { width: size, height: size }, style]}
+      style={[styles.btn, { width: visual, height: visual }, style]}
     >
       {glass && Platform.OS !== 'web' && (
         <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />

@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View, StyleSheet, TouchableOpacity,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS, SIZE } from '../constants/theme';
 
 interface AvatarProps {
@@ -33,7 +36,7 @@ export default function Avatar({
       {Icon ? (
         <Icon size={Math.round(size * 0.55)} color={COLORS.ink} />
       ) : (
-        <Text style={[styles.initial, { fontSize }]}>{initial}</Text>
+        <AppText style={[styles.initial, { fontSize }]}>{initial}</AppText>
       )}
     </View>
   );

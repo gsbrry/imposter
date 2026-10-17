@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, Pressable, Animated, Easing, Platform,
+  View, StyleSheet, Pressable, Animated, Easing, Platform,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -17,6 +18,7 @@ import Pill from '../components/Pill';
 import ProgressBar from '../components/ProgressBar';
 import { useGame } from '../context/GameContext';
 import { useRequireGame } from '../hooks/useRequireGame';
+import { useAccessibility } from '../context/AccessibilityContext';
 import { storage } from '../utils/storage';
 import { getWord } from '../utils/getWord';
 import { selectImposter, selectTwoImposters } from '../utils/selectImposter';
@@ -70,6 +72,7 @@ export default function RevealScreen() {
   const router = useRouter();
   const { game, setGame, resetGame } = useGame();
   const hasGame = useRequireGame();
+  const { reduceMotion, screenReader } = useAccessibility();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [wordVisible, setWordVisible] = useState(false);
   const [hasSeenWord, setHasSeenWord] = useState(false);
@@ -87,12 +90,16 @@ export default function RevealScreen() {
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
 
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(holdPulse, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(holdPulse, { toValue: 0, duration: 1100, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      ])
-    ).start();
+    if (!reduceMotion) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(holdPulse, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(holdPulse, { toValue: 0, duration: 1100, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      ).start();
+    } else {
+      holdPulse.setValue(0);
+    }
 
     if (!hasGame) return;
 
@@ -124,7 +131,7 @@ export default function RevealScreen() {
     }
     setup();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasGame]);
+  }, [hasGame, reduceMotion]);
 
   useEffect(() => () => clearTimeout(peekTimer.current), []);
 
@@ -188,7 +195,9 @@ export default function RevealScreen() {
   const packLabel = `${category?.label ?? 'General'} · ${DIFFICULTY_LABEL[game.difficulty] ?? 'Medium'}`;
 
   const glowScale = holdPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] });
-  const glowOpacity = holdPulse.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.12] });
+  const glowOpacity = reduceMotion
+    ? 0
+    : holdPulse.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.12] });
 
   return (
     <View style={styles.container}>
@@ -200,9 +209,9 @@ export default function RevealScreen() {
           {wordVisible ? (
             /* Revealed: no exit button, so nobody taps away mid-peek. */
             <View style={styles.revealHeader}>
-              <Text style={styles.label}>
+              <AppText style={styles.label}>
                 {player.name.toUpperCase()} · PLAYER {currentIndex + 1}
-              </Text>
+              </AppText>
             </View>
           ) : (
             <>
@@ -210,7 +219,7 @@ export default function RevealScreen() {
                 <IconButton onPress={exitGame} accessibilityLabel="Exit game">
                   <X size={20} color={COLORS.ink} />
                 </IconButton>
-                <Text style={styles.label}>PLAYER {currentIndex + 1} OF {total}</Text>
+                <AppText style={styles.label}>PLAYER {currentIndex + 1} OF {total}</AppText>
                 <View style={styles.headerSpacer} />
               </View>
 
@@ -231,11 +240,16 @@ export default function RevealScreen() {
 
           {!wordVisible && (
             <View style={styles.passTo}>
-              <Text style={styles.label}>PASS THE PHONE TO</Text>
-              <Text style={styles.playerName} maxFontSizeMultiplier={1.4} numberOfLines={1} adjustsFontSizeToFit>
+              <AppText style={styles.label}>PASS THE PHONE TO</AppText>
+              <AppText style={styles.playerName} maxFontSizeMultiplier={1.4} numberOfLines={1} adjustsFontSizeToFit>
                 {player.name}
-              </Text>
-              <Text style={styles.sub}>Make sure nobody else can see the screen.</Text>
+              </AppText>
+              <AppText style={styles.sub}>Make sure nobody else can see the screen.</AppText>
+              {screenReader && (
+                <AppText style={styles.headphones}>
+                  Use headphones so others cannot hear your word.
+                </AppText>
+              )}
             </View>
           )}
 
@@ -279,7 +293,7 @@ export default function RevealScreen() {
                         ]}
                       />
                     </View>
-                    <Text style={styles.peekText}>Let go to hide it</Text>
+                    <AppText style={styles.peekText}>Let go to hide it</AppText>
                   </View>
                 }
               />
@@ -294,8 +308,8 @@ export default function RevealScreen() {
                     <Pointer size={38} color={COLORS.honey} />
                   </View>
                 </View>
-                <Text style={styles.holdTitle}>Press and hold to see your word</Text>
-                <Text style={styles.holdSub}>Let go to hide it again</Text>
+                <AppText style={styles.holdTitle}>Press and hold to see your word</AppText>
+                <AppText style={styles.holdSub}>Let go to hide it again</AppText>
               </View>
             )}
           </Pressable>
@@ -374,6 +388,14 @@ const styles = StyleSheet.create({
     letterSpacing: -1.2,
     color: COLORS.ink,
     textAlign: 'center',
+  },
+  headphones: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: COLORS.honeyText,
+    textAlign: 'center',
+    marginTop: 4,
   },
   sub: {
     fontFamily: FONTS.bodyRegular,

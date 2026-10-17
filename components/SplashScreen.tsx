@@ -1,8 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, AccessibilityInfo, Platform } from 'react-native';
+import {
+  View, StyleSheet, Animated, Easing, AccessibilityInfo, Platform,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS, SPACING, SHADOW } from '../constants/theme';
 import ScreenBackground from './ScreenBackground';
 import AppMark from './AppMark';
+import { useAccessibility } from '../context/AccessibilityContext';
 
 /**
  * In-app splash shown while fonts load. Matches design/screens/01-splash.html:
@@ -13,6 +17,8 @@ export default function SplashScreen() {
   const pulse = useRef(new Animated.Value(0)).current;
   const load = useRef(new Animated.Value(0)).current;
   const reduceMotion = useRef(false);
+  // Settings > Reduce motion stops the glow and the loader bar too.
+  const { reduceMotion: prefersReduced } = useAccessibility();
 
   useEffect(() => {
     let cancelled = false;
@@ -33,16 +39,24 @@ export default function SplashScreen() {
       ).start();
     };
 
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then(enabled => { reduceMotion.current = enabled; start(); })
-      .catch(start);
+    if (prefersReduced) {
+      reduceMotion.current = true;
+    } else {
+      AccessibilityInfo.isReduceMotionEnabled()
+        .then(enabled => { reduceMotion.current = enabled; start(); })
+        .catch(start);
+    }
 
     return () => { cancelled = true; };
-  }, [load, pulse]);
+  }, [load, pulse, prefersReduced]);
 
   const glowScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
-  const glowOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.18] });
-  const barWidth = load.interpolate({ inputRange: [0, 1], outputRange: ['8%', '78%'] });
+  const glowOpacity = prefersReduced
+    ? 0
+    : pulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.18] });
+  const barWidth = prefersReduced
+    ? ('40%' as const)
+    : load.interpolate({ inputRange: [0, 1], outputRange: ['8%', '78%'] });
 
   return (
     <View style={styles.container}>
@@ -57,8 +71,8 @@ export default function SplashScreen() {
         </View>
 
         <View style={styles.text}>
-          <Text style={styles.title}>Impostr</Text>
-          <Text style={styles.tagline}>One word. One liar. Find them.</Text>
+          <AppText style={styles.title}>Impostr</AppText>
+          <AppText style={styles.tagline}>One word. One liar. Find them.</AppText>
         </View>
 
         <View style={styles.barTrack}>
@@ -66,7 +80,7 @@ export default function SplashScreen() {
         </View>
       </View>
 
-      <Text style={styles.credit}>GOOSEBERRY MEDIA</Text>
+      <AppText style={styles.credit}>GOOSEBERRY MEDIA</AppText>
     </View>
   );
 }

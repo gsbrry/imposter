@@ -1,7 +1,11 @@
 import React from 'react';
-import { Animated, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import {
+  Animated, TouchableOpacity, StyleSheet, StyleProp, ViewStyle,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS, RADIUS, SIZE, SPACING, SHADOW } from '../constants/theme';
 import { usePressScale } from '../hooks/usePressScale';
+import { useAccessibility } from '../context/AccessibilityContext';
 
 interface InkButtonProps {
   label: string;
@@ -17,6 +21,8 @@ export default function InkButton({
   label, onPress, icon, disabled, style, accessibilityLabel,
 }: InkButtonProps) {
   const { scale, onPressIn, onPressOut } = usePressScale();
+  // Larger text grows the control with the label so nothing is clipped.
+  const { textScale } = useAccessibility();
 
   return (
     <Animated.View style={[styles.shadowWrap, { transform: [{ scale }], opacity: disabled ? 0.4 : 1 }, style]}>
@@ -28,10 +34,10 @@ export default function InkButton({
         activeOpacity={1}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel ?? label}
-        style={styles.button}
+        style={[styles.button, { minHeight: SIZE.button * textScale }]}
       >
         {icon}
-        <Text style={styles.text} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</Text>
+        <AppText style={styles.text} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</AppText>
       </TouchableOpacity>
     </Animated.View>
   );

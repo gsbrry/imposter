@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, TextInputProps } from 'react-native';
+import {
+  View, TextInput, StyleSheet, TextInputProps,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS } from '../constants/theme';
 import { useWebFocusRing } from '../hooks/useWebFocusRing';
 
@@ -13,7 +16,7 @@ export default function TextField({ label, multiline, onFocus, onBlur, ...inputP
 
   return (
     <View style={styles.field}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <AppText style={styles.label}>{label}</AppText>}
       <TextInput
         {...inputProps}
         multiline={multiline}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity, Animated,
+  View, StyleSheet, TextInput, TouchableOpacity, Animated,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Play, Plus, X } from 'lucide-react-native';
@@ -76,8 +77,8 @@ export default function PlayerNamesScreen() {
           <StepHeader step={3} label="Step 3 of 3" onBack={() => router.back()} />
 
           <View style={styles.heading}>
-            <Text style={styles.title} maxFontSizeMultiplier={1.4}>Who is playing?</Text>
-            <Text style={styles.sub}>Names are saved for next time.</Text>
+            <AppText style={styles.title} maxFontSizeMultiplier={1.4}>Who is playing?</AppText>
+            <AppText style={styles.sub}>Names are saved for next time.</AppText>
           </View>
 
           <GlassCard style={styles.list}>
@@ -94,7 +95,7 @@ export default function PlayerNamesScreen() {
 
           {unusedSaved.length > 0 && (
             <View style={styles.recent}>
-              <Text style={styles.label}>RECENT PLAYERS</Text>
+              <AppText style={styles.label}>RECENT PLAYERS</AppText>
               <View style={styles.chips}>
                 {unusedSaved.map(name => (
                   <View key={name} style={styles.chipWrap}>
@@ -158,7 +159,7 @@ function PlayerRow({
           maxLength={20}
           accessibilityLabel={`Name for player ${index + 1}`}
         />
-        <Text style={styles.slot}>P{index + 1}</Text>
+        <AppText style={styles.slot}>P{index + 1}</AppText>
       </View>
     </View>
   );

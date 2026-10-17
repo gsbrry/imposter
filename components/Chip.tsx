@@ -1,5 +1,8 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import {
+  TouchableOpacity, StyleSheet, StyleProp, ViewStyle,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS } from '../constants/theme';
 
 interface ChipProps {
@@ -21,10 +24,11 @@ export default function Chip({ label, selected, onPress, icon, style, accessibil
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityState={onPress ? { selected: !!selected } : undefined}
       accessibilityLabel={accessibilityLabel ?? label}
+      hitSlop={{ top: 6, bottom: 6, left: 0, right: 0 }}
       style={[styles.chip, selected && styles.chipOn, style]}
     >
       {icon}
-      <Text style={[styles.label, selected && styles.labelOn]}>{label}</Text>
+      <AppText style={[styles.label, selected && styles.labelOn]}>{label}</AppText>
     </TouchableOpacity>
   );
 }

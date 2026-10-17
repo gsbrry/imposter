@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, TextInput, Animated, Keyboard,
+  View, StyleSheet, TextInput, Animated, Keyboard,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowRight, Minus, Plus } from 'lucide-react-native';
@@ -107,11 +108,11 @@ export default function GameSettingsScreen() {
         >
           <StepHeader step={2} label="Step 2 of 3" onBack={() => router.back()} />
 
-          <Text style={styles.title} maxFontSizeMultiplier={1.4}>Game settings</Text>
+          <AppText style={styles.title} maxFontSizeMultiplier={1.4}>Game settings</AppText>
 
           {/* Players */}
           <GlassCard style={styles.card}>
-            <Text style={styles.label}>PLAYERS</Text>
+            <AppText style={styles.label}>PLAYERS</AppText>
             <Stepper
               value={playerCount}
               onDecrement={() => adjustPlayers(-1)}
@@ -135,8 +136,8 @@ export default function GameSettingsScreen() {
           {/* Timer per clue */}
           <GlassCard style={styles.card}>
             <View style={styles.cardHead}>
-              <Text style={styles.label}>TIMER PER CLUE</Text>
-              <Text style={styles.value}>{timerSummary}</Text>
+              <AppText style={styles.label}>TIMER PER CLUE</AppText>
+              <AppText style={styles.value}>{timerSummary}</AppText>
             </View>
             <View style={styles.chips}>
               {TIMER_OPTIONS.map(opt => (
@@ -164,7 +165,7 @@ export default function GameSettingsScreen() {
                   onSubmitEditing={() => Keyboard.dismiss()}
                   accessibilityLabel="Custom timer in seconds"
                 />
-                <Text style={styles.customUnit}>sec, max 300</Text>
+                <AppText style={styles.customUnit}>sec, max 300</AppText>
               </View>
             )}
           </GlassCard>
@@ -173,8 +174,8 @@ export default function GameSettingsScreen() {
           <GlassCard style={styles.list}>
             <View style={styles.row}>
               <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Clue rounds</Text>
-                <Text style={styles.rowSub}>Turns before voting</Text>
+                <AppText style={styles.rowTitle}>Clue rounds</AppText>
+                <AppText style={styles.rowSub}>Turns before voting</AppText>
               </View>
               <View style={styles.rowStepper}>
                 <IconButton
@@ -185,7 +186,7 @@ export default function GameSettingsScreen() {
                 >
                   <Minus size={16} color={turnsBeforeGuess <= MIN_ROUNDS ? COLORS.textFaint : COLORS.ink} />
                 </IconButton>
-                <Text style={styles.rowValue}>{turnsBeforeGuess}</Text>
+                <AppText style={styles.rowValue}>{turnsBeforeGuess}</AppText>
                 <IconButton
                   size={32}
                   onPress={() => adjustRounds(1)}
@@ -201,8 +202,8 @@ export default function GameSettingsScreen() {
 
             <View style={styles.row}>
               <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Team votes together</Text>
-                <Text style={styles.rowSub}>One shared vote on this phone</Text>
+                <AppText style={styles.rowTitle}>Team votes together</AppText>
+                <AppText style={styles.rowSub}>One shared vote on this phone</AppText>
               </View>
               <Toggle
                 value={teamVote}

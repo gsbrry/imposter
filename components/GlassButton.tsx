@@ -1,8 +1,12 @@
 import React from 'react';
-import { Animated, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, Platform } from 'react-native';
+import {
+  Animated, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, Platform,
+} from 'react-native';
+import AppText from './AppText';
 import { BlurView } from 'expo-blur';
 import { COLORS, FONTS, RADIUS, SIZE, SPACING, BLUR } from '../constants/theme';
 import { usePressScale } from '../hooks/usePressScale';
+import { useAccessibility } from '../context/AccessibilityContext';
 
 interface GlassButtonProps {
   label: string;
@@ -18,6 +22,8 @@ export default function GlassButton({
   label, onPress, icon, disabled, style, accessibilityLabel,
 }: GlassButtonProps) {
   const { scale, onPressIn, onPressOut } = usePressScale();
+  // Larger text grows the control with the label so nothing is clipped.
+  const { textScale } = useAccessibility();
 
   return (
     <Animated.View style={[{ transform: [{ scale }], opacity: disabled ? 0.4 : 1 }, style]}>
@@ -29,13 +35,13 @@ export default function GlassButton({
         activeOpacity={1}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel ?? label}
-        style={styles.button}
+        style={[styles.button, { minHeight: SIZE.button * textScale }]}
       >
         {Platform.OS !== 'web' && (
           <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
         )}
         {icon}
-        <Text style={styles.text} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</Text>
+        <AppText style={styles.text} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</AppText>
       </TouchableOpacity>
     </Animated.View>
   );

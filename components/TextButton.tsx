@@ -1,5 +1,8 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import {
+  TouchableOpacity, StyleSheet, StyleProp, ViewStyle, TextStyle,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS } from '../constants/theme';
 
 interface TextButtonProps {
@@ -31,7 +34,7 @@ export default function TextButton({
       style={[styles.button, { opacity: disabled ? 0.4 : 1 }, style]}
     >
       {icon}
-      <Text style={[styles.text, textStyle]}>{label}</Text>
+      <AppText style={[styles.text, textStyle]}>{label}</AppText>
     </TouchableOpacity>
   );
 }

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, Platform, Pressable,
+  View, StyleSheet, Animated, Platform, Pressable,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { RefreshCw, Trophy, Eye, EyeOff } from 'lucide-react-native';
@@ -126,23 +127,23 @@ export default function ResultScreen() {
               label={outcomeLabel}
               icon={<Trophy size={14} color={COLORS.honeyText} />}
             />
-            <Text style={styles.headlineText} maxFontSizeMultiplier={1.4}>{headline}</Text>
+            <AppText style={styles.headlineText} maxFontSizeMultiplier={1.4}>{headline}</AppText>
           </View>
 
           {/* The imposter */}
           {revealed ? (
             <Animated.View style={{ opacity: cardOpacity, transform: [{ scale: cardScale }] }}>
               <GlassCard style={styles.imposterCard}>
-                <Text style={styles.label}>THE IMPOSTER WAS</Text>
+                <AppText style={styles.label}>THE IMPOSTER WAS</AppText>
                 <View style={styles.avatarWrap}>
                   <Avatar name={imposter?.name ?? '?'} index={imposterIndex} size={82} />
                   <View style={styles.avatarBadge}>
                     <Eye size={15} color={COLORS.honey} />
                   </View>
                 </View>
-                <Text style={styles.imposterName} numberOfLines={1}>{imposter?.name}</Text>
+                <AppText style={styles.imposterName} numberOfLines={1}>{imposter?.name}</AppText>
                 {!skippedVote && votesFor && totalVotes && (
-                  <Text style={styles.sub}>{votesFor} of {totalVotes} votes</Text>
+                  <AppText style={styles.sub}>{votesFor} of {totalVotes} votes</AppText>
                 )}
               </GlassCard>
             </Animated.View>
@@ -150,8 +151,8 @@ export default function ResultScreen() {
             <Pressable onPress={() => reveal(false)} accessibilityRole="button" accessibilityLabel="Reveal the imposter">
               <GlassCard style={styles.hiddenCard}>
                 <EyeOff size={28} color={COLORS.textMuted} />
-                <Text style={styles.hiddenTitle}>Tap to reveal the imposter</Text>
-                <Text style={styles.sub}>Make sure everyone is watching.</Text>
+                <AppText style={styles.hiddenTitle}>Tap to reveal the imposter</AppText>
+                <AppText style={styles.sub}>Make sure everyone is watching.</AppText>
               </GlassCard>
             </Pressable>
           )}
@@ -159,17 +160,17 @@ export default function ResultScreen() {
           {/* The word */}
           <GlassCard style={styles.wordCard}>
             <View style={styles.wordText}>
-              <Text style={styles.label}>THE WORD WAS</Text>
-              <Text style={styles.word} numberOfLines={1}>{game.word}</Text>
+              <AppText style={styles.label}>THE WORD WAS</AppText>
+              <AppText style={styles.word} numberOfLines={1}>{game.word}</AppText>
             </View>
             <Pill label={packLabel} />
           </GlassCard>
 
           {/* Who was voted out, when the crew got it wrong */}
           {!skippedVote && !caughtImposter && votedOut && (
-            <Text style={styles.wrongVote}>
+            <AppText style={styles.wrongVote}>
               The table voted out {votedOut.name}, who was crew.
-            </Text>
+            </AppText>
           )}
 
           <View style={styles.spacer} />

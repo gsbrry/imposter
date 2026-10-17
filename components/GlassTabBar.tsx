@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import {
+  View, TouchableOpacity, StyleSheet, Platform,
+} from 'react-native';
+import AppText from './AppText';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -63,7 +66,7 @@ export default function GlassTabBar({ state, descriptors, navigation, tabs }: Bo
               >
                 <View style={[styles.tab, focused && styles.tabOn]}>
                   <Icon size={20} color={color} />
-                  <Text style={[styles.label, { color }]} numberOfLines={1}>{label}</Text>
+                  <AppText style={[styles.label, { color }]} numberOfLines={1}>{label}</AppText>
                 </View>
               </TouchableOpacity>
             );

@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import {
+  View, StyleSheet, StyleProp, ViewStyle,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS } from '../constants/theme';
 
 interface PillProps {
@@ -16,9 +19,9 @@ export default function Pill({ label, icon, tone = 'glass', style }: PillProps) 
   return (
     <View style={[styles.pill, honey && styles.pillHoney, style]}>
       {icon}
-      <Text style={[styles.label, honey && styles.labelHoney]} numberOfLines={1}>
+      <AppText style={[styles.label, honey && styles.labelHoney]} numberOfLines={1}>
         {label}
-      </Text>
+      </AppText>
     </View>
   );
 }

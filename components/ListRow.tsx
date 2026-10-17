@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import {
+  View, TouchableOpacity, StyleSheet, StyleProp, ViewStyle,
+} from 'react-native';
+import AppText from './AppText';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 
 interface ListRowProps {
@@ -25,8 +28,8 @@ export default function ListRow({
     <>
       {icon && <View style={styles.tile}>{icon}</View>}
       <View style={styles.text}>
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
-        {description && <Text style={styles.description} numberOfLines={2}>{description}</Text>}
+        <AppText style={styles.title} numberOfLines={1}>{title}</AppText>
+        {description && <AppText style={styles.description} numberOfLines={2}>{description}</AppText>}
       </View>
       {trailing}
     </>

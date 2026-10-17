@@ -1,8 +1,12 @@
 import React from 'react';
-import { Animated, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import {
+  Animated, TouchableOpacity, StyleSheet, StyleProp, ViewStyle,
+} from 'react-native';
+import AppText from './AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, GRADIENTS, RADIUS, SIZE, SHADOW, SPACING } from '../constants/theme';
 import { usePressScale } from '../hooks/usePressScale';
+import { useAccessibility } from '../context/AccessibilityContext';
 
 interface PrimaryButtonProps {
   label: string;
@@ -22,6 +26,8 @@ export default function PrimaryButton({
   label, onPress, icon, iconPosition = 'leading', disabled, style, accessibilityLabel,
 }: PrimaryButtonProps) {
   const { scale, onPressIn, onPressOut } = usePressScale();
+  // Larger text grows the control with the label so nothing is clipped.
+  const { textScale } = useAccessibility();
 
   return (
     <Animated.View style={[styles.shadowWrap, { transform: [{ scale }], opacity: disabled ? 0.4 : 1 }, style]}>
@@ -39,10 +45,10 @@ export default function PrimaryButton({
           colors={GRADIENTS.honeyButton}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
-          style={styles.fill}
+          style={[styles.fill, { minHeight: SIZE.button * textScale }]}
         >
           {iconPosition === 'leading' && icon}
-          <Text style={styles.text} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</Text>
+          <AppText style={styles.text} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</AppText>
           {iconPosition === 'trailing' && icon}
         </LinearGradient>
       </TouchableOpacity>

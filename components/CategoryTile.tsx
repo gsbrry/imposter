@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View, TouchableOpacity, StyleSheet,
+} from 'react-native';
+import AppText from './AppText';
 import { Lock } from 'lucide-react-native';
 import { COLORS, FONTS } from '../constants/theme';
 
@@ -29,11 +32,11 @@ export default function CategoryTile({ icon: Icon, label, count, selected, locke
       <View style={[styles.tileIcon, selected && styles.tileIconSelected]}>
         <Icon size={17} color={iconColor} strokeWidth={1.75} />
       </View>
-      <Text style={[styles.name, selected && styles.nameSelected]} numberOfLines={2}>
+      <AppText style={[styles.name, selected && styles.nameSelected]} numberOfLines={2}>
         {label}
-      </Text>
+      </AppText>
       {count && (
-        <Text style={[styles.count, selected && styles.countSelected]}>{count}</Text>
+        <AppText style={[styles.count, selected && styles.countSelected]}>{count}</AppText>
       )}
     </TouchableOpacity>
   );

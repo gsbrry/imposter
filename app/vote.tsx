@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, Animated, TouchableOpacity,
+  View, StyleSheet, Animated, TouchableOpacity,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Eye } from 'lucide-react-native';
@@ -103,20 +104,20 @@ export default function VoteScreen() {
           style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
           <View style={styles.header}>
-            <Text style={styles.label}>
+            <AppText style={styles.label}>
               VOTING · {votesIn} OF {total} IN
-            </Text>
+            </AppText>
           </View>
 
           <View style={styles.heading}>
-            <Text style={styles.title} maxFontSizeMultiplier={1.4}>Who is the imposter?</Text>
-            <Text style={styles.sub}>
+            <AppText style={styles.title} maxFontSizeMultiplier={1.4}>Who is the imposter?</AppText>
+            <AppText style={styles.sub}>
               {showTally
                 ? 'Every vote is in. Reveal when the table is ready.'
                 : `${voter.name}, tap the player you suspect.`}
-            </Text>
+            </AppText>
             {tieIds.length > 0 && !showTally && (
-              <Text style={styles.tie}>It was a tie, so everyone votes again.</Text>
+              <AppText style={styles.tie}>It was a tie, so everyone votes again.</AppText>
             )}
           </View>
 
@@ -132,7 +133,7 @@ export default function VoteScreen() {
                     selected={showTally && counts[p.id] === Math.max(...Object.values(counts), 0) && (counts[p.id] ?? 0) > 0}
                     onPress={isSelf || showTally ? undefined : () => castVote(p.id)}
                   />
-                  {isSelf && <Text style={styles.selfTag}>You</Text>}
+                  {isSelf && <AppText style={styles.selfTag}>You</AppText>}
                 </View>
               );
             })}
@@ -147,7 +148,7 @@ export default function VoteScreen() {
                   accessibilityLabel="Skip this vote"
                   style={styles.skipCell}
                 >
-                  <Text style={styles.skipText}>Skip vote</Text>
+                  <AppText style={styles.skipText}>Skip vote</AppText>
                 </TouchableOpacity>
               </View>
             )}
@@ -156,20 +157,20 @@ export default function VoteScreen() {
           {showTally && ranked.length > 0 && (
             <GlassCard style={styles.tallyCard}>
               <View style={styles.tallyHead}>
-                <Text style={styles.label}>VOTE TALLY</Text>
-                {leader && <Text style={styles.leader}>{leader.name} leads</Text>}
+                <AppText style={styles.label}>VOTE TALLY</AppText>
+                {leader && <AppText style={styles.leader}>{leader.name} leads</AppText>}
               </View>
               {ranked.map(r => (
                 <View key={r.name} style={styles.tallyRow}>
                   <View style={styles.tallyLabels}>
-                    <Text style={styles.tallyName} numberOfLines={1}>{r.name}</Text>
-                    <Text style={styles.tallyPercent}>{r.percent}%</Text>
+                    <AppText style={styles.tallyName} numberOfLines={1}>{r.name}</AppText>
+                    <AppText style={styles.tallyPercent}>{r.percent}%</AppText>
                   </View>
                   <ProgressBar progress={r.percent / 100} />
                 </View>
               ))}
               {tally.skipped > 0 && (
-                <Text style={styles.skipped}>{tally.skipped} skipped</Text>
+                <AppText style={styles.skipped}>{tally.skipped} skipped</AppText>
               )}
             </GlassCard>
           )}

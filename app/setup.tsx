@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, Animated,
+  View, StyleSheet, Animated,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -113,8 +114,8 @@ export default function SetupScreen() {
           <StepHeader step={1} label="Step 1 of 3" onBack={() => router.back()} />
 
           <View style={styles.heading}>
-            <Text style={styles.title} maxFontSizeMultiplier={1.4}>Pick a category</Text>
-            <Text style={styles.sub}>Words come from this pack.</Text>
+            <AppText style={styles.title} maxFontSizeMultiplier={1.4}>Pick a category</AppText>
+            <AppText style={styles.sub}>Words come from this pack.</AppText>
           </View>
 
           <View style={styles.grid}>
@@ -139,9 +140,9 @@ export default function SetupScreen() {
           </View>
 
           <View style={styles.difficulty}>
-            <Text style={styles.label}>DIFFICULTY</Text>
+            <AppText style={styles.label}>DIFFICULTY</AppText>
             <Segmented options={DIFFICULTIES} value={difficulty} onChange={setDifficulty} />
-            <Text style={styles.blurb}>{DIFFICULTY_BLURB[difficulty]}</Text>
+            <AppText style={styles.blurb}>{DIFFICULTY_BLURB[difficulty]}</AppText>
           </View>
 
           <View style={styles.spacer} />

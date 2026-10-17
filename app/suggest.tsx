@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, Keyboard,
+  View, StyleSheet, Animated, Keyboard,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Send, Check } from 'lucide-react-native';
@@ -58,11 +59,11 @@ export default function SuggestCategoryScreen() {
               <View style={styles.doneTile}>
                 <Check size={26} color={COLORS.honeyText} />
               </View>
-              <Text style={styles.title} maxFontSizeMultiplier={1.3}>Saved.</Text>
-              <Text style={[styles.sub, styles.doneSub]}>
+              <AppText style={styles.title} maxFontSizeMultiplier={1.3}>Saved.</AppText>
+              <AppText style={[styles.sub, styles.doneSub]}>
                 Your idea is kept on this phone. We gather suggestions with each
                 update, so watch for new packs.
-              </Text>
+              </AppText>
               <GlassButton
                 label="Back to settings"
                 onPress={() => router.back()}
@@ -72,8 +73,8 @@ export default function SuggestCategoryScreen() {
           ) : (
             <>
               <View style={styles.heading}>
-                <Text style={styles.title} maxFontSizeMultiplier={1.4}>Suggest a category</Text>
-                <Text style={styles.sub}>The best ideas become new packs.</Text>
+                <AppText style={styles.title} maxFontSizeMultiplier={1.4}>Suggest a category</AppText>
+                <AppText style={styles.sub}>The best ideas become new packs.</AppText>
               </View>
 
               <TextField

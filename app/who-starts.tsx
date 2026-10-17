@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, Easing, AccessibilityInfo, Platform,
+  View, StyleSheet, Animated, Easing, AccessibilityInfo, Platform,
 } from 'react-native';
+import AppText from '../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Dice5, Play } from 'lucide-react-native';
@@ -14,6 +15,7 @@ import Pill from '../components/Pill';
 import PrimaryButton from '../components/PrimaryButton';
 import TextButton from '../components/TextButton';
 import { useGame } from '../context/GameContext';
+import { useAccessibility } from '../context/AccessibilityContext';
 import { useRequireGame } from '../hooks/useRequireGame';
 import { storage, defaultGameSettings } from '../utils/storage';
 import { pickStarter, clueOrder } from '../utils/pickStarter';
@@ -27,6 +29,7 @@ export default function WhoStartsScreen() {
   const router = useRouter();
   const { game, setGame } = useGame();
   const hasGame = useRequireGame();
+  const { reduceMotion } = useAccessibility();
   const [rounds, setRounds] = useState(defaultGameSettings.turnsBeforeGuess);
   const [timerLabel, setTimerLabel] = useState('timer off');
 
@@ -69,12 +72,16 @@ export default function WhoStartsScreen() {
         ])
       ).start();
     };
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then(reduced => { if (!reduced) startPulse(); })
-      .catch(startPulse);
+    if (reduceMotion) {
+      glow.setValue(0);
+    } else {
+      AccessibilityInfo.isReduceMotionEnabled()
+        .then(reduced => { if (!reduced) startPulse(); })
+        .catch(startPulse);
+    }
 
     return () => { cancelled = true; };
-  }, [entryAnim, entryY, glow]);
+  }, [entryAnim, entryY, glow, reduceMotion]);
 
   const pickAgain = () => {
     roll();
@@ -97,7 +104,9 @@ export default function WhoStartsScreen() {
 
   const starterSeat = game.players.findIndex(p => p.id === starter.id);
   const glowScale = glow.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] });
-  const glowOpacity = glow.interpolate({ inputRange: [0, 1], outputRange: [0.38, 0.16] });
+  const glowOpacity = reduceMotion
+    ? 0
+    : glow.interpolate({ inputRange: [0, 1], outputRange: [0.38, 0.16] });
   const roundsLabel = `${rounds} clue round${rounds === 1 ? '' : 's'} · ${timerLabel}`;
 
   return (
@@ -107,7 +116,7 @@ export default function WhoStartsScreen() {
         <Animated.View
           style={[styles.inner, { opacity: entryAnim, transform: [{ translateY: entryY }] }]}
         >
-          <Text style={styles.label}>EVERYONE HAS SEEN THEIR WORD</Text>
+          <AppText style={styles.label}>EVERYONE HAS SEEN THEIR WORD</AppText>
 
           <View style={styles.markWrap}>
             <Animated.View
@@ -121,14 +130,14 @@ export default function WhoStartsScreen() {
           </View>
 
           <View style={styles.heading}>
-            <Text style={styles.title} numberOfLines={2} maxFontSizeMultiplier={1.3}>
+            <AppText style={styles.title} numberOfLines={2} maxFontSizeMultiplier={1.3}>
               {starter.name} starts
-            </Text>
-            <Text style={styles.sub}>Picked at random. Then go clockwise.</Text>
+            </AppText>
+            <AppText style={styles.sub}>Picked at random. Then go clockwise.</AppText>
           </View>
 
           <GlassCard style={styles.orderCard}>
-            <Text style={styles.label}>CLUE ORDER</Text>
+            <AppText style={styles.label}>CLUE ORDER</AppText>
             <View style={styles.orderRow}>
               {order.map((p, i) => (
                 <Chip
@@ -136,7 +145,7 @@ export default function WhoStartsScreen() {
                   label={p.name}
                   selected={i === 0}
                   icon={
-                    <Text style={[styles.seat, i === 0 && styles.seatOn]}>{i + 1}</Text>
+                    <AppText style={[styles.seat, i === 0 && styles.seatOn]}>{i + 1}</AppText>
                   }
                 />
               ))}

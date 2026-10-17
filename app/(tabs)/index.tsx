@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, TouchableOpacity,
+  View, StyleSheet, Animated, TouchableOpacity,
 } from 'react-native';
+import AppText from '../../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import {
@@ -113,8 +114,8 @@ export default function HomeScreen() {
             <View style={styles.brand}>
               <AppMark size={36} />
               <View style={styles.brandText}>
-                <Text style={styles.label}>PARTY WORD GAME</Text>
-                <Text style={styles.brandName}>Impostr</Text>
+                <AppText style={styles.label}>PARTY WORD GAME</AppText>
+                <AppText style={styles.brandName}>Impostr</AppText>
               </View>
             </View>
             <IconButton onPress={() => setShowHowToPlay(true)} accessibilityLabel="How to play">
@@ -136,13 +137,13 @@ export default function HomeScreen() {
               />
             </View>
 
-            <Text style={styles.heroTitle} maxFontSizeMultiplier={1.4}>
-              Someone here{'\n'}is <Text style={styles.heroAccent}>lying.</Text>
-            </Text>
+            <AppText style={styles.heroTitle} maxFontSizeMultiplier={1.4}>
+              Someone here{'\n'}is <AppText style={styles.heroAccent}>lying.</AppText>
+            </AppText>
 
-            <Text style={styles.heroBody}>
+            <AppText style={styles.heroBody}>
               Everyone gets the secret word except one. Give clues, stay sneaky, then vote.
-            </Text>
+            </AppText>
 
             <PrimaryButton
               label="Play now"
@@ -164,10 +165,10 @@ export default function HomeScreen() {
                   <RefreshCw size={18} color={COLORS.honey} />
                 </View>
                 <View style={styles.againText}>
-                  <Text style={styles.againTitle}>Play again</Text>
-                  <Text style={styles.againSub} numberOfLines={1}>
+                  <AppText style={styles.againTitle}>Play again</AppText>
+                  <AppText style={styles.againSub} numberOfLines={1}>
                     {lastCategoryLabel} · {lastGame.players} players
-                  </Text>
+                  </AppText>
                 </View>
                 <ChevronRight size={20} color={COLORS.textMuted} />
               </GlassCard>
@@ -176,8 +177,8 @@ export default function HomeScreen() {
 
           {/* Categories */}
           <View style={styles.sectionHead}>
-            <Text style={styles.label}>CATEGORIES</Text>
-            <Text style={[styles.label, styles.labelAccent]}>{CATEGORIES.length} PACKS</Text>
+            <AppText style={styles.label}>CATEGORIES</AppText>
+            <AppText style={[styles.label, styles.labelAccent]}>{CATEGORIES.length} PACKS</AppText>
           </View>
 
           <View style={styles.catGrid}>
@@ -193,7 +194,7 @@ export default function HomeScreen() {
                   >
                     <GlassCard style={styles.catTile}>
                       <Icon size={17} color={COLORS.honeyText} strokeWidth={1.8} />
-                      <Text style={styles.catName} numberOfLines={1}>{cat.label}</Text>
+                      <AppText style={styles.catName} numberOfLines={1}>{cat.label}</AppText>
                     </GlassCard>
                   </TouchableOpacity>
                 </View>
@@ -212,7 +213,7 @@ function HowToPlaySheet({ visible, onClose }: { visible: boolean; onClose: () =>
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={styles.sheetHead}>
-        <Text style={styles.sheetTitle}>How to play</Text>
+        <AppText style={styles.sheetTitle}>How to play</AppText>
         <IconButton onPress={onClose} glass={false} accessibilityLabel="Close">
           <X size={20} color={COLORS.ink} />
         </IconButton>
@@ -221,11 +222,11 @@ function HowToPlaySheet({ visible, onClose }: { visible: boolean; onClose: () =>
       {HOW_TO_PLAY.map((step, i) => (
         <View key={step.title} style={styles.step}>
           <View style={styles.stepNumber}>
-            <Text style={styles.stepNumberText}>{i + 1}</Text>
+            <AppText style={styles.stepNumberText}>{i + 1}</AppText>
           </View>
           <View style={styles.stepText}>
-            <Text style={styles.stepTitle}>{step.title}</Text>
-            <Text style={styles.stepBody}>{step.body}</Text>
+            <AppText style={styles.stepTitle}>{step.title}</AppText>
+            <AppText style={styles.stepBody}>{step.body}</AppText>
           </View>
         </View>
       ))}

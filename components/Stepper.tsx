@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import {
+  View, StyleSheet,
+} from 'react-native';
+import AppText from './AppText';
 import { Minus, Plus } from 'lucide-react-native';
 import { COLORS, FONTS } from '../constants/theme';
 import IconButton from './IconButton';
@@ -35,8 +38,8 @@ export default function Stepper({
       </IconButton>
 
       <View style={styles.center}>
-        <Text style={styles.number}>{value}</Text>
-        {label && <Text style={styles.label}>{label}</Text>}
+        <AppText style={styles.number}>{value}</AppText>
+        {label && <AppText style={styles.label}>{label}</AppText>}
       </View>
 
       <IconButton
