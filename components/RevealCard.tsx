@@ -1,11 +1,12 @@
 import React from 'react';
 import {
-  View, StyleSheet, Platform, useWindowDimensions,
+  View, StyleSheet, Platform,
 } from 'react-native';
 import AppText from './AppText';
 import { BlurView } from 'expo-blur';
 import { COLORS, FONTS, BLUR, SHADOW } from '../constants/theme';
 import { useAccessibility } from '../context/AccessibilityContext';
+import { useContentSize } from './ContentSize';
 
 interface RevealCardProps {
   /** Rendered above the eyebrow — the category pill in the reveal flow. */
@@ -26,7 +27,7 @@ interface RevealCardProps {
  * away to anyone watching the screen from across the table.
  */
 export default function RevealCard({ badge, eyebrow, title, subtitle, footer }: RevealCardProps) {
-  const { width } = useWindowDimensions();
+  const { width } = useContentSize();
   const { textScale } = useAccessibility();
   // Matches the design's clamp(38px, 14.5cqi, 54px).
   const titleSize = Math.max(38, Math.min(54, width * 0.145));

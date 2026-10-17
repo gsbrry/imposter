@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, StyleSheet, Animated, Platform, useWindowDimensions,
+  View, StyleSheet, Animated, Platform,
   BackHandler, AppState,
 } from 'react-native';
 import AppText from '../components/AppText';
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
+import { useContentSize } from '../components/ContentSize';
 import GlassCard from '../components/GlassCard';
 import Avatar from '../components/Avatar';
 import TimerRing from '../components/TimerRing';
@@ -103,7 +104,7 @@ export default function ClueRoundScreen() {
   const router = useRouter();
   const { game, resetGame } = useGame();
   const hasGame = useRequireGame();
-  const { width } = useWindowDimensions();
+  const { width } = useContentSize();
   const [progress, setProgress] = useState<ClueProgress>(
     () => startProgress(defaultGameSettings.turnsBeforeGuess)
   );

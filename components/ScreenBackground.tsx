@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, {
   Circle, Defs, Pattern, Rect, RadialGradient, Stop,
 } from 'react-native-svg';
 import { COLORS } from '../constants/theme';
+import { useContentSize } from './ContentSize';
 
 /**
  * Cream page background with two blurred honey orbs and a faint dot
@@ -16,7 +17,7 @@ import { COLORS } from '../constants/theme';
  * reproduces the soft edge of the design's `filter: blur(38px)`.
  */
 export default function ScreenBackground() {
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useContentSize();
 
   // Sizes are a share of the width, matching the design's cqi units.
   const o1 = width * 0.66;

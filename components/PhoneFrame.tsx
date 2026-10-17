@@ -1,45 +1,76 @@
 import { useEffect } from 'react';
 import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { COLORS, RADIUS } from '@/constants/theme';
+import ScreenBackground from './ScreenBackground';
+import { ContentSizeProvider } from './ContentSize';
 
 /**
- * Keeps the mobile layout intact on desktop web by rendering the app inside a
- * centred, phone-width frame. On native, and on narrow browser windows, it is
- * a transparent pass-through so nothing about the phone experience changes.
+ * Keeps the one-handed layout intact on anything wider than a phone.
+ *
+ * Phones and narrow browser windows pass straight through. A tablet, or a
+ * desktop browser, gets the app as a centred column on the cream page with
+ * the honey orbs behind it, matching the tablet captures in
+ * design/store/play-store. A full-width tablet layout would leave the
+ * reveal card and the vote grid stranded in white space, and the game is
+ * played by passing one device round either way.
  */
 
-const FRAME_WIDTH = 420;
+/** Android's own small-tablet threshold, in dp. */
+const TABLET_BREAKPOINT = 600;
+/** Android's 10-inch threshold, sw720dp, and desktop browsers. */
+const LARGE_TABLET_BREAKPOINT = 720;
+
+const COLUMN_WIDTH_TABLET = 460;
+const COLUMN_WIDTH_LARGE = 520;
+
+const SPACE_AROUND = 32;
+/** On web the column is framed; on a tablet it fills the height. */
 const FRAME_MAX_HEIGHT = 900;
-// Below this the browser window is close enough to a phone to go full bleed.
-const WIDE_BREAKPOINT = 700;
+
+export function columnWidthFor(width: number): number | null {
+  if (width < TABLET_BREAKPOINT) return null;
+  return width >= LARGE_TABLET_BREAKPOINT ? COLUMN_WIDTH_LARGE : COLUMN_WIDTH_TABLET;
+}
 
 export default function PhoneFrame({ children }: { children: React.ReactNode }) {
   const { width, height } = useWindowDimensions();
-  const isWide = Platform.OS === 'web' && width >= WIDE_BREAKPOINT;
+  const columnWidth = columnWidthFor(width);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    // The page behind the frame, so the browser gutters match the app.
-    document.body.style.backgroundColor = COLORS.pageSurround;
+    // The page behind the column, so the browser gutters match the app.
+    document.body.style.backgroundColor = COLORS.background;
   }, []);
 
-  if (!isWide) {
+  if (columnWidth === null) {
     return <View style={styles.fill}>{children}</View>;
   }
 
-  const frameHeight = Math.min(height - SPACE_AROUND * 2, FRAME_MAX_HEIGHT);
+  // On web the column keeps a rounded frame and sits in from the edges. On
+  // a tablet it runs the full height, so the status bar and the system
+  // navigation still belong to the app.
+  const framed = Platform.OS === 'web';
+  const columnHeight = framed
+    ? Math.min(height - SPACE_AROUND * 2, FRAME_MAX_HEIGHT)
+    : height;
 
   return (
     <View style={styles.backdrop}>
-      <View style={styles.glow} pointerEvents="none" />
-      <View style={[styles.frame, { width: FRAME_WIDTH, height: frameHeight }]}>
-        {children}
+      <ScreenBackground />
+      <View
+        style={[
+          styles.column,
+          { width: columnWidth, height: columnHeight },
+          framed && styles.framed,
+        ]}
+      >
+        <ContentSizeProvider width={columnWidth} height={columnHeight}>
+          {children}
+        </ContentSizeProvider>
       </View>
     </View>
   );
 }
-
-const SPACE_AROUND = 32;
 
 const styles = StyleSheet.create({
   fill: {
@@ -49,22 +80,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.pageSurround,
+    backgroundColor: COLORS.background,
   },
-  // A soft honey halo so the frame reads as deliberate rather than cropped.
-  glow: {
-    position: 'absolute',
-    width: FRAME_WIDTH + 160,
-    height: FRAME_WIDTH + 160,
-    borderRadius: (FRAME_WIDTH + 160) / 2,
-    backgroundColor: COLORS.honeySoft,
-    opacity: 0.5,
-  },
-  frame: {
+  column: {
     overflow: 'hidden',
+    backgroundColor: COLORS.background,
+  },
+  framed: {
     borderRadius: RADIUS.lg + 12,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.background,
   },
 });
