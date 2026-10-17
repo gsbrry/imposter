@@ -106,7 +106,7 @@ export default function ResultScreen() {
 
   if (!hasGame) return null;
 
-  const outcomeLabel = skippedVote ? 'No vote' : caughtImposter ? 'Crew wins' : 'Imposter wins';
+  const outcomeLabel = skippedVote ? 'Voting skipped' : caughtImposter ? 'Crew wins' : 'Imposter wins';
   const headline = skippedVote
     ? 'The imposter was...'
     : caughtImposter ? 'Caught them.' : 'They got away.';
