@@ -127,11 +127,12 @@ export default function VoteScreen() {
               return (
                 <View key={p.id} style={styles.cell}>
                   <VoteCard
+                    id={p.id}
                     name={p.name}
                     avatarIndex={i}
                     voteCount={showTally ? counts[p.id] ?? 0 : undefined}
                     selected={showTally && counts[p.id] === Math.max(...Object.values(counts), 0) && (counts[p.id] ?? 0) > 0}
-                    onPress={isSelf || showTally ? undefined : () => castVote(p.id)}
+                    onPress={isSelf || showTally ? undefined : castVote}
                   />
                   {isSelf && <AppText style={styles.selfTag}>You</AppText>}
                 </View>

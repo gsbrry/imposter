@@ -12,16 +12,18 @@ interface CategoryTileProps {
   count?: string;
   selected?: boolean;
   locked?: boolean;
-  onPress: () => void;
+  /** Passed back to onPress, so the grid can use one stable handler. */
+  id: string;
+  onPress: (id: string) => void;
 }
 
 /** 3-column category grid tile. Matches impostr.css `.cat` / `.cat.sel` / `.tile-ic`. */
-export default function CategoryTile({ icon: Icon, label, count, selected, locked, onPress }: CategoryTileProps) {
+function CategoryTile({ icon: Icon, id, label, count, selected, locked, onPress }: CategoryTileProps) {
   const iconColor = selected ? COLORS.onHoney : COLORS.honeyText;
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => onPress(id)}
       activeOpacity={0.75}
       style={[styles.tile, selected && styles.tileSelected]}
       accessibilityRole="button"
@@ -91,3 +93,9 @@ const styles = StyleSheet.create({
     color: COLORS.onInkMuted,
   },
 });
+
+/**
+ * Memoised: rendered inside a .map() loop, so a parent re-render would
+ * otherwise rebuild every item. Keep the props it receives stable.
+ */
+export default React.memo(CategoryTile);

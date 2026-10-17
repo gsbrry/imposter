@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, StyleSheet, Animated,
 } from 'react-native';
@@ -84,14 +84,17 @@ export default function SetupScreen() {
     ]).start();
   }, [entryAnim, entryY]);
 
-  const handleLockedPress = (catId: CategoryKey) => {
+  // Stable so the memoised tiles are not rebuilt on every parent render.
+  const chooseCategory = useCallback((id: string) => setCategory(id as CategoryKey), []);
+
+  const handleLockedPress = useCallback((catId: string) => {
     const anim = pulseAnims[catId];
     Animated.sequence([
       Animated.timing(anim, { toValue: 1.05, duration: 75, useNativeDriver: true }),
       Animated.timing(anim, { toValue: 1, duration: 75, useNativeDriver: true }),
     ]).start();
     router.push('/premium');
-  };
+  }, [pulseAnims, router]);
 
   const handleNext = async () => {
     await storage.setLastCategory(category);
@@ -138,7 +141,8 @@ export default function SetupScreen() {
                     count={`${wordCount(cat.id)} words`}
                     selected={category === cat.id}
                     locked={locked}
-                    onPress={() => (locked ? handleLockedPress(cat.id) : setCategory(cat.id))}
+                    id={cat.id}
+                    onPress={locked ? handleLockedPress : chooseCategory}
                   />
                 </Animated.View>
               );

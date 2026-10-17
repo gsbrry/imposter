@@ -8,17 +8,19 @@ import { COLORS, FONTS } from '../constants/theme';
 interface ChipProps {
   label: string;
   selected?: boolean;
-  onPress?: () => void;
+  /** Passed back to onPress, so the parent can use one stable handler. */
+  value?: string;
+  onPress?: (value: string) => void;
   icon?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
 }
 
 /** Matches impostr.css `.chip` / `.chip.on`. */
-export default function Chip({ label, selected, onPress, icon, style, accessibilityLabel }: ChipProps) {
+function Chip({ label, selected, value, onPress, icon, style, accessibilityLabel }: ChipProps) {
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={onPress && (() => onPress(value ?? label))}
       disabled={!onPress}
       activeOpacity={0.75}
       accessibilityRole={onPress ? 'button' : undefined}
@@ -58,3 +60,9 @@ const styles = StyleSheet.create({
     color: COLORS.background,
   },
 });
+
+/**
+ * Memoised: rendered inside a .map() loop, so a parent re-render would
+ * otherwise rebuild every item. Keep the props it receives stable.
+ */
+export default React.memo(Chip);

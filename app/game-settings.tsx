@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, StyleSheet, TextInput, Animated, Keyboard,
 } from 'react-native';
@@ -68,6 +68,12 @@ export default function GameSettingsScreen() {
 
   const adjustRounds = (delta: number) =>
     setTurnsBeforeGuess(r => Math.min(MAX_ROUNDS, Math.max(MIN_ROUNDS, r + delta)));
+
+  // One stable handler for the chip row, so the memoised chips hold.
+  const chooseTimer = useCallback((v: string) => {
+    const opt = TIMER_OPTIONS.find(o => String(o.value) === v);
+    if (opt) setTimerPerClue(opt.value);
+  }, []);
 
   const handleNext = async () => {
     const parsed = parseInt(customSeconds, 10);
@@ -146,8 +152,9 @@ export default function GameSettingsScreen() {
                 <Chip
                   key={String(opt.value)}
                   label={opt.label}
+                  value={String(opt.value)}
                   selected={timerPerClue === opt.value}
-                  onPress={() => setTimerPerClue(opt.value)}
+                  onPress={chooseTimer}
                 />
               ))}
             </View>

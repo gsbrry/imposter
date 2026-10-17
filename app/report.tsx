@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View, StyleSheet, Animated, Platform, Linking, Keyboard,
 } from 'react-native';
@@ -68,6 +68,8 @@ export default function ReportScreen() {
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
   }, [entryAnim, entryY]);
+
+  const chooseType = useCallback((v: string) => setType(v as ReportType), []);
 
   const handleSend = async () => {
     if (!message.trim()) return;
@@ -148,8 +150,9 @@ export default function ReportScreen() {
                 <Chip
                   key={t}
                   label={t}
+                  value={t}
                   selected={type === t}
-                  onPress={() => setType(t)}
+                  onPress={chooseType}
                   accessibilityLabel={`Report type ${t}`}
                 />
               ))}

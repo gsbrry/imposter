@@ -6,7 +6,7 @@ import AppText from './AppText';
 import { COLORS, FONTS } from '../constants/theme';
 
 /** The small uppercase caption above a card. Matches impostr.css `.lab`. */
-export default function SectionLabel({
+function SectionLabel({
   children, style,
 }: {
   children: string;
@@ -23,3 +23,9 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
   },
 });
+
+/**
+ * Memoised: rendered inside a .map() loop, so a parent re-render would
+ * otherwise rebuild every item. Keep the props it receives stable.
+ */
+export default React.memo(SectionLabel);

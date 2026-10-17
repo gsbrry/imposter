@@ -13,7 +13,7 @@ interface GlassCardProps {
  * 1px border, radius 20. Matches impostr.css `.glass`. Always sits over
  * ScreenBackground's orbs — a glass fill over a flat cream page looks dull.
  */
-export default function GlassCard({ children, style }: GlassCardProps) {
+function GlassCard({ children, style }: GlassCardProps) {
   return (
     <View style={styles.shadowWrap}>
       <View style={[styles.card, style]}>
@@ -43,3 +43,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
+
+/**
+ * Memoised: rendered inside a .map() loop, so a parent re-render would
+ * otherwise rebuild every item. Keep the props it receives stable.
+ */
+export default React.memo(GlassCard);

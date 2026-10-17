@@ -23,7 +23,7 @@ interface AvatarProps {
  * 34x34 at radius 11 by default, background cycling through the 6-colour
  * avatar palette, ink-coloured initial.
  */
-export default function Avatar({
+function Avatar({
   name, index, size = SIZE.avatar, icon: Icon, onPress, accessibilityLabel,
 }: AvatarProps) {
   const bg = COLORS.avatars[index % COLORS.avatars.length];
@@ -69,3 +69,9 @@ const styles = StyleSheet.create({
     color: COLORS.ink,
   },
 });
+
+/**
+ * Memoised: rendered inside a .map() loop, so a parent re-render would
+ * otherwise rebuild every item. Keep the props it receives stable.
+ */
+export default React.memo(Avatar);

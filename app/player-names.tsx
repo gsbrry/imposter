@@ -90,7 +90,7 @@ export default function PlayerNamesScreen() {
                 name={player.name}
                 index={index}
                 showDivider={index > 0}
-                onChangeName={text => updateName(index, text)}
+                onChangeName={updateName}
               />
             ))}
           </GlassCard>
@@ -135,13 +135,14 @@ export default function PlayerNamesScreen() {
   );
 }
 
-function PlayerRow({
+const PlayerRow = React.memo(function PlayerRow({
   name, index, showDivider, onChangeName,
 }: {
   name: string;
   index: number;
   showDivider: boolean;
-  onChangeName: (text: string) => void;
+  /** Takes the row index so one stable handler serves every row. */
+  onChangeName: (index: number, text: string) => void;
 }) {
   const focusRing = useWebFocusRing();
 
@@ -155,7 +156,7 @@ function PlayerRow({
           onFocus={focusRing.onFocus}
           onBlur={focusRing.onBlur}
           value={name}
-          onChangeText={onChangeName}
+          onChangeText={text => onChangeName(index, text)}
           placeholder={`Player ${index + 1}`}
           placeholderTextColor={COLORS.textFaint}
           maxLength={20}
@@ -165,7 +166,7 @@ function PlayerRow({
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },

@@ -7,18 +7,20 @@ import { COLORS, FONTS } from '../constants/theme';
 import Avatar from './Avatar';
 
 interface VoteCardProps {
+  /** Passed back to onPress, so the grid can use one stable handler. */
+  id: string;
   name: string;
   avatarIndex: number;
   voteCount?: number;
   selected?: boolean;
-  onPress?: () => void;
+  onPress?: (id: string) => void;
 }
 
 /** One cell in the 2-column vote grid. Matches impostr.css `.vcard` / `.vcard.sel`. */
-export default function VoteCard({ name, avatarIndex, voteCount, selected, onPress }: VoteCardProps) {
+function VoteCard({ id, name, avatarIndex, voteCount, selected, onPress }: VoteCardProps) {
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={onPress && (() => onPress(id))}
       disabled={!onPress}
       activeOpacity={0.75}
       style={[styles.card, selected && styles.cardSelected]}
@@ -78,3 +80,9 @@ const styles = StyleSheet.create({
     color: COLORS.textBody,
   },
 });
+
+/**
+ * Memoised: rendered inside a .map() loop, so a parent re-render would
+ * otherwise rebuild every item. Keep the props it receives stable.
+ */
+export default React.memo(VoteCard);

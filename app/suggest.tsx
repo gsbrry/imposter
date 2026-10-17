@@ -104,7 +104,7 @@ export default function SuggestCategoryScreen() {
                       key={idea}
                       label={idea}
                       selected={categoryName === idea}
-                      onPress={() => setCategoryName(idea)}
+                      onPress={setCategoryName}
                     />
                   ))}
                 </View>
