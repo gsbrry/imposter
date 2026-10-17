@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Platform,
+  View, Text, StyleSheet, Modal, Pressable, Platform,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { House } from 'lucide-react-native';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
+import { COLORS, FONTS, RADIUS, SPACING, BLUR } from '../constants/theme';
 import { useGame } from '../context/GameContext';
-import GlassIconButton from './GlassIconButton';
+import IconButton from './IconButton';
+import PrimaryButton from './PrimaryButton';
+import GlassButton from './GlassButton';
 
 export default function HomeButton() {
   const [visible, setVisible] = useState(false);
@@ -23,9 +24,9 @@ export default function HomeButton() {
 
   return (
     <>
-      <GlassIconButton onPress={() => setVisible(true)} size={36} style={styles.btnShape}>
-        <House size={18} color={COLORS.textLabel} />
-      </GlassIconButton>
+      <IconButton onPress={() => setVisible(true)} size={36} accessibilityLabel="End game and go home">
+        <House size={18} color={COLORS.textMuted} />
+      </IconButton>
 
       <Modal
         visible={visible}
@@ -38,35 +39,16 @@ export default function HomeButton() {
           <View style={styles.modalShadow}>
             <Pressable style={styles.modal} onPress={e => e.stopPropagation()}>
               {Platform.OS !== 'web' && (
-                <BlurView intensity={85} tint="dark" style={StyleSheet.absoluteFill} />
+                <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
               )}
-              <LinearGradient
-                pointerEvents="none"
-                colors={[COLORS.glassSheen, 'transparent']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.modalSheen}
-              />
               <View style={styles.iconWrap}>
-                <House size={28} color={COLORS.yellow} />
+                <House size={28} color={COLORS.honey} />
               </View>
               <Text style={styles.heading}>End this game?</Text>
               <Text style={styles.sub}>Current game progress will be lost.</Text>
 
-              <TouchableOpacity style={styles.btnYes} onPress={confirm} activeOpacity={0.85}>
-                <LinearGradient
-                  pointerEvents="none"
-                  colors={['rgba(255,255,255,0.35)', 'transparent']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                  style={styles.btnYesSheen}
-                />
-                <Text style={styles.btnYesText}>YES, GO HOME</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.btnKeep} onPress={() => setVisible(false)} activeOpacity={0.85}>
-                <Text style={styles.btnKeepText}>Keep Playing</Text>
-              </TouchableOpacity>
+              <PrimaryButton label="YES, GO HOME" onPress={confirm} style={styles.fullWidth} />
+              <GlassButton label="Keep Playing" onPress={() => setVisible(false)} style={styles.fullWidth} />
             </Pressable>
           </View>
         </Pressable>
@@ -76,12 +58,9 @@ export default function HomeButton() {
 }
 
 const styles = StyleSheet.create({
-  btnShape: {
-    borderRadius: RADIUS.icon,
-  },
   backdrop: {
     flex: 1,
-    backgroundColor: COLORS.violetOverlay,
+    backgroundColor: COLORS.scrim,
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.md,
@@ -89,16 +68,16 @@ const styles = StyleSheet.create({
   modalShadow: {
     width: '100%',
     maxWidth: 360,
-    borderRadius: RADIUS.card,
-    shadowColor: '#000',
+    borderRadius: RADIUS.lg,
+    shadowColor: '#1C1404',
     shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
     shadowRadius: 28,
     elevation: 12,
   },
   modal: {
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFillStrong,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     padding: SPACING.md,
@@ -106,77 +85,31 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
     overflow: 'hidden',
   },
-  modalSheen: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-  },
   iconWrap: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
   heading: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 20,
-    color: COLORS.white,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   sub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
     marginBottom: SPACING.xs,
   },
-  btnYes: {
+  fullWidth: {
     width: '100%',
-    height: 56,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.yellow,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    shadowColor: COLORS.yellow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 14,
-    elevation: 6,
-  },
-  btnYesSheen: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '55%',
-  },
-  btnYesText: {
-    fontFamily: FONTS.extraBold,
-    fontSize: 15,
-    color: COLORS.nearBlack,
-    letterSpacing: 1,
-  },
-  btnKeep: {
-    width: '100%',
-    height: 56,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.glass,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnKeepText: {
-    fontFamily: FONTS.bold,
-    fontSize: 15,
-    color: COLORS.textBody,
   },
 });

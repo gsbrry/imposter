@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { COLORS } from '../constants/theme';
 
@@ -21,7 +21,7 @@ export default function TimerRing({ size = 56, progress, strokeWidth = 3 }: Time
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="rgba(255,255,255,0.1)"
+          stroke={COLORS.divider}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -29,7 +29,7 @@ export default function TimerRing({ size = 56, progress, strokeWidth = 3 }: Time
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={COLORS.yellow}
+          stroke={COLORS.honey}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={`${circumference} ${circumference}`}

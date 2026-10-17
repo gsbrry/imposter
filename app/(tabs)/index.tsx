@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ghost, Drama, MessageCircle, Vote } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
-import PillButton from '../../components/PillButton';
+import PrimaryButton from '../../components/PrimaryButton';
 
 const { width, height } = Dimensions.get('window');
 
@@ -89,7 +89,7 @@ export default function HomeScreen() {
         >
           <Animated.View style={[styles.iconWrap, { opacity: glowAnim }]}>
             <View style={styles.iconCircle}>
-              <Ghost size={40} color={COLORS.yellow} />
+              <Ghost size={40} color={COLORS.honey} />
             </View>
           </Animated.View>
 
@@ -104,10 +104,9 @@ export default function HomeScreen() {
           <Text style={styles.subtitle}>PARTY WORD GAME</Text>
 
           <View style={styles.buttonGroup}>
-            <PillButton
+            <PrimaryButton
               label="PLAY NOW"
               onPress={() => router.push('/setup')}
-              variant="yellow"
               style={styles.playBtn}
             />
 
@@ -162,7 +161,7 @@ function HowToPlayModal({ onClose }: { onClose: () => void }) {
       <Pressable style={styles.modal} onPress={e => e.stopPropagation()}>
         <Animated.View style={{ opacity: slideAnim, transform: [{ translateY: slideY }] }}>
           <View style={styles.modalIconWrap}>
-            <SlideIcon size={28} color={COLORS.yellow} strokeWidth={1.75} />
+            <SlideIcon size={28} color={COLORS.honey} strokeWidth={1.75} />
           </View>
           <Text style={styles.modalTitle}>{slides[slide].title}</Text>
           <Text style={styles.modalDesc}>{slides[slide].desc}</Text>
@@ -176,9 +175,9 @@ function HowToPlayModal({ onClose }: { onClose: () => void }) {
 
         <View style={styles.modalActions}>
           {slide < slides.length - 1 ? (
-            <PillButton label="Next" onPress={() => setSlide(s => s + 1)} variant="yellow" style={styles.modalBtn} />
+            <PrimaryButton label="Next" onPress={() => setSlide(s => s + 1)} style={styles.modalBtn} />
           ) : (
-            <PillButton label="Got it!" onPress={onClose} variant="yellow" style={styles.modalBtn} />
+            <PrimaryButton label="Got it!" onPress={onClose} style={styles.modalBtn} />
           )}
         </View>
       </Pressable>
@@ -189,7 +188,7 @@ function HowToPlayModal({ onClose }: { onClose: () => void }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.nearBlack,
+    backgroundColor: COLORS.background,
   },
   safe: { flex: 1 },
   center: {
@@ -201,11 +200,11 @@ const styles = StyleSheet.create({
   },
   particle: {
     position: 'absolute',
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
   },
   iconWrap: {
     marginBottom: SPACING.md,
-    shadowColor: COLORS.yellow,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
     shadowRadius: 32,
@@ -215,24 +214,24 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(111,207,71,0.08)',
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: 'rgba(111,207,71,0.2)',
+    borderColor: COLORS.honeyBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 48,
-    color: COLORS.white,
+    color: COLORS.ink,
     letterSpacing: 6,
     width: '100%',
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 3,
     marginTop: 4,
     marginBottom: SPACING.xl,
@@ -251,51 +250,51 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
   },
   howText: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
 
   // Modal
   modalOverlay: {
     position: 'absolute',
     inset: 0,
-    backgroundColor: COLORS.violetOverlay,
+    backgroundColor: COLORS.scrim,
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.md,
   },
   modal: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFillStrong,
+    borderRadius: RADIUS.lg,
     padding: SPACING.md,
     width: '100%',
     maxWidth: 340,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(111,207,71,0.2)',
+    borderColor: COLORS.glassBorder,
   },
   modalIconWrap: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
     marginBottom: SPACING.sm,
   },
   modalTitle: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     marginBottom: SPACING.xs,
     textAlign: 'center',
   },
   modalDesc: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 15,
     color: COLORS.textBody,
     textAlign: 'center',
@@ -314,7 +313,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)',
   },
   dotActive: {
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
     width: 20,
   },
   modalActions: { width: '100%' },

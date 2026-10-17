@@ -4,10 +4,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { RotateCcw, Ghost } from 'lucide-react-native';
-import { Eye, EyeSlash } from 'phosphor-react-native';
+import { RotateCcw, Ghost, Eye, EyeOff } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import PlayerAvatar from '../components/PlayerAvatar';
+import Avatar from '../components/Avatar';
 import { useGame } from '../context/GameContext';
 import { storage } from '../utils/storage';
 import HomeButton from '../components/HomeButton';
@@ -137,7 +136,7 @@ export default function ResultScreen() {
             ) : (
               <>
                 <View style={styles.outcomeIconWrap}>
-                  <Ghost size={28} color={COLORS.yellow} />
+                  <Ghost size={28} color={COLORS.honey} />
                 </View>
                 <Text style={styles.outcomeLabel}>
                   {caughtImposter ? 'CREW WINS' : 'IMPOSTER WINS'}
@@ -155,7 +154,7 @@ export default function ResultScreen() {
           {/* Imposter card — hidden or revealed */}
           {!imposterRevealed ? (
             <View style={styles.hiddenCard}>
-              <Ghost size={32} color={COLORS.textMuted} />
+              <Ghost size={32} color={COLORS.textFaint} />
               <Text style={styles.hiddenCardText}>???</Text>
             </View>
           ) : (
@@ -166,7 +165,7 @@ export default function ResultScreen() {
               ]}
             >
               {imposter && (
-                <PlayerAvatar iconIndex={imposter.iconIndex} playerIndex={imposterIndex} size={44} />
+                <Avatar name={imposter.name} index={imposterIndex} size={44} />
               )}
               <View style={styles.identityInfo}>
                 <Text style={styles.identityName}>{imposter?.name}</Text>
@@ -178,12 +177,12 @@ export default function ResultScreen() {
           {/* Reveal / hide button */}
           {!imposterRevealed ? (
             <TouchableOpacity style={styles.revealBtn} onPress={() => revealImposter(false)} activeOpacity={0.85}>
-              <Eye size={20} color={COLORS.nearBlack} weight="fill" />
+              <Eye size={20} color={COLORS.ink} fill={COLORS.ink} />
               <Text style={styles.revealBtnText}>REVEAL IMPOSTER</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.hideBtn} onPress={hideImposter} activeOpacity={0.75}>
-              <EyeSlash size={16} color={COLORS.textLabel} weight="fill" />
+              <EyeOff size={16} color={COLORS.textFaint} />
               <Text style={styles.hideBtnText}>HIDDEN — TAP TO HIDE AGAIN</Text>
             </TouchableOpacity>
           )}
@@ -216,7 +215,7 @@ export default function ResultScreen() {
           {/* Actions */}
           <View style={styles.actions}>
             <TouchableOpacity style={styles.btnPrimary} onPress={playAgain} activeOpacity={0.9}>
-              <RotateCcw size={18} color={COLORS.nearBlack} />
+              <RotateCcw size={18} color={COLORS.ink} />
               <Text style={styles.btnPrimaryText}>PLAY AGAIN</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btnSecondary} onPress={changeCategory} activeOpacity={0.85}>
@@ -230,7 +229,7 @@ export default function ResultScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   inner: {
     padding: SPACING.md,
@@ -255,36 +254,36 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.yellow,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 8,
   },
   outcomeLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: 'rgba(111,207,71,0.6)',
+    color: COLORS.honeyText,
     letterSpacing: 3,
     textTransform: 'uppercase',
   },
   heroText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 32,
-    color: COLORS.white,
+    color: COLORS.ink,
     textAlign: 'center',
     lineHeight: 38,
   },
 
   cardSectionLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 6,
@@ -295,8 +294,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.xs,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     padding: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
@@ -304,9 +303,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   hiddenCardText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 28,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
     letterSpacing: 6,
   },
 
@@ -314,13 +313,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     padding: SPACING.sm,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     width: '100%',
-    shadowColor: COLORS.yellow,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
@@ -328,14 +327,14 @@ const styles = StyleSheet.create({
   },
   identityInfo: { flex: 1 },
   identityName: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 20,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
   identitySubtitle: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginTop: 2,
@@ -343,27 +342,27 @@ const styles = StyleSheet.create({
 
   revealBtn: {
     height: 56,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.yellow,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.honey,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    shadowColor: COLORS.yellow,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 6,
   },
   revealBtnText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 15,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
     letterSpacing: 1,
   },
   hideBtn: {
     height: 44,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
     flexDirection: 'row',
@@ -372,15 +371,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   hideBtnText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 11,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 1,
   },
 
   wordCard: {
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     padding: SPACING.md,
@@ -391,28 +390,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   wordCardValue: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 36,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     letterSpacing: 3,
     textAlign: 'center',
   },
   wordCardCategory: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
   hiddenWordText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 28,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
     letterSpacing: 6,
   },
 
   wrongVoteCard: {
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     borderRadius: 12,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 10,
@@ -422,7 +421,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   wrongVoteText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 13,
     color: COLORS.textBody,
   },
@@ -430,30 +429,30 @@ const styles = StyleSheet.create({
   actions: { gap: SPACING.xs, marginTop: SPACING.sm },
   btnPrimary: {
     height: 56,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.yellow,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.honey,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
   btnPrimaryText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 15,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
     letterSpacing: 1,
   },
   btnSecondary: {
     height: 56,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.glass,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   btnSecondaryText: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 15,
     color: COLORS.textBody,
   },

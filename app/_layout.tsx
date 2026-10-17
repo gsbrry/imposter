@@ -6,11 +6,17 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts } from 'expo-font';
 import {
-  Nunito_400Regular,
-  Nunito_600SemiBold,
-  Nunito_700Bold,
-  Nunito_800ExtraBold,
-} from '@expo-google-fonts/nunito';
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_800ExtraBold,
+} from '@expo-google-fonts/outfit';
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GameProvider, useGame } from '../context/GameContext';
@@ -68,10 +74,14 @@ export default function RootLayout() {
   useFrameworkReady();
 
   const [fontsLoaded, fontError] = useFonts({
-    Nunito_400Regular,
-    Nunito_600SemiBold,
-    Nunito_700Bold,
-    Nunito_800ExtraBold,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
+    Outfit_700Bold,
+    Outfit_800ExtraBold,
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
   });
 
   useEffect(() => {
@@ -85,7 +95,7 @@ export default function RootLayout() {
       <GameProvider>
         <RCInitialiser />
         <PhoneFrame>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.nearBlack } }}>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.background } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="setup" options={{ animation: 'slide_from_right' }} />
             <Stack.Screen name="game-settings" options={{ animation: 'slide_from_right' }} />
@@ -100,7 +110,7 @@ export default function RootLayout() {
             <Stack.Screen name="+not-found" />
           </Stack>
         </PhoneFrame>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </GameProvider>
     </SafeAreaProvider>
   );

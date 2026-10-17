@@ -5,10 +5,9 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X } from 'lucide-react-native';
-import { Crown, Star } from 'phosphor-react-native';
+import { X, Crown, Star } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import GlassIconButton from '../components/GlassIconButton';
+import IconButton from '../components/IconButton';
 import { usePremium } from '@/hooks/usePremium';
 import { useGame } from '../context/GameContext';
 import { PRODUCTS } from '../constants/revenuecat';
@@ -59,12 +58,12 @@ function WebFallback({ onClose }: { onClose: () => void }) {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
-        <GlassIconButton onPress={onClose} style={[styles.closeBtn, { top: insets.top + 12 }]}>
-          <X size={20} color="rgba(255,255,255,0.5)" />
-        </GlassIconButton>
+        <IconButton onPress={onClose} style={[styles.closeBtn, { top: insets.top + 12 }]} accessibilityLabel="Close">
+          <X size={20} color={COLORS.textFaint} />
+        </IconButton>
         <View style={styles.webCenter}>
           <View style={styles.starCircle}>
-            <Star size={48} color={COLORS.yellow} weight="fill" />
+            <Star size={48} color={COLORS.honey} fill={COLORS.honey} />
           </View>
           <Text style={styles.webTitle}>Premium is available on Android</Text>
           <Text style={styles.webSub}>Download the free app to unlock all features</Text>
@@ -201,13 +200,13 @@ export default function PremiumScreen() {
       />
 
       <SafeAreaView style={styles.safe}>
-        <GlassIconButton onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]}>
-          <X size={20} color="rgba(255,255,255,0.5)" />
-        </GlassIconButton>
+        <IconButton onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]} accessibilityLabel="Close">
+          <X size={20} color={COLORS.textFaint} />
+        </IconButton>
 
         {success ? (
           <Animated.View style={[styles.successWrap, { opacity: successAnim, transform: [{ scale: successAnim }] }]}>
-            <Crown size={72} color={COLORS.yellow} weight="fill" />
+            <Crown size={72} color={COLORS.honey} fill={COLORS.honey} />
             <Text style={styles.successTitle}>Welcome to Premium!</Text>
             <Text style={styles.successSub}>All categories and features unlocked.</Text>
           </Animated.View>
@@ -216,7 +215,7 @@ export default function PremiumScreen() {
             {/* Hero */}
             <View style={styles.hero}>
               <View style={styles.starCircle}>
-                <Star size={48} color={COLORS.yellow} weight="fill" />
+                <Star size={48} color={COLORS.honey} fill={COLORS.honey} />
               </View>
               <Text style={styles.heroLabel}>UNLOCK ALL CATEGORIES</Text>
               <Text style={styles.heroTitle}>Go Premium</Text>
@@ -273,7 +272,7 @@ export default function PremiumScreen() {
               disabled={loading}
             >
               {loading
-                ? <ActivityIndicator color={COLORS.nearBlack} />
+                ? <ActivityIndicator color={COLORS.ink} />
                 : <Text style={styles.trialBtnText}>UNLOCK PREMIUM</Text>
               }
             </TouchableOpacity>
@@ -289,7 +288,7 @@ export default function PremiumScreen() {
               activeOpacity={0.7}
             >
               {restoring
-                ? <ActivityIndicator size="small" color={COLORS.textMuted} />
+                ? <ActivityIndicator size="small" color={COLORS.textFaint} />
                 : <Text style={styles.restoreText}>Restore purchases</Text>
               }
             </TouchableOpacity>
@@ -312,11 +311,11 @@ export default function PremiumScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   flashOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
     zIndex: 99,
   },
   closeBtn: {
@@ -341,12 +340,12 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.yellow,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -354,21 +353,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   heroLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: 'rgba(111,207,71,0.7)',
+    color: COLORS.honeyText,
     letterSpacing: 3,
     textTransform: 'uppercase',
   },
   heroTitle: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 32,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   heroSub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
     lineHeight: 21,
     paddingHorizontal: SPACING.sm,
@@ -377,8 +376,8 @@ const styles = StyleSheet.create({
   // Plans
   plans: { gap: SPACING.xs },
   planCard: {
-    borderRadius: RADIUS.card,
-    backgroundColor: COLORS.glass,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     padding: SPACING.sm,
@@ -387,11 +386,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   planCardActive: {
-    borderColor: COLORS.yellow,
-    backgroundColor: 'rgba(111,207,71,0.07)',
+    borderColor: COLORS.honey,
+    backgroundColor: COLORS.honeySoft,
   },
   planCardHighlight: {
-    borderColor: 'rgba(111,207,71,0.4)',
+    borderColor: COLORS.honeyBorder,
   },
   planBadge: {
     borderRadius: 6,
@@ -399,53 +398,53 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     marginBottom: 4,
   },
-  planBadgeYellow: { backgroundColor: COLORS.yellow },
+  planBadgeYellow: { backgroundColor: COLORS.honey },
   planBadgeGlass: {
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
   },
   planBadgeText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 9,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
     letterSpacing: 0.5,
   },
   planBadgeTextGlass: { color: COLORS.textBody },
   planLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 11,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
   },
   planPrice: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 26,
-    color: COLORS.white,
+    color: COLORS.ink,
     lineHeight: 32,
   },
-  planPriceActive: { color: COLORS.yellow },
+  planPriceActive: { color: COLORS.honey },
   planSub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
   },
   selectedDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
     marginTop: 6,
   },
 
   // Buttons
   trialBtn: {
     height: 56,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.yellow,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.honey,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.yellow,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -453,38 +452,38 @@ const styles = StyleSheet.create({
   },
   trialBtnLoading: { opacity: 0.7 },
   trialBtnText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 16,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
     letterSpacing: 1,
   },
   laterBtn: {
     height: 48,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   laterBtnText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 14,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
   restoreBtn: {
     alignItems: 'center',
     paddingVertical: 8,
   },
   restoreText: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 13,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
     textDecorationLine: 'underline',
   },
   note: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 11,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
     textAlign: 'center',
     lineHeight: 16,
   },
@@ -498,15 +497,15 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
   },
   successTitle: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 28,
-    color: COLORS.white,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   successSub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 15,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
 
@@ -519,15 +518,15 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   webTitle: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   webSub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
 
@@ -546,9 +545,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toastText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 14,
-    color: COLORS.white,
+    color: COLORS.ink,
     textAlign: 'center',
   },
 });

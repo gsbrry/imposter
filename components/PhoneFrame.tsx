@@ -20,7 +20,7 @@ export default function PhoneFrame({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     // The page behind the frame, so the browser gutters match the app.
-    document.body.style.backgroundColor = COLORS.nearBlack;
+    document.body.style.backgroundColor = COLORS.pageSurround;
   }, []);
 
   if (!isWide) {
@@ -49,22 +49,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.nearBlack,
+    backgroundColor: COLORS.pageSurround,
   },
-  // A soft yellow halo so the frame reads as deliberate rather than cropped.
+  // A soft honey halo so the frame reads as deliberate rather than cropped.
   glow: {
     position: 'absolute',
     width: FRAME_WIDTH + 160,
     height: FRAME_WIDTH + 160,
     borderRadius: (FRAME_WIDTH + 160) / 2,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     opacity: 0.5,
   },
   frame: {
     overflow: 'hidden',
-    borderRadius: RADIUS.card + 12,
+    borderRadius: RADIUS.lg + 12,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.violet,
+    backgroundColor: COLORS.background,
   },
 });

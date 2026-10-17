@@ -4,7 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import GlassIconButton from '../components/GlassIconButton';
+import IconButton from '../components/IconButton';
 
 // RevenueCat Paywall UI is native-only — guard for web
 let RevenueCatUI: any = null;
@@ -22,9 +22,13 @@ export default function PaywallScreen() {
     return (
       <View style={styles.container}>
         <SafeAreaView style={styles.safe}>
-          <GlassIconButton onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]}>
-            <X size={20} color="rgba(255,255,255,0.5)" />
-          </GlassIconButton>
+          <IconButton
+            onPress={() => router.back()}
+            style={[styles.closeBtn, { top: insets.top + 12 }]}
+            accessibilityLabel="Close"
+          >
+            <X size={20} color={COLORS.textFaint} />
+          </IconButton>
           <View style={styles.center}>
             <Text style={styles.title}>Premium is available on Android</Text>
             <Text style={styles.sub}>Download the app to unlock all features.</Text>
@@ -40,9 +44,13 @@ export default function PaywallScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]} activeOpacity={0.7}>
-          <X size={20} color="rgba(255,255,255,0.5)" />
-        </TouchableOpacity>
+        <IconButton
+          onPress={() => router.back()}
+          style={[styles.closeBtn, { top: insets.top + 12 }]}
+          accessibilityLabel="Close"
+        >
+          <X size={20} color={COLORS.textFaint} />
+        </IconButton>
         <RevenueCatUI.Paywall
           onPurchaseCompleted={() => router.back()}
           onRestoreCompleted={() => router.back()}
@@ -54,7 +62,7 @@ export default function PaywallScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   closeBtn: {
     position: 'absolute',
@@ -69,28 +77,28 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   sub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
   btn: {
     height: 52,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.yellow,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.honey,
     paddingHorizontal: SPACING.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   btnText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 15,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
   },
 });

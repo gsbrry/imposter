@@ -1,41 +1,90 @@
-// Premium glass palette: rich spring-leaf green accent on dark graphite.
-// The `yellow*` keys are kept (not renamed) since ~150 call sites reference
-// them — they now hold the green accent, not an actual yellow.
+// Impostr design v2: Honey and Cream.
+// Values come from design/tokens.json (source of truth) plus a handful of
+// derived helpers that tokens.json doesn't define directly (textFaint,
+// honeyBorder, scrim, danger) — each documented below.
+
 export const COLORS = {
-  yellow: '#6FCF47',
-  yellowDeep: '#3F8F24',
+  // Surfaces
+  background: '#F4EFE4',
+  backgroundDeep: '#EAE2CF',
+  // Web-only surround behind the phone-width column on wide screens —
+  // `--page` in impostr.css, not in tokens.json.
+  pageSurround: '#ECE5D6',
   white: '#FFFFFF',
-  nearBlack: '#15171A',
-  rose: '#F4536B',
-  // Glass system
-  glass: 'rgba(255,255,255,0.06)',
-  glassBorder: 'rgba(111,207,71,0.22)',
-  glassBorderBright: 'rgba(255,255,255,0.5)',
-  glassHover: 'rgba(255,255,255,0.1)',
-  glassSheen: 'rgba(255,255,255,0.16)',
-  glassTint: 'rgba(111,207,71,0.05)',
-  // Text hierarchy
-  textPrimary: '#FFFFFF',
-  textBody: 'rgba(255,255,255,0.7)',
-  textLabel: 'rgba(255,255,255,0.45)',
-  textMuted: 'rgba(255,255,255,0.28)',
-  // Accent (green) tints
-  yellowGlass: 'rgba(111,207,71,0.16)',
-  yellowBorder: 'rgba(111,207,71,0.4)',
-  yellowGlow: 'rgba(111,207,71,0.5)',
-  // Legacy aliases (kept for remaining references) — same dark-graphite family
-  violet: '#15171A',
-  violetGlass: 'rgba(255,255,255,0.06)',
-  violetBorder: 'rgba(111,207,71,0.22)',
-  violetOverlay: 'rgba(14,16,18,0.88)',
-  roseGlow: 'rgba(244,83,107,0.4)',
+
+  // Text
+  ink: '#1B1813',
+  textBody: '#5C5547',
+  textMuted: '#6F6757',
+  // Dimmest text tier — tokens.json has no third tier, so this is an
+  // ink-based alpha derivation, consistent with how tokens.json itself
+  // derives `divider` from ink.
+  textFaint: 'rgba(27,24,19,0.45)',
+
+  // Honey (the one primary accent)
+  honey: '#F2B705',
+  honeyText: '#805B00',
+  honeySoft: '#FBE7A1',
+  onHoney: '#1B1813',
+  // Translucent honey border for tinted badges/icon wraps — tokens.json
+  // doesn't define this explicitly; derived from `honey` at low opacity.
+  honeyBorder: 'rgba(242,183,5,0.35)',
+
+  // Glass (floating layers only — cards, sheets, tab bar, icon buttons)
+  glassFill: 'rgba(255,252,245,0.55)',
+  glassFillStrong: 'rgba(255,253,248,0.80)',
+  glassBorder: 'rgba(255,255,255,0.85)',
+
+  // Lines
+  divider: 'rgba(27,24,19,0.09)',
+  dot: 'rgba(27,24,19,0.07)',
+
+  // Background orbs (behind glass, per README's liquid-glass notes)
+  orbHoney: '#FFD13D',
+  orbCream: '#F6DCA0',
+  orbLight: '#FFF6DC',
+
+  // Avatar fills
+  avatars: ['#FFD866', '#F4C7A1', '#CFE3B0', '#BFD8EE', '#E6CBEA', '#F2D7B6'],
+
+  // Modal/sheet scrim — ported from the CSS `.dim` recipe.
+  scrim: 'rgba(20,16,8,0.28)',
+
+  // Not in tokens.json: a muted warm red kept only for pre-existing
+  // "timer about to run out" urgency text. No red appears anywhere in the
+  // crew/imposter reveal parity (see RevealCard).
+  danger: '#C23B3B',
+};
+
+export const GRADIENTS = {
+  honeyButton: ['#F8CF4A', '#F2B705', '#DFA800'] as const,
 };
 
 export const FONTS = {
-  extraBold: 'Nunito_800ExtraBold',
-  bold: 'Nunito_700Bold',
-  semiBold: 'Nunito_600SemiBold',
-  regular: 'Nunito_400Regular',
+  // Outfit — headings, numbers, the word/timer display
+  displayExtraBold: 'Outfit_800ExtraBold',
+  displayBold: 'Outfit_700Bold',
+  displaySemiBold: 'Outfit_600SemiBold',
+  displayMedium: 'Outfit_500Medium',
+  // Plus Jakarta Sans — body copy, labels, buttons
+  bodyBold: 'PlusJakartaSans_700Bold',
+  bodySemiBold: 'PlusJakartaSans_600SemiBold',
+  bodyMedium: 'PlusJakartaSans_500Medium',
+  bodyRegular: 'PlusJakartaSans_400Regular',
+};
+
+// Font sizes from design/tokens.json `type`. Screens that haven't been
+// rebuilt yet keep using raw fontSize numbers; new shared components use
+// this scale directly.
+export const TYPE = {
+  hero: { fontFamily: FONTS.displayExtraBold, fontSize: 44, letterSpacing: -1.2 },
+  word: { fontFamily: FONTS.displayExtraBold, fontSize: 52, letterSpacing: -1.6 },
+  titleL: { fontFamily: FONTS.displayBold, fontSize: 28 },
+  titleM: { fontFamily: FONTS.displayBold, fontSize: 20 },
+  titleS: { fontFamily: FONTS.displaySemiBold, fontSize: 16 },
+  body: { fontFamily: FONTS.bodyRegular, fontSize: 13.5, lineHeight: 19.6 },
+  button: { fontFamily: FONTS.bodyBold, fontSize: 15 },
+  label: { fontFamily: FONTS.bodySemiBold, fontSize: 10.5, letterSpacing: 1.2 },
 };
 
 export const SPACING = {
@@ -44,10 +93,36 @@ export const SPACING = {
   md: 24,
   lg: 32,
   xl: 48,
+  // design/tokens.json `spacing` — used by the new shared components.
+  screenX: 18,
+  gap: 14,
+  cardPadding: 16,
 };
 
 export const RADIUS = {
-  card: 28,
-  button: 50,
-  icon: 18,
+  sm: 10,
+  md: 14,
+  lg: 20,
+  xl: 24,
+  sheet: 34,
+  // Icon buttons (`.iconbtn` in impostr.css) use 12px, which sits outside
+  // the named sm/md/lg/xl scale but is the literal CSS value.
+  icon: 12,
+};
+
+export const SIZE = {
+  button: 54,
+  iconButton: 40,
+  tabBar: 64,
+  avatar: 34,
+};
+
+export const SHADOW = {
+  card: { color: '#1C1404', opacity: 0.18, radius: 18, offsetY: 10, elevation: 4 },
+  honeyButton: { color: '#F2B705', opacity: 0.55, radius: 14, offsetY: 10, elevation: 6 },
+};
+
+export const BLUR = {
+  intensity: 40,
+  tint: 'light' as const,
 };

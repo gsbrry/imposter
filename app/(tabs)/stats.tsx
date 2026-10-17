@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChartBar as BarChart2, Ghost } from 'lucide-react-native';
+import { Ghost } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
 import GlassCard from '../../components/GlassCard';
 import { storage, Stats } from '../../utils/storage';
@@ -60,7 +60,7 @@ export default function StatsScreen() {
           {stats.gamesPlayed === 0 && (
             <View style={styles.empty}>
               <View style={styles.emptyIcon}>
-                <Ghost size={32} color={COLORS.textLabel} />
+                <Ghost size={32} color={COLORS.textMuted} />
               </View>
               <Text style={styles.emptyText}>No games played yet</Text>
               <Text style={styles.emptySubtext}>Play a game to see your stats here</Text>
@@ -82,24 +82,24 @@ function StatCard({ value, label }: { value: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 130 },
   header: {
     marginBottom: SPACING.md,
   },
   label: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   grid: {
     flexDirection: 'row',
@@ -116,14 +116,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   statValue: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 36,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
   statLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
@@ -135,16 +135,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   bestLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
   bestValue: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
   empty: {
     alignItems: 'center',
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     alignItems: 'center',
@@ -163,14 +163,14 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   emptyText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 16,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
   emptySubtext: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 13,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
     textAlign: 'center',
   },
 });

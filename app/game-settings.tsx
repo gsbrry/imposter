@@ -97,7 +97,13 @@ export default function GameSettingsScreen() {
           style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backBtn}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
               <ChevronLeft size={22} color={COLORS.textBody} />
             </TouchableOpacity>
             <View>
@@ -116,8 +122,10 @@ export default function GameSettingsScreen() {
                 onPress={() => adjustPlayerCount(-1)}
                 activeOpacity={0.75}
                 disabled={playerCount <= 3}
+                accessibilityRole="button"
+                accessibilityLabel="Fewer players"
               >
-                <Minus size={24} color={playerCount <= 3 ? COLORS.textMuted : COLORS.white} />
+                <Minus size={24} color={playerCount <= 3 ? COLORS.textFaint : COLORS.ink} />
               </TouchableOpacity>
             </Animated.View>
             <View style={styles.countCenter}>
@@ -130,8 +138,10 @@ export default function GameSettingsScreen() {
                 onPress={() => adjustPlayerCount(1)}
                 activeOpacity={0.75}
                 disabled={playerCount >= 15}
+                accessibilityRole="button"
+                accessibilityLabel="More players"
               >
-                <Plus size={24} color={playerCount >= 15 ? COLORS.textMuted : COLORS.yellow} />
+                <Plus size={24} color={playerCount >= 15 ? COLORS.textFaint : COLORS.honey} />
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -183,7 +193,7 @@ export default function GameSettingsScreen() {
                   keyboardType="number-pad"
                   maxLength={3}
                   placeholder="60"
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor={COLORS.textFaint}
                   returnKeyType="done"
                   onSubmitEditing={() => Keyboard.dismiss()}
                 />
@@ -203,8 +213,8 @@ export default function GameSettingsScreen() {
             <Switch
               value={teamVote}
               onValueChange={setTeamVote}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: COLORS.yellowGlow }}
-              thumbColor={teamVote ? COLORS.yellow : 'rgba(255,255,255,0.4)'}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: COLORS.honey }}
+              thumbColor={teamVote ? COLORS.honey : 'rgba(255,255,255,0.4)'}
               ios_backgroundColor="rgba(255,255,255,0.1)"
             />
           </View>
@@ -219,7 +229,7 @@ export default function GameSettingsScreen() {
 
           <TouchableOpacity style={styles.nextBtn} onPress={handleNext} activeOpacity={0.85}>
             <Text style={styles.nextBtnText}>Enter Player Names</Text>
-            <ChevronRight size={20} color={COLORS.nearBlack} />
+            <ChevronRight size={20} color={COLORS.ink} />
           </TouchableOpacity>
         </Animated.ScrollView>
       </SafeAreaView>
@@ -237,7 +247,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 48 },
 
@@ -251,40 +261,40 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 2,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
     textAlign: 'center',
   },
 
   sectionLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 6,
     marginTop: SPACING.md,
   },
   sectionSubtitle: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
     marginBottom: SPACING.xs,
     marginTop: -2,
   },
@@ -293,8 +303,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     paddingHorizontal: SPACING.md,
@@ -313,15 +323,15 @@ const styles = StyleSheet.create({
   countBtnDisabled: { opacity: 0.3 },
   countCenter: { alignItems: 'center', gap: 2 },
   countNumber: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 56,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     lineHeight: 64,
   },
   countSub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
 
   pillRow: { flexDirection: 'row', gap: SPACING.xs },
@@ -329,10 +339,10 @@ const styles = StyleSheet.create({
   pill: {
     flex: 1,
     minHeight: 52,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
@@ -340,62 +350,62 @@ const styles = StyleSheet.create({
   timerPill: {
     minHeight: 48,
     minWidth: 56,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
     flexGrow: 1,
   },
   pillActive: {
-    backgroundColor: COLORS.yellowGlass,
-    borderColor: COLORS.yellow,
+    backgroundColor: COLORS.honeySoft,
+    borderColor: COLORS.honey,
   },
   pillText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 13,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
   pillTextActive: {
-    color: COLORS.yellow,
-    fontFamily: FONTS.bold,
+    color: COLORS.honey,
+    fontFamily: FONTS.displayBold,
   },
 
   customInputWrap: { marginTop: SPACING.xs },
   customLabel: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 11,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     marginBottom: 6,
   },
   customInputRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
   customInput: {
     flex: 1,
     height: 56,
-    backgroundColor: COLORS.yellowGlass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.honeySoft,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     paddingHorizontal: SPACING.sm,
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 28,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     textAlign: 'center',
   },
   customUnit: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 16,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     width: 32,
   },
 
   toggleCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     paddingHorizontal: SPACING.md,
@@ -405,20 +415,20 @@ const styles = StyleSheet.create({
   },
   toggleInfo: { flex: 1, gap: 3 },
   toggleLabel: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 15,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   toggleSub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
 
   summary: {
     marginTop: SPACING.md,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     marginBottom: SPACING.md,
@@ -434,29 +444,29 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.04)',
   },
   summaryLabel: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
   summaryValue: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 15,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
 
   nextBtn: {
     height: 56,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.yellow,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.honey,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
   nextBtnText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 15,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
     letterSpacing: 0.3,
   },
 });

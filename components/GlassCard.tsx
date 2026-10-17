@@ -1,38 +1,25 @@
 import React from 'react';
 import { View, StyleSheet, StyleProp, ViewStyle, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, RADIUS } from '../constants/theme';
+import { COLORS, RADIUS, BLUR, SHADOW } from '../constants/theme';
 
 interface GlassCardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
+/**
+ * The base floating-glass surface: light blur, pale warm fill, bright
+ * 1px border, radius 20. Matches impostr.css `.glass`. Always sits over
+ * ScreenBackground's orbs — a glass fill over a flat cream page looks dull.
+ */
 export default function GlassCard({ children, style }: GlassCardProps) {
   return (
     <View style={styles.shadowWrap}>
       <View style={[styles.card, style]}>
         {Platform.OS !== 'web' && (
-          <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
+          <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
         )}
-        {/* Faint accent tint so the blur refracts green, not just gray */}
-        <LinearGradient
-          pointerEvents="none"
-          colors={[COLORS.yellowGlass, 'transparent']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        {/* Specular highlight — light catching the top of the glass */}
-        <LinearGradient
-          pointerEvents="none"
-          colors={[COLORS.glassSheen, 'transparent']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={styles.sheen}
-        />
-        <View style={styles.topBorder} pointerEvents="none" />
         {children}
       </View>
     </View>
@@ -41,34 +28,18 @@ export default function GlassCard({ children, style }: GlassCardProps) {
 
 const styles = StyleSheet.create({
   shadowWrap: {
-    borderRadius: RADIUS.card,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    elevation: 8,
+    borderRadius: RADIUS.lg,
+    shadowColor: SHADOW.card.color,
+    shadowOffset: { width: 0, height: SHADOW.card.offsetY },
+    shadowOpacity: SHADOW.card.opacity,
+    shadowRadius: SHADOW.card.radius,
+    elevation: SHADOW.card.elevation,
   },
   card: {
-    borderRadius: RADIUS.card,
-    backgroundColor: COLORS.glass,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     overflow: 'hidden',
-  },
-  sheen: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '45%',
-  },
-  // A bright 1px line along the top edge — the clearest "glass catching light" cue.
-  topBorder: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: COLORS.glassBorderBright,
   },
 });

@@ -4,13 +4,22 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Shuffle, ChevronRight, X, Users } from 'lucide-react-native';
+import {
+  Shuffle, ChevronRight, X, Users,
+  CircleUser, Skull, Bot, Cat, Dog, Crown, Star, Ghost, Flame, Moon, Sun, Rocket, Diamond,
+} from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import PlayerAvatar, { ICON_COMPONENTS } from '../components/PlayerAvatar';
-import PillButton from '../components/PillButton';
+import Avatar from '../components/Avatar';
+import PrimaryButton from '../components/PrimaryButton';
 import { storage } from '../utils/storage';
+import { shuffle as shuffleArray } from '../utils/shuffle';
 import { useGame } from '../context/GameContext';
 import HomeButton from '../components/HomeButton';
+
+const ICON_COMPONENTS = [
+  CircleUser, Skull, Bot, Cat, Dog, Crown, Star, Ghost,
+  Flame, Moon, Sun, Rocket, Diamond,
+];
 
 export default function PlayerNamesScreen() {
   const router = useRouter();
@@ -39,8 +48,8 @@ export default function PlayerNamesScreen() {
     ));
   };
 
-  const shuffle = () => {
-    setPlayers(prev => [...prev].sort(() => Math.random() - 0.5));
+  const handleShuffle = () => {
+    setPlayers(prev => shuffleArray(prev));
   };
 
   const fillFromSaved = (name: string) => {
@@ -91,7 +100,7 @@ export default function PlayerNamesScreen() {
           {!useNumbers && savedNames.length > 0 && (
             <View style={styles.savedSection}>
               <View style={styles.savedHeader}>
-                <Users size={12} color={COLORS.yellow} />
+                <Users size={12} color={COLORS.honey} />
                 <Text style={styles.savedLabel}>SAVED PLAYERS</Text>
                 <Text style={styles.savedHint}>tap to fill next empty slot</Text>
               </View>
@@ -109,9 +118,11 @@ export default function PlayerNamesScreen() {
                     <TouchableOpacity
                       style={styles.savedChipDelete}
                       onPress={() => deleteSavedName(item)}
-                      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                      hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove saved name ${item}`}
                     >
-                      <X size={9} color={COLORS.white} />
+                      <X size={9} color={COLORS.ink} />
                     </TouchableOpacity>
                   </View>
                 )}
@@ -122,11 +133,13 @@ export default function PlayerNamesScreen() {
           <View style={styles.playerList}>
             {players.map((player, index) => (
               <View key={player.id} style={styles.playerRow}>
-                <PlayerAvatar
-                  iconIndex={player.iconIndex}
-                  playerIndex={index}
+                <Avatar
+                  name={player.name}
+                  index={index}
+                  icon={ICON_COMPONENTS[player.iconIndex % ICON_COMPONENTS.length]}
                   size={32}
                   onPress={() => updateIcon(index)}
+                  accessibilityLabel={`Change icon for ${player.name || `Player ${index + 1}`}`}
                 />
                 {useNumbers ? (
                   <Text style={styles.numberName}>Player {index + 1}</Text>
@@ -136,7 +149,7 @@ export default function PlayerNamesScreen() {
                     value={player.name}
                     onChangeText={text => updateName(index, text)}
                     placeholder={`Player ${index + 1}`}
-                    placeholderTextColor={COLORS.textMuted}
+                    placeholderTextColor={COLORS.textFaint}
                     maxLength={20}
                   />
                 )}
@@ -144,16 +157,15 @@ export default function PlayerNamesScreen() {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.shuffleBtn} onPress={shuffle}>
-            <Shuffle size={16} color={COLORS.yellow} />
+          <TouchableOpacity style={styles.shuffleBtn} onPress={handleShuffle}>
+            <Shuffle size={16} color={COLORS.honey} />
             <Text style={styles.shuffleText}>Randomise Order</Text>
           </TouchableOpacity>
 
-          <PillButton
+          <PrimaryButton
             label="Start Reveal"
             onPress={handleNext}
-            variant="yellow"
-            icon={<ChevronRight size={18} color={COLORS.nearBlack} />}
+            icon={<ChevronRight size={18} color={COLORS.ink} />}
           />
         </Animated.ScrollView>
       </SafeAreaView>
@@ -162,7 +174,7 @@ export default function PlayerNamesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 100 },
 
@@ -174,31 +186,31 @@ const styles = StyleSheet.create({
   },
   headerCenter: { alignItems: 'center' },
   headerLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 2,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   toggle: {
     width: 44,
     height: 26,
     borderRadius: 13,
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     justifyContent: 'center',
     padding: 3,
   },
   toggleActive: {
-    backgroundColor: COLORS.yellowGlass,
-    borderColor: COLORS.yellow,
+    backgroundColor: COLORS.honeySoft,
+    borderColor: COLORS.honey,
   },
   toggleThumb: {
     width: 18,
@@ -208,14 +220,14 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   toggleThumbActive: {
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
     alignSelf: 'flex-end',
   },
 
   savedSection: {
     marginBottom: SPACING.sm,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     padding: SPACING.sm,
@@ -227,16 +239,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   savedLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
   savedHint: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 10,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
   },
   savedChipRow: { gap: 6, paddingRight: 4 },
   savedChipWrap: { position: 'relative' },
@@ -244,14 +256,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
   },
   savedChipText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 13,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     paddingRight: 8,
   },
   savedChipDelete: {
@@ -276,25 +288,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.xs,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     padding: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
   },
   input: {
     flex: 1,
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 15,
-    color: COLORS.white,
+    color: COLORS.ink,
     height: 40,
     paddingHorizontal: 8,
   },
   numberName: {
     flex: 1,
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 15,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     paddingHorizontal: 8,
   },
 
@@ -307,8 +319,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   shuffleText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 14,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
 });

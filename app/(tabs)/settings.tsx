@@ -4,11 +4,10 @@ import {
   TouchableOpacity, Animated, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Timer, Volume2, Vibrate, Star, MessageSquare, ChevronRight, Crown } from 'lucide-react-native';
-import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
+import { COLORS, FONTS, SPACING, RADIUS, GRADIENTS } from '../../constants/theme';
 import GlassCard from '../../components/GlassCard';
 import { storage, Settings } from '../../utils/storage';
 import { useGame } from '../../context/GameContext';
@@ -106,7 +105,7 @@ export default function SettingsScreen() {
               <Text style={styles.title}>Settings</Text>
               {isPremium && (
                 <View style={styles.crownBadge}>
-                  <Crown size={14} color={COLORS.nearBlack} />
+                  <Crown size={14} color={COLORS.ink} />
                   <Text style={styles.crownText}>PREMIUM</Text>
                 </View>
               )}
@@ -120,7 +119,7 @@ export default function SettingsScreen() {
               <GlassCard style={styles.premiumCard}>
                 <View style={styles.premiumCardInner}>
                   <View style={styles.premiumIconWrap}>
-                    <Crown size={20} color={COLORS.nearBlack} />
+                    <Crown size={20} color={COLORS.ink} />
                   </View>
                   <View style={styles.premiumCardText}>
                     <Text style={styles.premiumActiveLabel}>Premium Active</Text>
@@ -133,7 +132,7 @@ export default function SettingsScreen() {
                   <>
                     <View style={styles.divider} />
                     <SettingLink
-                      icon={<Star size={18} color={COLORS.yellow} />}
+                      icon={<Star size={18} color={COLORS.honey} />}
                       label="Manage Subscription"
                       onPress={openCustomerCenter}
                     />
@@ -148,7 +147,7 @@ export default function SettingsScreen() {
               style={styles.premiumBannerShadow}
             >
               <LinearGradient
-                colors={[COLORS.yellow, COLORS.yellowDeep]}
+                colors={GRADIENTS.honeyButton}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.premiumBanner}
@@ -161,13 +160,13 @@ export default function SettingsScreen() {
                   style={styles.premiumBannerSheen}
                 />
                 <View style={styles.premiumBannerIconWrap}>
-                  <Crown size={22} color={COLORS.nearBlack} />
+                  <Crown size={22} color={COLORS.ink} />
                 </View>
                 <View style={styles.premiumCardText}>
                   <Text style={styles.premiumBannerTitle}>Go Premium</Text>
                   <Text style={styles.premiumBannerSub}>Unlock every category, no ads</Text>
                 </View>
-                <ChevronRight size={20} color={COLORS.nearBlack} />
+                <ChevronRight size={20} color={COLORS.ink} />
               </LinearGradient>
             </TouchableOpacity>
           )}
@@ -175,7 +174,7 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>GAMEPLAY</Text>
           <GlassCard style={styles.section}>
             <SettingRow
-              icon={<Timer size={18} color={COLORS.yellow} />}
+              icon={<Timer size={18} color={COLORS.honey} />}
               label="Round Timer"
               description="Show countdown during clue round"
               value={settings.timerEnabled}
@@ -183,7 +182,7 @@ export default function SettingsScreen() {
             />
             <Divider />
             <SettingRow
-              icon={<Timer size={18} color={COLORS.yellow} />}
+              icon={<Timer size={18} color={COLORS.honey} />}
               label="Timer sounds"
               description="Tick and shutter sounds during countdown"
               value={timerSound}
@@ -191,7 +190,7 @@ export default function SettingsScreen() {
             />
             <Divider />
             <SettingRow
-              icon={<Volume2 size={18} color={COLORS.yellow} />}
+              icon={<Volume2 size={18} color={COLORS.honey} />}
               label="Sound Effects"
               description="Blip on reveal, fanfare on game end"
               value={settings.soundEnabled}
@@ -199,7 +198,7 @@ export default function SettingsScreen() {
             />
             <Divider />
             <SettingRow
-              icon={<Vibrate size={18} color={COLORS.yellow} />}
+              icon={<Vibrate size={18} color={COLORS.honey} />}
               label="Haptic Feedback"
               description="Vibration on imposter reveal"
               value={settings.hapticsEnabled}
@@ -210,7 +209,7 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>MORE</Text>
           <GlassCard style={styles.section}>
             <SettingLink
-              icon={<MessageSquare size={18} color={COLORS.yellow} />}
+              icon={<MessageSquare size={18} color={COLORS.honey} />}
               label="Suggest a Category"
               onPress={() => router.push('/suggest')}
             />
@@ -250,8 +249,8 @@ function SettingRow({
       <Switch
         value={value}
         onValueChange={onChange}
-        trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(111,207,71,0.4)' }}
-        thumbColor={value ? COLORS.yellow : 'rgba(255,255,255,0.4)'}
+        trackColor={{ false: COLORS.divider, true: COLORS.honeyBorder }}
+        thumbColor={value ? COLORS.honey : COLORS.white}
       />
     </View>
   );
@@ -262,20 +261,20 @@ function SettingLink({ icon, label, onPress }: { icon: React.ReactNode; label: s
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.rowIcon}>{icon}</View>
       <Text style={[styles.rowLabel, { flex: 1 }]}>{label}</Text>
-      <ChevronRight size={16} color={COLORS.textLabel} />
+      <ChevronRight size={16} color={COLORS.textMuted} />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 130 },
   header: { marginBottom: SPACING.md },
   label: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 4,
@@ -286,30 +285,30 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   crownBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   crownText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 10,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
     letterSpacing: 0.5,
   },
 
   sectionLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: SPACING.xs,
@@ -330,26 +329,26 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
     alignItems: 'center',
     justifyContent: 'center',
   },
   premiumCardText: { flex: 1, gap: 2 },
   premiumActiveLabel: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 15,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
   premiumExpiry: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
 
   // Go Premium banner
   premiumBannerShadow: {
-    borderRadius: RADIUS.card,
-    shadowColor: COLORS.yellow,
+    borderRadius: RADIUS.lg,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.35,
     shadowRadius: 18,
@@ -358,7 +357,7 @@ const styles = StyleSheet.create({
   premiumBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: RADIUS.card,
+    borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 16,
     gap: 12,
@@ -380,12 +379,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   premiumBannerTitle: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 16,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
   },
   premiumBannerSub: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 12,
     color: 'rgba(21,23,26,0.65)',
     marginTop: 1,
@@ -402,20 +401,20 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
   rowText: { flex: 1 },
   rowLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 15,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   rowDesc: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     marginTop: 2,
   },
   divider: {
@@ -424,9 +423,9 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.sm,
   },
   version: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
     textAlign: 'center',
     marginTop: SPACING.xl,
   },

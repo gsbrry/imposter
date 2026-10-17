@@ -6,8 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { CircleCheck as CheckCircle } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import PlayerAvatar from '../components/PlayerAvatar';
-import PillButton from '../components/PillButton';
+import Avatar from '../components/Avatar';
+import PrimaryButton from '../components/PrimaryButton';
 import { useGame } from '../context/GameContext';
 import HomeButton from '../components/HomeButton';
 
@@ -97,7 +97,7 @@ export default function VoteScreen() {
                   const isTop = voteCount === maxVotes && maxVotes > 0;
                   return (
                     <View key={player.id} style={[styles.tallyRow, isTop && styles.tallyRowTop]}>
-                      <PlayerAvatar iconIndex={player.iconIndex} playerIndex={game.players.indexOf(player)} size={32} />
+                      <Avatar name={player.name} index={game.players.indexOf(player)} size={32} />
                       <Text style={styles.tallyName}>{player.name}</Text>
                       <View style={styles.tallyBarWrap}>
                         {Array.from({ length: voteCount }).map((_, i) => (
@@ -110,7 +110,7 @@ export default function VoteScreen() {
                 })}
             </ScrollView>
 
-            <PillButton label="Reveal Imposter!" onPress={handleReveal} variant="yellow" />
+            <PrimaryButton label="Reveal Imposter!" onPress={handleReveal} />
           </Animated.View>
         </SafeAreaView>
       </View>
@@ -136,7 +136,7 @@ export default function VoteScreen() {
           )}
 
           <View style={styles.voterCard}>
-            <PlayerAvatar iconIndex={voter.iconIndex} playerIndex={voterIndex} size={36} />
+            <Avatar name={voter.name} index={voterIndex} size={36} />
             <View style={styles.voterInfo}>
               <Text style={styles.voterLabel}>VOTING NOW</Text>
               <Text style={styles.voterName}>{voter.name}</Text>
@@ -158,14 +158,14 @@ export default function VoteScreen() {
                   onPress={() => castVote(suspect.id)}
                   activeOpacity={0.75}
                 >
-                  <PlayerAvatar
-                    iconIndex={suspect.iconIndex}
-                    playerIndex={game.players.indexOf(suspect)}
+                  <Avatar
+                    name={suspect.name}
+                    index={game.players.indexOf(suspect)}
                     size={36}
                   />
                   <Text style={styles.suspectName}>{suspect.name}</Text>
                   <View style={styles.voteBtn}>
-                    <CheckCircle size={18} color={COLORS.yellow} />
+                    <CheckCircle size={18} color={COLORS.honey} />
                   </View>
                 </TouchableOpacity>
               ))}
@@ -185,7 +185,7 @@ export default function VoteScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   inner: {
     flex: 1,
@@ -201,23 +201,23 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
 
   tieBanner: {
-    backgroundColor: 'rgba(244,83,107,0.08)',
+    backgroundColor: 'rgba(194,59,59,0.08)',
     borderRadius: 12,
     padding: 10,
     marginBottom: SPACING.xs,
     borderWidth: 1,
-    borderColor: 'rgba(244,83,107,0.2)',
+    borderColor: 'rgba(194,59,59,0.2)',
   },
   tieBannerText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 12,
-    color: COLORS.rose,
+    color: COLORS.danger,
     textAlign: 'center',
     letterSpacing: 0.5,
   },
@@ -226,8 +226,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.xs,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     padding: SPACING.sm,
     marginBottom: SPACING.sm,
     borderWidth: 1,
@@ -235,36 +235,36 @@ const styles = StyleSheet.create({
   },
   voterInfo: { flex: 1 },
   voterLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 2,
   },
   voterName: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 17,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   progressBadge: {
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
   },
   progressText: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 12,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
 
   suspectLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: SPACING.xs,
@@ -275,32 +275,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     padding: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
   },
   suspectName: {
     flex: 1,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 17,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   voteBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   revealGhostBtn: {
     height: 44,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
@@ -308,9 +308,9 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   revealGhostText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 12,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 1.5,
   },
 
@@ -320,20 +320,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.xs,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     padding: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
   },
   tallyRowTop: {
-    borderColor: COLORS.yellowBorder,
-    backgroundColor: COLORS.yellowGlass,
+    borderColor: COLORS.honeyBorder,
+    backgroundColor: COLORS.honeySoft,
   },
   tallyName: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 15,
-    color: COLORS.white,
+    color: COLORS.ink,
     width: 90,
   },
   tallyBarWrap: {
@@ -346,14 +346,14 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
   },
   tallyCount: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 20,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     width: 24,
     textAlign: 'right',
   },
-  tallyCountTop: { color: COLORS.yellow },
+  tallyCountTop: { color: COLORS.honey },
 });

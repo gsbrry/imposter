@@ -5,13 +5,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Eye } from 'lucide-react-native';
-import { FastForward } from 'phosphor-react-native';
+import { ChevronRight, Eye, FastForward } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import GlassCard from '../components/GlassCard';
-import PlayerAvatar from '../components/PlayerAvatar';
+import Avatar from '../components/Avatar';
 import TimerRing from '../components/TimerRing';
-import PillButton from '../components/PillButton';
+import PrimaryButton from '../components/PrimaryButton';
 import { useGame } from '../context/GameContext';
 import HomeButton from '../components/HomeButton';
 import { storage } from '../utils/storage';
@@ -228,8 +227,14 @@ export default function ClueRoundScreen() {
                   {timerEnabled ? `${timeLeft}s` : '—'}
                 </Text>
               </View>
-              <TouchableOpacity onPress={openSkipSheet} style={styles.skipAllBtn} activeOpacity={0.7}>
-                <FastForward size={22} color={COLORS.yellow} weight="fill" />
+              <TouchableOpacity
+                onPress={openSkipSheet}
+                style={styles.skipAllBtn}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Skip all remaining clues"
+              >
+                <FastForward size={22} color={COLORS.honey} fill={COLORS.honey} />
               </TouchableOpacity>
             </View>
           </View>
@@ -253,14 +258,14 @@ export default function ClueRoundScreen() {
             <View style={styles.avatarWrap}>
               <TimerRing size={96} progress={progress} strokeWidth={3} />
               <View style={styles.avatarInner}>
-                <PlayerAvatar iconIndex={player.iconIndex} playerIndex={currentIndex} size={52} />
+                <Avatar name={player.name} index={currentIndex} size={52} />
               </View>
             </View>
             <Text style={styles.playerName}>{player.name}</Text>
             <Text style={styles.instruction}>Give one word clue about the secret word</Text>
             {timeLeft === 0 && timerEnabled && (
               <View style={styles.timesUpBadge}>
-                <Text style={styles.timesUp}>TIME'S UP</Text>
+                <Text style={styles.timesUp}>TIME&apos;S UP</Text>
               </View>
             )}
           </GlassCard>
@@ -269,20 +274,19 @@ export default function ClueRoundScreen() {
           <View style={styles.tips}>
             <Text style={styles.tipsLabel}>TIPS</Text>
             <Text style={styles.tipItem}>One word only — no phrases</Text>
-            <Text style={styles.tipItem}>Don't say the word itself</Text>
+            <Text style={styles.tipItem}>Don&apos;t say the word itself</Text>
             <Text style={styles.tipItem}>Imposters — be convincing!</Text>
           </View>
 
           {/* Action buttons */}
           <View style={styles.actions}>
-            <PillButton
+            <PrimaryButton
               label={primaryLabel}
               onPress={handlePrimary}
-              variant="yellow"
               icon={
                 teamVote && isLast
-                  ? <Eye size={18} color={COLORS.nearBlack} />
-                  : <ChevronRight size={18} color={COLORS.nearBlack} />
+                  ? <Eye size={18} color={COLORS.ink} />
+                  : <ChevronRight size={18} color={COLORS.ink} />
               }
             />
 
@@ -292,7 +296,7 @@ export default function ClueRoundScreen() {
                   <Text style={styles.ghostText}>Go to Vote</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.revealBtn} onPress={revealImposter} activeOpacity={0.75}>
-                  <Eye size={14} color={COLORS.yellow} />
+                  <Eye size={14} color={COLORS.honey} />
                   <Text style={styles.revealText}>Reveal Imposter</Text>
                 </TouchableOpacity>
               </View>
@@ -323,7 +327,7 @@ export default function ClueRoundScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   inner: {
     flex: 1,
@@ -340,9 +344,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 18,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   topRight: {
     flexDirection: 'row',
@@ -350,28 +354,28 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   timerBadge: {
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     minWidth: 48,
     alignItems: 'center',
   },
   timerText: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 14,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
-  timerCritical: { color: COLORS.rose },
+  timerCritical: { color: COLORS.danger },
   skipAllBtn: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -388,8 +392,8 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: 'rgba(255,255,255,0.12)',
   },
-  dotDone: { backgroundColor: 'rgba(111,207,71,0.4)' },
-  dotActive: { backgroundColor: COLORS.yellow, width: 18 },
+  dotDone: { backgroundColor: COLORS.honeyBorder },
+  dotActive: { backgroundColor: COLORS.honey, width: 18 },
 
   playerCard: {
     padding: SPACING.md,
@@ -406,14 +410,14 @@ const styles = StyleSheet.create({
   },
   avatarInner: { position: 'absolute' },
   playerName: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 24,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   instruction: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
   timesUpBadge: {
@@ -426,30 +430,30 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   timesUp: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 12,
-    color: COLORS.rose,
+    color: COLORS.danger,
     letterSpacing: 2,
   },
 
   tips: {
     gap: 6,
-    backgroundColor: COLORS.glass,
-    borderRadius: RADIUS.card,
+    backgroundColor: COLORS.glassFill,
+    borderRadius: RADIUS.lg,
     padding: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
   },
   tipsLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   tipItem: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
     color: COLORS.textBody,
   },
@@ -462,16 +466,16 @@ const styles = StyleSheet.create({
   ghostBtn: {
     flex: 1,
     paddingVertical: 13,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   ghostText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 13,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
   revealBtn: {
     flex: 1,
@@ -480,27 +484,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 13,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
-    backgroundColor: COLORS.yellowGlass,
+    borderColor: COLORS.honeyBorder,
+    backgroundColor: COLORS.honeySoft,
   },
   revealText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 13,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
 
   // Bottom sheet
   overlay: {
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: COLORS.scrim,
   },
   sheet: {
     position: 'absolute',
     bottom: 0, left: 0, right: 0,
-    backgroundColor: COLORS.nearBlack,
+    backgroundColor: COLORS.glassFillStrong,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: SPACING.md,
@@ -518,43 +522,43 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   sheetTitle: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 18,
-    color: COLORS.white,
+    color: COLORS.ink,
     textAlign: 'center',
     marginBottom: 4,
   },
   sheetSub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 13,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
     marginBottom: SPACING.xs,
   },
   sheetYes: {
     height: 56,
-    borderRadius: RADIUS.button,
-    backgroundColor: COLORS.yellow,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.honey,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sheetYesText: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 15,
-    color: COLORS.nearBlack,
+    color: COLORS.ink,
     letterSpacing: 0.5,
   },
   sheetNo: {
     height: 52,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   sheetNoText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 15,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
   },
 });

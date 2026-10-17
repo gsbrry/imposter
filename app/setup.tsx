@@ -9,7 +9,7 @@ import {
   Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper, Crown,
 } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import PillButton from '../components/PillButton';
+import PrimaryButton from '../components/PrimaryButton';
 import { CATEGORIES, CategoryKey, CategoryIcon } from '../data/words';
 import { storage } from '../utils/storage';
 import { useGame } from '../context/GameContext';
@@ -107,7 +107,7 @@ export default function SetupScreen() {
               const locked = !cat.free && !isPremium;
               const selected = category === cat.id;
               const Icon = CATEGORY_ICONS[cat.icon];
-              const iconColor = selected ? COLORS.yellow : locked ? 'rgba(255,255,255,0.45)' : COLORS.textBody;
+              const iconColor = selected ? COLORS.honey : locked ? COLORS.textFaint : COLORS.textBody;
               return (
                 <Animated.View
                   key={cat.id}
@@ -124,7 +124,7 @@ export default function SetupScreen() {
                   >
                     {locked && (
                       <View style={styles.premiumBadge}>
-                        <Crown size={10} color={COLORS.nearBlack} />
+                        <Crown size={10} color={COLORS.ink} />
                       </View>
                     )}
                     <Icon size={24} color={iconColor} strokeWidth={1.75} />
@@ -163,12 +163,11 @@ export default function SetupScreen() {
             ))}
           </View>
 
-          <PillButton
+          <PrimaryButton
             label="Next: Game Settings"
             onPress={handleNext}
-            variant="yellow"
             style={styles.startBtn}
-            icon={<ChevronRight size={18} color={COLORS.nearBlack} />}
+            icon={<ChevronRight size={18} color={COLORS.ink} />}
           />
         </Animated.ScrollView>
       </SafeAreaView>
@@ -177,23 +176,23 @@ export default function SetupScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 100 },
 
   header: { marginBottom: SPACING.md },
   label: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
 
   grid: {
@@ -204,8 +203,8 @@ const styles = StyleSheet.create({
   },
   catBtn: {
     aspectRatio: 0.95,
-    borderRadius: RADIUS.card,
-    backgroundColor: COLORS.glass,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     alignItems: 'center',
@@ -215,21 +214,21 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   catSelected: {
-    borderColor: COLORS.yellow,
-    backgroundColor: COLORS.yellowGlass,
+    borderColor: COLORS.honey,
+    backgroundColor: COLORS.honeySoft,
   },
   catLocked: {
-    backgroundColor: 'rgba(111,207,71,0.08)',
-    borderColor: 'rgba(111,207,71,0.35)',
+    backgroundColor: COLORS.glassFill,
+    borderColor: COLORS.divider,
   },
   catLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 11,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
-  catLabelSelected: { color: COLORS.yellow },
-  catLabelLocked: { color: 'rgba(255,255,255,0.6)' },
+  catLabelSelected: { color: COLORS.honey },
+  catLabelLocked: { color: COLORS.textFaint },
   premiumBadge: {
     position: 'absolute',
     top: 8,
@@ -237,10 +236,10 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.yellow,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 6,
@@ -257,29 +256,29 @@ const styles = StyleSheet.create({
   diffBtn: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: RADIUS.card,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     alignItems: 'center',
     gap: 3,
   },
   diffSelected: {
-    backgroundColor: COLORS.yellowGlass,
-    borderColor: COLORS.yellow,
+    backgroundColor: COLORS.honeySoft,
+    borderColor: COLORS.honey,
   },
   diffText: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 13,
-    color: COLORS.textLabel,
-  },
-  diffTextSelected: { color: COLORS.yellow },
-  diffDesc: {
-    fontFamily: FONTS.regular,
-    fontSize: 10,
     color: COLORS.textMuted,
   },
-  diffDescSelected: { color: 'rgba(111,207,71,0.6)' },
+  diffTextSelected: { color: COLORS.honey },
+  diffDesc: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 10,
+    color: COLORS.textFaint,
+  },
+  diffDescSelected: { color: COLORS.honeyText },
 
   startBtn: { marginTop: 0 },
 });

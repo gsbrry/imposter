@@ -6,8 +6,9 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import { MessageSquare, X, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import PillButton from '../components/PillButton';
-import GlassIconButton from '../components/GlassIconButton';
+import PrimaryButton from '../components/PrimaryButton';
+import GlassButton from '../components/GlassButton';
+import IconButton from '../components/IconButton';
 import { storage } from '../utils/storage';
 
 export default function SuggestCategoryScreen() {
@@ -30,12 +31,16 @@ export default function SuggestCategoryScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
-        <GlassIconButton onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]}>
-          <X size={22} color="rgba(255,255,255,0.5)" />
-        </GlassIconButton>
+        <IconButton
+          onPress={() => router.back()}
+          style={[styles.closeBtn, { top: insets.top + 12 }]}
+          accessibilityLabel="Close"
+        >
+          <X size={22} color={COLORS.textFaint} />
+        </IconButton>
 
         <View style={styles.header}>
-          <MessageSquare size={32} color={COLORS.yellow} />
+          <MessageSquare size={32} color={COLORS.honey} />
           <Text style={styles.title}>Suggest a Category</Text>
           <Text style={styles.sub}>
             Got an idea for a new category? Jot it down.
@@ -44,13 +49,13 @@ export default function SuggestCategoryScreen() {
 
         {submitted ? (
           <View style={styles.successWrap}>
-            <CheckCircle size={64} color={COLORS.yellow}  />
+            <CheckCircle size={64} color={COLORS.honey}  />
             <Text style={styles.successTitle}>Saved!</Text>
             <Text style={styles.successText}>
               Your idea is saved on this device. We gather suggestions in app
               updates, so keep an eye out for new categories.
             </Text>
-            <PillButton label="Back to Settings" onPress={() => router.back()} variant="violet" style={{ marginTop: SPACING.sm }} />
+            <GlassButton label="Back to Settings" onPress={() => router.back()} style={{ marginTop: SPACING.sm }} />
           </View>
         ) : (
           <View style={styles.form}>
@@ -80,10 +85,9 @@ export default function SuggestCategoryScreen() {
               />
             </View>
 
-            <PillButton
+            <PrimaryButton
               label={loading ? 'Saving...' : 'Save Suggestion'}
               onPress={handleSubmit}
-              variant="yellow"
               disabled={!categoryName.trim() || loading}
             />
           </View>
@@ -94,7 +98,7 @@ export default function SuggestCategoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1, padding: SPACING.sm, paddingTop: SPACING.md },
   closeBtn: {
     position: 'absolute',
@@ -108,12 +112,12 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 24,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   sub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
     color: 'rgba(255,255,255,0.5)',
     textAlign: 'center',
@@ -121,20 +125,20 @@ const styles = StyleSheet.create({
   form: { gap: SPACING.sm },
   field: { gap: 6 },
   fieldLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 13,
     color: 'rgba(255,255,255,0.6)',
   },
   input: {
     backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: RADIUS.card,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: COLORS.violetBorder,
+    borderColor: COLORS.divider,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 14,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 15,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
   inputMulti: {
     height: 100,
@@ -149,12 +153,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
   },
   successTitle: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 28,
-    color: COLORS.yellow,
+    color: COLORS.honey,
   },
   successText: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 15,
     color: 'rgba(255,255,255,0.6)',
     textAlign: 'center',

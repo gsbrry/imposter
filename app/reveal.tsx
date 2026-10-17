@@ -4,10 +4,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ghost, ShieldCheck } from 'lucide-react-native';
-import { Eye, EyeSlash } from 'phosphor-react-native';
+import { Ghost, ShieldCheck, Eye, EyeOff } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import PlayerAvatar from '../components/PlayerAvatar';
+import Avatar from '../components/Avatar';
 import { useGame } from '../context/GameContext';
 import { storage } from '../utils/storage';
 import { getWord } from '../utils/getWord';
@@ -192,7 +191,7 @@ export default function RevealScreen() {
           {/* Pass card */}
           <View style={styles.passCard}>
             <Text style={styles.passLabel}>PASS TO</Text>
-            <PlayerAvatar iconIndex={player.iconIndex} playerIndex={currentIndex} size={52} />
+            <Avatar name={player.name} index={currentIndex} size={52} />
             <Text style={styles.playerName}>{player.name}</Text>
           </View>
 
@@ -205,7 +204,7 @@ export default function RevealScreen() {
             {!wordVisible ? (
               <>
                 <View style={styles.eyeCircle}>
-                  <Eye size={28} color={COLORS.yellow} weight="fill" />
+                  <Eye size={28} color={COLORS.honey} fill={COLORS.honey} />
                 </View>
                 <Text style={styles.tapText}>TAP TO SEE YOUR WORD</Text>
                 <Text style={styles.tapSubtext}>Make sure only {player.name} can see</Text>
@@ -219,9 +218,9 @@ export default function RevealScreen() {
               >
                 {isImposter ? (
                   <>
-                    <Ghost size={48} color={COLORS.yellow} />
+                    <Ghost size={48} color={COLORS.honey} />
                     <Text style={styles.imposterLabel}>IMPOSTER</Text>
-                    <Text style={styles.imposterSub}>Blend in — you don't know the word.</Text>
+                    <Text style={styles.imposterSub}>Blend in — you don&apos;t know the word.</Text>
                     {game.difficulty === 'easy' && (
                       <View style={styles.hintBadge}>
                         <Text style={styles.hintText}>HINT: {game.hint}</Text>
@@ -230,13 +229,13 @@ export default function RevealScreen() {
                   </>
                 ) : (
                   <>
-                    <ShieldCheck size={36} color={COLORS.yellow} />
+                    <ShieldCheck size={36} color={COLORS.honey} />
                     <Text style={styles.wordLabel}>{scrambledWord}</Text>
                     <Text style={styles.categoryLabel}>{game.category?.toUpperCase()}</Text>
                   </>
                 )}
                 <View style={styles.hideHint}>
-                  <EyeSlash size={14} color={COLORS.textMuted} weight="fill" />
+                  <EyeOff size={14} color={COLORS.textFaint} />
                   <Text style={styles.hideText}>Tap to hide (auto-hides in 3s)</Text>
                 </View>
               </Animated.View>
@@ -261,7 +260,7 @@ export default function RevealScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.nearBlack },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   inner: { flex: 1, padding: SPACING.md, paddingTop: SPACING.md, justifyContent: 'space-between' },
   center: { alignItems: 'center', justifyContent: 'center' },
@@ -269,7 +268,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
     opacity: 0.5,
   },
 
@@ -286,32 +285,32 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: 'rgba(255,255,255,0.12)',
   },
-  progressDone: { backgroundColor: 'rgba(111,207,71,0.4)' },
-  progressActive: { backgroundColor: COLORS.yellow, width: 18 },
+  progressDone: { backgroundColor: COLORS.honeyBorder },
+  progressActive: { backgroundColor: COLORS.honey, width: 18 },
 
   passCard: {
     alignItems: 'center',
     gap: SPACING.xs,
   },
   passLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
   playerName: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.ink,
   },
 
   tapArea: {
-    borderRadius: RADIUS.card,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     borderStyle: 'dashed',
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.xs,
@@ -322,34 +321,34 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
   tapText: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 13,
     color: COLORS.textBody,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
   tapSubtext: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
 
   revealCardWrap: {
-    borderRadius: RADIUS.card,
-    backgroundColor: COLORS.glass,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     overflow: 'hidden',
-    shadowColor: COLORS.yellow,
+    shadowColor: COLORS.honey,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,
     shadowRadius: 32,
@@ -363,44 +362,44 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   imposterLabel: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 36,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     letterSpacing: 4,
   },
   imposterSub: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 14,
     color: COLORS.textBody,
     textAlign: 'center',
   },
   hintBadge: {
-    backgroundColor: COLORS.yellowGlass,
+    backgroundColor: COLORS.honeySoft,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderWidth: 1,
-    borderColor: COLORS.yellowBorder,
+    borderColor: COLORS.honeyBorder,
     marginTop: 4,
   },
   hintText: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 12,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   wordLabel: {
-    fontFamily: FONTS.extraBold,
+    fontFamily: FONTS.displayExtraBold,
     fontSize: 36,
-    color: COLORS.yellow,
+    color: COLORS.honey,
     letterSpacing: 3,
     textAlign: 'center',
   },
   categoryLabel: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bodySemiBold,
     fontSize: 10,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
@@ -411,33 +410,33 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   hideText: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.bodyRegular,
     fontSize: 11,
-    color: COLORS.textMuted,
+    color: COLORS.textFaint,
   },
 
   nextBtn: {
     height: 56,
-    borderRadius: RADIUS.button,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glass,
+    backgroundColor: COLORS.glassFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   nextBtnActive: {
-    backgroundColor: COLORS.yellow,
-    borderColor: COLORS.yellow,
+    backgroundColor: COLORS.honey,
+    borderColor: COLORS.honey,
   },
   nextText: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.displayBold,
     fontSize: 13,
-    color: COLORS.textLabel,
+    color: COLORS.textMuted,
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   nextTextActive: {
-    color: COLORS.nearBlack,
-    fontFamily: FONTS.extraBold,
+    color: COLORS.ink,
+    fontFamily: FONTS.displayExtraBold,
   },
 });
