@@ -8,6 +8,8 @@ interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
   icon?: React.ReactNode;
+  /** Play-style icons lead the label; "next" arrows trail it. */
+  iconPosition?: 'leading' | 'trailing';
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
@@ -17,7 +19,7 @@ interface PrimaryButtonProps {
  * The one honey-gradient action per screen. Matches impostr.css `.btn-gold`.
  */
 export default function PrimaryButton({
-  label, onPress, icon, disabled, style, accessibilityLabel,
+  label, onPress, icon, iconPosition = 'leading', disabled, style, accessibilityLabel,
 }: PrimaryButtonProps) {
   const { scale, onPressIn, onPressOut } = usePressScale();
 
@@ -39,8 +41,9 @@ export default function PrimaryButton({
           end={{ x: 0, y: 1 }}
           style={styles.fill}
         >
-          {icon}
+          {iconPosition === 'leading' && icon}
           <Text style={styles.text}>{label}</Text>
+          {iconPosition === 'trailing' && icon}
         </LinearGradient>
       </TouchableOpacity>
     </Animated.View>

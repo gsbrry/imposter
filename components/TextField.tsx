@@ -1,21 +1,26 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet, TextInputProps } from 'react-native';
 import { COLORS, FONTS } from '../constants/theme';
+import { useWebFocusRing } from '../hooks/useWebFocusRing';
 
 interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   label?: string;
 }
 
 /** Matches impostr.css `.field` / `.input` / `.input.ta` (multiline). */
-export default function TextField({ label, multiline, ...inputProps }: TextFieldProps) {
+export default function TextField({ label, multiline, onFocus, onBlur, ...inputProps }: TextFieldProps) {
+  const focusRing = useWebFocusRing(onFocus, onBlur);
+
   return (
     <View style={styles.field}>
       {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
         {...inputProps}
         multiline={multiline}
+        onFocus={focusRing.onFocus}
+        onBlur={focusRing.onBlur}
         placeholderTextColor={COLORS.textFaint}
-        style={[styles.input, multiline && styles.inputMultiline]}
+        style={[styles.input, multiline && styles.inputMultiline, focusRing.focusStyle]}
         accessibilityLabel={inputProps.accessibilityLabel ?? label}
       />
     </View>

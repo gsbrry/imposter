@@ -22,16 +22,17 @@ export interface Category {
   free: boolean;
 }
 
+// Display names are one word each, per the design rules in design/README.md.
 export const CATEGORIES: Category[] = [
   { id: 'general', label: 'General', icon: 'brain', free: true },
   { id: 'vehicles', label: 'Vehicles', icon: 'car', free: true },
-  { id: 'home', label: 'Home & Household', icon: 'house', free: true },
-  { id: 'food', label: 'Food & Drinks', icon: 'utensils', free: false },
-  { id: 'bollywood', label: 'Bollywood & Movies', icon: 'clapperboard', free: false },
-  { id: 'sports', label: 'Sports & Games', icon: 'trophy', free: false },
-  { id: 'animals', label: 'Animals & Nature', icon: 'paw', free: false },
-  { id: 'jobs', label: 'Jobs & Professions', icon: 'briefcase', free: false },
-  { id: 'festival', label: 'Festival & Celebration', icon: 'party', free: false },
+  { id: 'home', label: 'Home', icon: 'house', free: true },
+  { id: 'food', label: 'Food', icon: 'utensils', free: false },
+  { id: 'bollywood', label: 'Bollywood', icon: 'clapperboard', free: false },
+  { id: 'sports', label: 'Sports', icon: 'trophy', free: false },
+  { id: 'animals', label: 'Animals', icon: 'paw', free: false },
+  { id: 'jobs', label: 'Jobs', icon: 'briefcase', free: false },
+  { id: 'festival', label: 'Festivals', icon: 'party', free: false },
 ];
 
 export const WORDS: Record<CategoryKey, Record<Difficulty, string[]>> = {
@@ -294,6 +295,12 @@ export const WORDS: Record<CategoryKey, Record<Difficulty, string[]>> = {
     ],
   },
 };
+
+/** Total words bundled for a category, across every difficulty. */
+export function wordCount(category: CategoryKey): number {
+  const pack = WORDS[category];
+  return pack.easy.length + pack.medium.length + pack.hard.length;
+}
 
 export const HINTS: Record<CategoryKey, string[]> = {
   general: ['everyday item', 'common object', 'household thing', 'useful tool', 'found at home'],

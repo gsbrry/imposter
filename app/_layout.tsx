@@ -21,6 +21,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GameProvider, useGame } from '../context/GameContext';
 import PhoneFrame from '@/components/PhoneFrame';
+import AppSplash from '@/components/SplashScreen';
 import { usePremium } from '@/hooks/usePremium';
 import { storage } from '@/utils/storage';
 import { ENTITLEMENT_ID } from '@/constants/revenuecat';
@@ -86,6 +87,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
+      // Hand off from the native splash to our own, which keeps the
+      // Honey and Cream look while the rest of the app mounts.
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
@@ -95,20 +98,24 @@ export default function RootLayout() {
       <GameProvider>
         <RCInitialiser />
         <PhoneFrame>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.background } }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="setup" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="game-settings" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="player-names" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="reveal" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="clue-round" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="vote" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="result" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="suggest" options={{ animation: 'slide_from_right' }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
+          {!fontsLoaded && !fontError ? (
+            <AppSplash />
+          ) : (
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.background } }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="setup" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="game-settings" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="player-names" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="reveal" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="clue-round" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="vote" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="result" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="suggest" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          )}
         </PhoneFrame>
         <StatusBar style="dark" />
       </GameProvider>

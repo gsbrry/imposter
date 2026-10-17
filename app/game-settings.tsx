@@ -1,22 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Animated, Keyboard, Switch,
+  View, Text, StyleSheet, TextInput, Animated, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Minus, Plus, ChevronRight, ChevronLeft } from 'lucide-react-native';
+import { ArrowRight, Minus, Plus } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import ScreenBackground from '../components/ScreenBackground';
+import StepHeader from '../components/StepHeader';
+import GlassCard from '../components/GlassCard';
+import PrimaryButton from '../components/PrimaryButton';
+import IconButton from '../components/IconButton';
+import Stepper from '../components/Stepper';
+import Chip from '../components/Chip';
+import Toggle from '../components/Toggle';
 import { storage, GameSettings, defaultGameSettings } from '../utils/storage';
 import { useGame } from '../context/GameContext';
+import { useWebFocusRing } from '../hooks/useWebFocusRing';
 
-const TURNS_OPTIONS = [1, 2, 3, 4];
-const TIMER_OPTIONS: { label: string; value: number | 'none' | 'custom' }[] = [
-  { label: 'No Timer', value: 'none' },
-  { label: '10s', value: 10 },
+const MIN_PLAYERS = 3;
+const MAX_PLAYERS = 15;
+const MIN_ROUNDS = 1;
+const MAX_ROUNDS = 4;
+
+type TimerValue = number | 'none' | 'custom';
+
+const TIMER_OPTIONS: { label: string; value: TimerValue }[] = [
+  { label: 'Off', value: 'none' },
   { label: '30s', value: 30 },
-  { label: '1 min', value: 60 },
-  { label: '2 min', value: 120 },
+  { label: '60s', value: 60 },
+  { label: '90s', value: 90 },
   { label: 'Custom', value: 'custom' },
 ];
 
@@ -24,16 +37,14 @@ export default function GameSettingsScreen() {
   const router = useRouter();
   const { setGame } = useGame();
   const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
 
   const [playerCount, setPlayerCount] = useState(defaultGameSettings.playerCount);
   const [turnsBeforeGuess, setTurnsBeforeGuess] = useState(defaultGameSettings.turnsBeforeGuess);
-  const [timerPerClue, setTimerPerClue] = useState<number | 'none' | 'custom'>(30);
+  const [timerPerClue, setTimerPerClue] = useState<TimerValue>(defaultGameSettings.timerPerClue);
   const [customSeconds, setCustomSeconds] = useState(String(defaultGameSettings.customTimerSeconds));
   const [teamVote, setTeamVote] = useState(false);
-
-  const playerScaleDown = useRef(new Animated.Value(1)).current;
-  const playerScaleUp = useRef(new Animated.Value(1)).current;
+  const customFocus = useWebFocusRing();
 
   useEffect(() => {
     storage.getGameSettings().then(s => {
@@ -47,19 +58,13 @@ export default function GameSettingsScreen() {
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [entryAnim, entryY]);
 
-  const pulse = (anim: Animated.Value) => {
-    Animated.sequence([
-      Animated.timing(anim, { toValue: 0.88, duration: 80, useNativeDriver: true }),
-      Animated.spring(anim, { toValue: 1, useNativeDriver: true, friction: 4 }),
-    ]).start();
-  };
+  const adjustPlayers = (delta: number) =>
+    setPlayerCount(p => Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, p + delta)));
 
-  const adjustPlayerCount = (delta: number) => {
-    pulse(delta < 0 ? playerScaleDown : playerScaleUp);
-    setPlayerCount(p => Math.min(15, Math.max(3, p + delta)));
-  };
+  const adjustRounds = (delta: number) =>
+    setTurnsBeforeGuess(r => Math.min(MAX_ROUNDS, Math.max(MIN_ROUNDS, r + delta)));
 
   const handleNext = async () => {
     const parsed = parseInt(customSeconds, 10);
@@ -78,116 +83,72 @@ export default function GameSettingsScreen() {
     router.push('/player-names');
   };
 
-  const timerLabel =
+  const timerSummary =
     timerPerClue === 'none'
       ? 'Off'
       : timerPerClue === 'custom'
-      ? `${parseInt(customSeconds, 10) || 60}s`
-      : timerPerClue >= 60
-      ? `${timerPerClue / 60} min`
-      : `${timerPerClue}s`;
+      ? `${parseInt(customSeconds, 10) || 60} sec`
+      : `${timerPerClue} sec`;
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <Animated.ScrollView
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={styles.backBtn}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-            >
-              <ChevronLeft size={22} color={COLORS.textBody} />
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.headerLabel}>STEP 2 OF 3</Text>
-              <Text style={styles.title}>Game Settings</Text>
-            </View>
-            <View style={{ width: 36 }} />
-          </View>
+          <StepHeader step={2} label="Step 2 of 3" onBack={() => router.back()} />
 
-          {/* Number of players */}
-          <Text style={styles.sectionLabel}>NUMBER OF PLAYERS</Text>
-          <View style={styles.card}>
-            <Animated.View style={{ transform: [{ scale: playerScaleDown }] }}>
-              <TouchableOpacity
-                style={[styles.countBtn, playerCount <= 3 && styles.countBtnDisabled]}
-                onPress={() => adjustPlayerCount(-1)}
-                activeOpacity={0.75}
-                disabled={playerCount <= 3}
-                accessibilityRole="button"
-                accessibilityLabel="Fewer players"
-              >
-                <Minus size={24} color={playerCount <= 3 ? COLORS.textFaint : COLORS.ink} />
-              </TouchableOpacity>
-            </Animated.View>
-            <View style={styles.countCenter}>
-              <Text style={styles.countNumber}>{playerCount}</Text>
-              <Text style={styles.countSub}>players</Text>
-            </View>
-            <Animated.View style={{ transform: [{ scale: playerScaleUp }] }}>
-              <TouchableOpacity
-                style={[styles.countBtn, playerCount >= 15 && styles.countBtnDisabled]}
-                onPress={() => adjustPlayerCount(1)}
-                activeOpacity={0.75}
-                disabled={playerCount >= 15}
-                accessibilityRole="button"
-                accessibilityLabel="More players"
-              >
-                <Plus size={24} color={playerCount >= 15 ? COLORS.textFaint : COLORS.honey} />
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
+          <Text style={styles.title} maxFontSizeMultiplier={1.4}>Game settings</Text>
 
-          {/* Turns before guess */}
-          <Text style={styles.sectionLabel}>TURNS BEFORE GUESS</Text>
-          <Text style={styles.sectionSubtitle}>
-            Each player gives one clue word per turn, then the group guesses the imposter
-          </Text>
-          <View style={styles.pillRow}>
-            {TURNS_OPTIONS.map(n => (
-              <TouchableOpacity
-                key={n}
-                style={[styles.pill, turnsBeforeGuess === n && styles.pillActive]}
-                onPress={() => setTurnsBeforeGuess(n)}
-                activeOpacity={0.75}
-              >
-                <Text style={[styles.pillText, turnsBeforeGuess === n && styles.pillTextActive]}>{n}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {/* Players */}
+          <GlassCard style={styles.card}>
+            <Text style={styles.label}>PLAYERS</Text>
+            <Stepper
+              value={playerCount}
+              onDecrement={() => adjustPlayers(-1)}
+              onIncrement={() => adjustPlayers(1)}
+              min={MIN_PLAYERS}
+              max={MAX_PLAYERS}
+              decrementAccessibilityLabel="Fewer players"
+              incrementAccessibilityLabel="More players"
+            />
+            <View style={styles.dots}>
+              {Array.from({ length: Math.min(playerCount, 8) }, (_, i) => (
+                <View
+                  key={i}
+                  style={[styles.dot, { backgroundColor: COLORS.avatars[i % COLORS.avatars.length] }]}
+                />
+              ))}
+              <View style={[styles.dot, styles.dotEmpty]} />
+            </View>
+          </GlassCard>
 
           {/* Timer per clue */}
-          <Text style={styles.sectionLabel}>TIMER PER CLUE</Text>
-          <View style={styles.timerRow}>
-            {TIMER_OPTIONS.map(opt => {
-              const active = timerPerClue === opt.value;
-              return (
-                <TouchableOpacity
+          <GlassCard style={styles.card}>
+            <View style={styles.cardHead}>
+              <Text style={styles.label}>TIMER PER CLUE</Text>
+              <Text style={styles.value}>{timerSummary}</Text>
+            </View>
+            <View style={styles.chips}>
+              {TIMER_OPTIONS.map(opt => (
+                <Chip
                   key={String(opt.value)}
-                  style={[styles.timerPill, active && styles.pillActive]}
+                  label={opt.label}
+                  selected={timerPerClue === opt.value}
                   onPress={() => setTimerPerClue(opt.value)}
-                  activeOpacity={0.75}
-                >
-                  <Text style={[styles.pillText, active && styles.pillTextActive]}>{opt.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {timerPerClue === 'custom' && (
-            <View style={styles.customInputWrap}>
-              <Text style={styles.customLabel}>Seconds (max 300)</Text>
-              <View style={styles.customInputRow}>
+                />
+              ))}
+            </View>
+            {timerPerClue === 'custom' && (
+              <View style={styles.customRow}>
                 <TextInput
-                  style={styles.customInput}
+                  style={[styles.customInput, customFocus.focusStyle]}
+                  onFocus={customFocus.onFocus}
+                  onBlur={customFocus.onBlur}
                   value={customSeconds}
                   onChangeText={t => setCustomSeconds(t.replace(/[^0-9]/g, ''))}
                   keyboardType="number-pad"
@@ -196,52 +157,66 @@ export default function GameSettingsScreen() {
                   placeholderTextColor={COLORS.textFaint}
                   returnKeyType="done"
                   onSubmitEditing={() => Keyboard.dismiss()}
+                  accessibilityLabel="Custom timer in seconds"
                 />
-                <Text style={styles.customUnit}>sec</Text>
+                <Text style={styles.customUnit}>sec, max 300</Text>
+              </View>
+            )}
+          </GlassCard>
+
+          {/* Rounds and team vote */}
+          <GlassCard style={styles.list}>
+            <View style={styles.row}>
+              <View style={styles.rowText}>
+                <Text style={styles.rowTitle}>Clue rounds</Text>
+                <Text style={styles.rowSub}>Turns before voting</Text>
+              </View>
+              <View style={styles.rowStepper}>
+                <IconButton
+                  size={32}
+                  onPress={() => adjustRounds(-1)}
+                  accessibilityLabel="Fewer clue rounds"
+                  style={turnsBeforeGuess <= MIN_ROUNDS ? styles.disabled : undefined}
+                >
+                  <Minus size={16} color={turnsBeforeGuess <= MIN_ROUNDS ? COLORS.textFaint : COLORS.ink} />
+                </IconButton>
+                <Text style={styles.rowValue}>{turnsBeforeGuess}</Text>
+                <IconButton
+                  size={32}
+                  onPress={() => adjustRounds(1)}
+                  accessibilityLabel="More clue rounds"
+                  style={turnsBeforeGuess >= MAX_ROUNDS ? styles.disabled : undefined}
+                >
+                  <Plus size={16} color={turnsBeforeGuess >= MAX_ROUNDS ? COLORS.textFaint : COLORS.ink} />
+                </IconButton>
               </View>
             </View>
-          )}
 
-          {/* Team Vote toggle */}
-          <View style={styles.toggleCard}>
-            <View style={styles.toggleInfo}>
-              <Text style={styles.toggleLabel}>Team votes together</Text>
-              <Text style={styles.toggleSub}>
-                Skip individual voting, reveal imposter directly
-              </Text>
+            <View style={styles.divider} />
+
+            <View style={styles.row}>
+              <View style={styles.rowText}>
+                <Text style={styles.rowTitle}>Team votes together</Text>
+                <Text style={styles.rowSub}>One shared vote on this phone</Text>
+              </View>
+              <Toggle
+                value={teamVote}
+                onValueChange={setTeamVote}
+                accessibilityLabel="Team votes together"
+              />
             </View>
-            <Switch
-              value={teamVote}
-              onValueChange={setTeamVote}
-              trackColor={{ false: COLORS.divider, true: COLORS.honey }}
-              thumbColor={teamVote ? COLORS.honey : COLORS.white}
-              ios_backgroundColor={COLORS.divider}
-            />
-          </View>
+          </GlassCard>
 
-          {/* Summary */}
-          <View style={styles.summary}>
-            <SummaryRow label="Players" value={`${playerCount}`} />
-            <SummaryRow label="Turns before guess" value={`${turnsBeforeGuess}`} />
-            <SummaryRow label="Timer per clue" value={timerLabel} />
-            <SummaryRow label="Team votes together" value={teamVote ? 'Yes' : 'No'} />
-          </View>
+          <View style={styles.spacer} />
 
-          <TouchableOpacity style={styles.nextBtn} onPress={handleNext} activeOpacity={0.85}>
-            <Text style={styles.nextBtnText}>Enter Player Names</Text>
-            <ChevronRight size={20} color={COLORS.ink} />
-          </TouchableOpacity>
+          <PrimaryButton
+            label="Add player names"
+            onPress={handleNext}
+            iconPosition="trailing"
+            icon={<ArrowRight size={18} color={COLORS.onHoney} />}
+          />
         </Animated.ScrollView>
       </SafeAreaView>
-    </View>
-  );
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.summaryRow}>
-      <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={styles.summaryValue}>{value}</Text>
     </View>
   );
 }
@@ -249,224 +224,128 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 48 },
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    paddingBottom: 24,
+    gap: SPACING.gap,
+  },
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.md,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: COLORS.glassFill,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 2,
-  },
   title: {
     fontFamily: FONTS.displayBold,
-    fontSize: 22,
+    fontSize: 28,
+    lineHeight: 30,
+    letterSpacing: -0.7,
     color: COLORS.ink,
-    textAlign: 'center',
   },
-
-  sectionLabel: {
+  label: {
     fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
     color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 6,
-    marginTop: SPACING.md,
   },
-  sectionSubtitle: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.textFaint,
-    marginBottom: SPACING.xs,
-    marginTop: -2,
+  value: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 12.5,
+    color: COLORS.honeyText,
   },
 
   card: {
+    padding: SPACING.cardPadding,
+    gap: 10,
+  },
+  cardHead: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-  },
-  countBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.glassFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  countBtnDisabled: { opacity: 0.3 },
-  countCenter: { alignItems: 'center', gap: 2 },
-  countNumber: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 56,
-    color: COLORS.honey,
-    lineHeight: 64,
-  },
-  countSub: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.textMuted,
+    gap: 8,
   },
 
-  pillRow: { flexDirection: 'row', gap: SPACING.xs },
-  timerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pill: {
-    flex: 1,
-    minHeight: 52,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glassFill,
-    alignItems: 'center',
+  dots: {
+    flexDirection: 'row',
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    flexWrap: 'wrap',
+    gap: 5,
   },
-  timerPill: {
-    minHeight: 48,
-    minWidth: 56,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glassFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    flexGrow: 1,
+  dot: {
+    width: 22,
+    height: 22,
+    borderRadius: 7,
   },
-  pillActive: {
-    backgroundColor: COLORS.honeySoft,
-    borderColor: COLORS.honey,
-  },
-  pillText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 13,
-    color: COLORS.textMuted,
-  },
-  pillTextActive: {
-    color: COLORS.honey,
-    fontFamily: FONTS.displayBold,
+  dotEmpty: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: COLORS.textMuted,
   },
 
-  customInputWrap: { marginTop: SPACING.xs },
-  customLabel: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 11,
-    color: COLORS.textMuted,
-    marginBottom: 6,
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
-  customInputRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
+  customRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   customInput: {
-    flex: 1,
-    height: 56,
+    width: 86,
+    height: 48,
+    borderRadius: 12,
+    paddingHorizontal: 14,
     backgroundColor: COLORS.honeySoft,
-    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.honeyBorder,
-    paddingHorizontal: SPACING.sm,
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 28,
-    color: COLORS.honey,
+    fontFamily: FONTS.displayBold,
+    fontSize: 20,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   customUnit: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 16,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12.5,
     color: COLORS.textMuted,
-    width: 32,
   },
 
-  toggleCard: {
+  list: { borderRadius: RADIUS.lg },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    marginTop: SPACING.md,
-    gap: SPACING.sm,
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  toggleInfo: { flex: 1, gap: 3 },
-  toggleLabel: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 15,
+  rowText: { flex: 1, minWidth: 0 },
+  rowTitle: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 14,
     color: COLORS.ink,
   },
-  toggleSub: {
+  rowSub: {
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
     color: COLORS.textMuted,
+    marginTop: 2,
   },
-
-  summary: {
-    marginTop: SPACING.md,
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    marginBottom: SPACING.md,
-    overflow: 'hidden',
-  },
-  summaryRow: {
+  rowStepper: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
+    gap: 6,
   },
-  summaryLabel: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.textMuted,
-  },
-  summaryValue: {
+  rowValue: {
     fontFamily: FONTS.displayBold,
-    fontSize: 15,
-    color: COLORS.honey,
-  },
-
-  nextBtn: {
-    height: 56,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.honey,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  nextBtnText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 15,
+    fontSize: 17,
+    width: 18,
+    textAlign: 'center',
     color: COLORS.ink,
-    letterSpacing: 0.3,
   },
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.divider,
+  },
+  disabled: { opacity: 0.4 },
+
+  spacer: { flex: 1, minHeight: SPACING.sm },
 });

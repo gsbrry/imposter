@@ -42,6 +42,9 @@ const styles = StyleSheet.create({
     gap: 4,
     padding: 4,
     borderRadius: 14,
+    backgroundColor: COLORS.glassFill,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
   },
   segment: {
     flex: 1,

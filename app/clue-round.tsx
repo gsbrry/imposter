@@ -366,9 +366,11 @@ const styles = StyleSheet.create({
   timerText: {
     fontFamily: FONTS.displayBold,
     fontSize: 14,
-    color: COLORS.honey,
+    color: COLORS.honeyText,
   },
-  timerCritical: { color: COLORS.danger },
+  // Urgency is carried by weight and contrast, never by red: the reveal,
+  // clue, vote and result screens stay on the honey and ink palette.
+  timerCritical: { color: COLORS.ink },
   skipAllBtn: {
     width: 36,
     height: 36,
@@ -421,18 +423,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   timesUpBadge: {
-    backgroundColor: COLORS.dangerSoft,
+    backgroundColor: COLORS.ink,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: COLORS.dangerBorder,
     marginTop: 4,
   },
   timesUp: {
     fontFamily: FONTS.displayBold,
     fontSize: 12,
-    color: COLORS.danger,
+    color: COLORS.honey,
     letterSpacing: 2,
   },
 

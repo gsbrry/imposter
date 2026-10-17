@@ -1,321 +1,404 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions,
-  Pressable,
+  View, Text, StyleSheet, Animated, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Ghost, Drama, MessageCircle, Vote } from 'lucide-react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import {
+  HelpCircle, Play, Users, WifiOff, RefreshCw, ChevronRight, X,
+  Brain, Car, House, UtensilsCrossed, Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
+} from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
+import ScreenBackground from '../../components/ScreenBackground';
+import GlassCard from '../../components/GlassCard';
 import PrimaryButton from '../../components/PrimaryButton';
+import InkButton from '../../components/InkButton';
+import IconButton from '../../components/IconButton';
+import BottomSheet from '../../components/BottomSheet';
+import AppMark from '../../components/AppMark';
+import Pill from '../../components/Pill';
+import { CATEGORIES, CategoryIcon, CategoryKey } from '../../data/words';
+import { storage } from '../../utils/storage';
+import { useGame } from '../../context/GameContext';
+import { useHideTabBar } from '../../components/TabBarVisibility';
 
-const { width, height } = Dimensions.get('window');
+const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
+  brain: Brain,
+  car: Car,
+  house: House,
+  utensils: UtensilsCrossed,
+  clapperboard: Clapperboard,
+  trophy: Trophy,
+  paw: PawPrint,
+  briefcase: Briefcase,
+  party: PartyPopper,
+};
 
-const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
-  id: i,
-  x: Math.random() * width,
-  y: Math.random() * height,
-  size: Math.random() * 3 + 1.5,
-  speed: Math.random() * 0.3 + 0.1,
-  opacity: Math.random() * 0.25 + 0.05,
-}));
-
-function Particle({ x, y, size, opacity }: { x: number; y: number; size: number; opacity: number }) {
-  const anim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(anim, { toValue: 1, duration: 4000 + Math.random() * 5000, useNativeDriver: true }),
-        Animated.timing(anim, { toValue: 0, duration: 4000 + Math.random() * 5000, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
-
-  const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [0, -40] });
-  const op = anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, opacity, 0] });
-
-  return (
-    <Animated.View
-      style={[
-        styles.particle,
-        {
-          left: x,
-          top: y,
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          opacity: op,
-          transform: [{ translateY }],
-        },
-      ]}
-    />
-  );
-}
+const HOW_TO_PLAY = [
+  {
+    title: 'One word, one imposter',
+    body: 'Everyone sees the same secret word except the imposter, who has to blend in.',
+  },
+  {
+    title: 'Give one-word clues',
+    body: 'Take turns. Say a clue about the word without saying the word itself.',
+  },
+  {
+    title: 'Vote and reveal',
+    body: 'Vote for the imposter. Crew wins by catching them. The imposter wins by surviving.',
+  },
+];
 
 export default function HomeScreen() {
   const router = useRouter();
-  const glowAnim = useRef(new Animated.Value(0.5)).current;
-  const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
+  const { setGame } = useGame();
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [lastGame, setLastGame] = useState<{ category: CategoryKey; players: number } | null>(null);
+
+  const entryAnim = useRef(new Animated.Value(0)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
+
+  // The sheet is drawn inside this screen, so the tab bar steps aside.
+  useHideTabBar(showHowToPlay);
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
+  }, [entryAnim, entryY]);
 
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 1, duration: 2000, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0.5, duration: 2000, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
+  // Refresh the "Play again" summary whenever the tab regains focus, so it
+  // reflects a game that was just played.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      Promise.all([storage.getLastCategory(), storage.getGameSettings()]).then(([cat, gs]) => {
+        if (!active) return;
+        const known = CATEGORIES.some(c => c.id === cat);
+        setLastGame(known ? { category: cat as CategoryKey, players: gs.playerCount } : null);
+      });
+      return () => { active = false; };
+    }, [])
+  );
+
+  const startFresh = () => router.push('/setup');
+
+  const playAgain = () => {
+    if (!lastGame) return;
+    setGame(g => ({ ...g, category: lastGame.category }));
+    router.push('/game-settings');
+  };
+
+  const openCategory = (id: CategoryKey) => {
+    setGame(g => ({ ...g, category: id }));
+    router.push('/setup');
+  };
+
+  const lastCategoryLabel = lastGame
+    ? CATEGORIES.find(c => c.id === lastGame.category)?.label ?? 'General'
+    : '';
 
   return (
     <View style={styles.container}>
-      {PARTICLES.map(p => (
-        <Particle key={p.id} x={p.x} y={p.y} size={p.size} opacity={p.opacity} />
-      ))}
-
-      <SafeAreaView style={styles.safe}>
-        <Animated.View
-          style={[
-            styles.center,
-            { opacity: entryAnim, transform: [{ translateY: entryY }] },
-          ]}
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+        <Animated.ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
-          <Animated.View style={[styles.iconWrap, { opacity: glowAnim }]}>
-            <View style={styles.iconCircle}>
-              <Ghost size={40} color={COLORS.honey} />
+          {/* Masthead */}
+          <View style={styles.masthead}>
+            <View style={styles.brand}>
+              <AppMark size={36} />
+              <View style={styles.brandText}>
+                <Text style={styles.label}>PARTY WORD GAME</Text>
+                <Text style={styles.brandName}>Impostr</Text>
+              </View>
             </View>
-          </Animated.View>
-
-          <Text
-            style={styles.title}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.5}
-          >
-            IMPOSTR
-          </Text>
-          <Text style={styles.subtitle}>PARTY WORD GAME</Text>
-
-          <View style={styles.buttonGroup}>
-            <PrimaryButton
-              label="PLAY NOW"
-              onPress={() => router.push('/setup')}
-              style={styles.playBtn}
-            />
-
-            <TouchableOpacity onPress={() => setShowHowToPlay(true)} style={styles.howLink}>
-              <Text style={styles.howText}>How to play?</Text>
-            </TouchableOpacity>
+            <IconButton onPress={() => setShowHowToPlay(true)} accessibilityLabel="How to play">
+              <HelpCircle size={20} color={COLORS.ink} />
+            </IconButton>
           </View>
-        </Animated.View>
+
+          {/* Hero */}
+          <GlassCard style={styles.hero}>
+            <View style={styles.pills}>
+              <Pill
+                tone="honey"
+                label="3 to 12 players"
+                icon={<Users size={14} color={COLORS.honeyText} />}
+              />
+              <Pill
+                label="Works offline"
+                icon={<WifiOff size={14} color={COLORS.textBody} />}
+              />
+            </View>
+
+            <Text style={styles.heroTitle} maxFontSizeMultiplier={1.4}>
+              Someone here{'\n'}is <Text style={styles.heroAccent}>lying.</Text>
+            </Text>
+
+            <Text style={styles.heroBody}>
+              Everyone gets the secret word except one. Give clues, stay sneaky, then vote.
+            </Text>
+
+            <PrimaryButton
+              label="Play now"
+              onPress={startFresh}
+              icon={<Play size={18} color={COLORS.onHoney} fill={COLORS.onHoney} />}
+            />
+          </GlassCard>
+
+          {/* Play again */}
+          {lastGame && (
+            <TouchableOpacity
+              onPress={playAgain}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={`Play again: ${lastCategoryLabel}, ${lastGame.players} players`}
+            >
+              <GlassCard style={styles.againCard}>
+                <View style={styles.againIcon}>
+                  <RefreshCw size={18} color={COLORS.honey} />
+                </View>
+                <View style={styles.againText}>
+                  <Text style={styles.againTitle}>Play again</Text>
+                  <Text style={styles.againSub} numberOfLines={1}>
+                    {lastCategoryLabel} · {lastGame.players} players
+                  </Text>
+                </View>
+                <ChevronRight size={20} color={COLORS.textMuted} />
+              </GlassCard>
+            </TouchableOpacity>
+          )}
+
+          {/* Categories */}
+          <View style={styles.sectionHead}>
+            <Text style={styles.label}>CATEGORIES</Text>
+            <Text style={[styles.label, styles.labelAccent]}>{CATEGORIES.length} PACKS</Text>
+          </View>
+
+          <View style={styles.catGrid}>
+            {CATEGORIES.slice(0, 6).map(cat => {
+              const Icon = CATEGORY_ICONS[cat.icon];
+              return (
+                <View key={cat.id} style={styles.catCell}>
+                  <TouchableOpacity
+                    onPress={() => openCategory(cat.id)}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel={cat.label}
+                  >
+                    <GlassCard style={styles.catTile}>
+                      <Icon size={17} color={COLORS.honeyText} strokeWidth={1.8} />
+                      <Text style={styles.catName} numberOfLines={1}>{cat.label}</Text>
+                    </GlassCard>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </View>
+        </Animated.ScrollView>
       </SafeAreaView>
 
-      {showHowToPlay && <HowToPlayModal onClose={() => setShowHowToPlay(false)} />}
+      <HowToPlaySheet visible={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
     </View>
   );
 }
 
-function HowToPlayModal({ onClose }: { onClose: () => void }) {
-  const [slide, setSlide] = useState(0);
-  const slideAnim = useRef(new Animated.Value(0)).current;
-  const slideY = useRef(new Animated.Value(24)).current;
-
-  const slides = [
-    {
-      Icon: Drama,
-      title: 'One Word, One Imposter',
-      desc: 'Everyone gets the same secret word — except one player who is the IMPOSTER. They must blend in without knowing the word.',
-    },
-    {
-      Icon: MessageCircle,
-      title: 'Give Clues, Stay Sneaky',
-      desc: "Players take turns giving one-word clues. The imposter must give a convincing clue without revealing they don't know it.",
-    },
-    {
-      Icon: Vote,
-      title: 'Vote & Reveal',
-      desc: 'After all clues, vote on who you think is the imposter. Crew wins by catching them. Imposter wins by surviving!',
-    },
-  ];
-
-  useEffect(() => {
-    slideAnim.setValue(0);
-    slideY.setValue(16);
-    Animated.parallel([
-      Animated.timing(slideAnim, { toValue: 1, duration: 220, useNativeDriver: true }),
-      Animated.timing(slideY, { toValue: 0, duration: 220, useNativeDriver: true }),
-    ]).start();
-  }, [slide]);
-
-  const SlideIcon = slides[slide].Icon;
-
+function HowToPlaySheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   return (
-    <Pressable style={styles.modalOverlay} onPress={onClose}>
-      <Pressable style={styles.modal} onPress={e => e.stopPropagation()}>
-        <Animated.View style={{ opacity: slideAnim, transform: [{ translateY: slideY }] }}>
-          <View style={styles.modalIconWrap}>
-            <SlideIcon size={28} color={COLORS.honey} strokeWidth={1.75} />
+    <BottomSheet visible={visible} onClose={onClose}>
+      <View style={styles.sheetHead}>
+        <Text style={styles.sheetTitle}>How to play</Text>
+        <IconButton onPress={onClose} glass={false} accessibilityLabel="Close">
+          <X size={20} color={COLORS.ink} />
+        </IconButton>
+      </View>
+
+      {HOW_TO_PLAY.map((step, i) => (
+        <View key={step.title} style={styles.step}>
+          <View style={styles.stepNumber}>
+            <Text style={styles.stepNumberText}>{i + 1}</Text>
           </View>
-          <Text style={styles.modalTitle}>{slides[slide].title}</Text>
-          <Text style={styles.modalDesc}>{slides[slide].desc}</Text>
-        </Animated.View>
-
-        <View style={styles.dots}>
-          {slides.map((_, i) => (
-            <View key={i} style={[styles.dot, i === slide && styles.dotActive]} />
-          ))}
+          <View style={styles.stepText}>
+            <Text style={styles.stepTitle}>{step.title}</Text>
+            <Text style={styles.stepBody}>{step.body}</Text>
+          </View>
         </View>
+      ))}
 
-        <View style={styles.modalActions}>
-          {slide < slides.length - 1 ? (
-            <PrimaryButton label="Next" onPress={() => setSlide(s => s + 1)} style={styles.modalBtn} />
-          ) : (
-            <PrimaryButton label="Got it!" onPress={onClose} style={styles.modalBtn} />
-          )}
-        </View>
-      </Pressable>
-    </Pressable>
+      <InkButton label="Got it" onPress={onClose} style={styles.sheetButton} />
+    </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingBottom: SPACING.xl,
-  },
-  particle: {
-    position: 'absolute',
-    backgroundColor: COLORS.honey,
-  },
-  iconWrap: {
-    marginBottom: SPACING.md,
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 32,
-    elevation: 10,
-  },
-  iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.honeySoft,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 48,
-    color: COLORS.ink,
-    letterSpacing: 6,
-    width: '100%',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 3,
-    marginTop: 4,
-    marginBottom: SPACING.xl,
-    textTransform: 'uppercase',
-  },
-  buttonGroup: {
-    width: '100%',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  playBtn: {
-    width: '100%',
-    maxWidth: 320,
-  },
-  howLink: {
-    padding: SPACING.xs,
-  },
-  howText: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.textMuted,
+  scroll: {
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    // Clears the floating tab bar (64 tall, 16 from the bottom inset).
+    paddingBottom: 110,
+    gap: SPACING.gap,
   },
 
-  // Modal
-  modalOverlay: {
-    position: 'absolute',
-    inset: 0,
-    backgroundColor: COLORS.scrim,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.md,
-  },
-  modal: {
-    backgroundColor: COLORS.glassFillStrong,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    width: '100%',
-    maxWidth: 340,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  modalIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.honeySoft,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: SPACING.sm,
-  },
-  modalTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 22,
-    color: COLORS.honey,
-    marginBottom: SPACING.xs,
-    textAlign: 'center',
-  },
-  modalDesc: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 15,
-    color: COLORS.textBody,
-    textAlign: 'center',
-    lineHeight: 23,
-    marginBottom: SPACING.md,
-  },
-  dots: {
+  // Masthead
+  masthead: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
+  },
+  brandText: { gap: 1, flexShrink: 1 },
+  brandName: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 20,
+    letterSpacing: -0.5,
+    color: COLORS.ink,
+  },
+  label: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
+    color: COLORS.textMuted,
+  },
+  labelAccent: { color: COLORS.honeyText },
+
+  // Hero
+  hero: {
+    padding: 20,
+    borderRadius: RADIUS.xl,
+    gap: 16,
+  },
+  pills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 6,
-    marginBottom: SPACING.md,
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.divider,
+  heroTitle: {
+    fontFamily: FONTS.displayExtraBold,
+    fontSize: 40,
+    lineHeight: 42,
+    letterSpacing: -1.2,
+    color: COLORS.ink,
   },
-  dotActive: {
-    backgroundColor: COLORS.honey,
-    width: 20,
+  heroAccent: { color: COLORS.honeyText },
+  heroBody: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
   },
-  modalActions: { width: '100%' },
-  modalBtn: { width: '100%' },
+
+  // Play again
+  againCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 18,
+  },
+  againIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.ink,
+  },
+  againText: { flex: 1, minWidth: 0 },
+  againTitle: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 14,
+    color: COLORS.ink,
+  },
+  againSub: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+
+  // Categories
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  catGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  catCell: {
+    // Three across, accounting for the two 8px gaps.
+    width: '31.5%',
+  },
+  catTile: {
+    padding: 10,
+    borderRadius: RADIUS.md,
+    gap: 6,
+    minWidth: 0,
+  },
+  catName: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 12,
+    color: COLORS.ink,
+  },
+
+  // How to play sheet
+  sheetHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  sheetTitle: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 26,
+    letterSpacing: -0.7,
+    color: COLORS.ink,
+  },
+  step: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 14,
+  },
+  stepNumber: {
+    width: 30,
+    height: 30,
+    borderRadius: RADIUS.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.ink,
+  },
+  stepNumberText: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 14,
+    color: COLORS.honey,
+  },
+  stepText: { flex: 1, gap: 3 },
+  stepTitle: {
+    fontFamily: FONTS.displaySemiBold,
+    fontSize: 16,
+    letterSpacing: -0.16,
+    color: COLORS.ink,
+  },
+  stepBody: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
+  },
+  sheetButton: { marginTop: 4 },
 });

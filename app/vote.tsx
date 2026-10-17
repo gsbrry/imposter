@@ -206,18 +206,18 @@ const styles = StyleSheet.create({
     color: COLORS.ink,
   },
 
+  // A tie is not an error, and red is barred from the vote screen, so this
+  // uses the ink attention pill from impostr.css instead.
   tieBanner: {
-    backgroundColor: COLORS.dangerSoft,
+    backgroundColor: COLORS.ink,
     borderRadius: 12,
     padding: 10,
     marginBottom: SPACING.xs,
-    borderWidth: 1,
-    borderColor: COLORS.dangerBorder,
   },
   tieBannerText: {
     fontFamily: FONTS.bodySemiBold,
     fontSize: 12,
-    color: COLORS.danger,
+    color: COLORS.honey,
     textAlign: 'center',
     letterSpacing: 0.5,
   },

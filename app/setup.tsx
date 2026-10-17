@@ -1,25 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated,
+  View, Text, StyleSheet, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
-  ChevronRight, Brain, Car, House, UtensilsCrossed,
-  Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper, Crown,
+  ArrowRight, Brain, Car, House, UtensilsCrossed,
+  Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
 } from 'lucide-react-native';
-import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import { COLORS, FONTS, SPACING } from '../constants/theme';
+import ScreenBackground from '../components/ScreenBackground';
+import StepHeader from '../components/StepHeader';
+import CategoryTile from '../components/CategoryTile';
+import Segmented from '../components/Segmented';
 import PrimaryButton from '../components/PrimaryButton';
-import { CATEGORIES, CategoryKey, CategoryIcon } from '../data/words';
+import { CATEGORIES, CategoryKey, CategoryIcon, wordCount } from '../data/words';
 import { storage } from '../utils/storage';
 import { useGame } from '../context/GameContext';
 
-const DIFFICULTIES = [
-  { key: 'easy', label: 'Easy', desc: 'Hints enabled' },
-  { key: 'medium', label: 'Medium', desc: 'Standard' },
-  { key: 'hard', label: 'Hard', desc: 'Tricky words' },
-  { key: 'chaos', label: 'Chaos', desc: '2 imposters' },
-] as const;
+type SetupDifficulty = 'easy' | 'medium' | 'chaos';
+
+const DIFFICULTIES: { key: SetupDifficulty; label: string }[] = [
+  { key: 'easy', label: 'Easy' },
+  { key: 'medium', label: 'Medium' },
+  { key: 'chaos', label: 'Chaos' },
+];
+
+const DIFFICULTY_BLURB: Record<SetupDifficulty, string> = {
+  easy: 'Simpler words, imposter gets a hint.',
+  medium: 'Standard words, no hints.',
+  chaos: 'Standard words, sometimes two imposters.',
+};
 
 const LAST_DIFFICULTY_KEY = 'IMPOSTR_LAST_DIFFICULTY';
 
@@ -37,11 +48,11 @@ const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
 
 export default function SetupScreen() {
   const router = useRouter();
-  const { setGame, isPremium } = useGame();
-  const [category, setCategory] = useState<CategoryKey>('general');
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | 'chaos'>('easy');
+  const { game, setGame, isPremium } = useGame();
+  const [category, setCategory] = useState<CategoryKey>(game.category);
+  const [difficulty, setDifficulty] = useState<SetupDifficulty>('medium');
   const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
 
   // Per-card pulse anims for locked cards
   const pulseAnims = useRef(
@@ -50,24 +61,23 @@ export default function SetupScreen() {
 
   useEffect(() => {
     storage.getLastCategory().then(c => {
-      if (c) setCategory(c as CategoryKey);
+      if (c && CATEGORIES.some(cat => cat.id === c)) setCategory(c as CategoryKey);
     });
-    // Load last difficulty, default 'easy'
+    // Load last difficulty, default 'medium'. A stored 'hard' from an older
+    // build falls back to 'medium', which is the pack it now maps to.
     import('@react-native-async-storage/async-storage').then(({ default: AS }) => {
       AS.getItem(LAST_DIFFICULTY_KEY).then(d => {
-        if (d === 'easy' || d === 'medium' || d === 'hard' || d === 'chaos') {
-          setDifficulty(d);
-        }
+        if (d === 'easy' || d === 'medium' || d === 'chaos') setDifficulty(d);
+        else if (d === 'hard') setDifficulty('medium');
       });
     });
     Animated.parallel([
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [entryAnim, entryY]);
 
   const handleLockedPress = (catId: CategoryKey) => {
-    // Pulse animation
     const anim = pulseAnims[catId];
     Animated.sequence([
       Animated.timing(anim, { toValue: 1.05, duration: 75, useNativeDriver: true }),
@@ -84,90 +94,62 @@ export default function SetupScreen() {
     setGame(g => ({
       ...g,
       category,
-      difficulty: difficulty === 'chaos' ? 'medium' : difficulty,
+      // 'chaos' plays the medium word pack and enables the two-imposter roll.
+      difficulty: difficulty === 'chaos' ? 'chaos' : difficulty,
     }));
     router.push('/game-settings');
   };
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <Animated.ScrollView
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
           style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
-          <View style={styles.header}>
-            <Text style={styles.label}>STEP 1 OF 3</Text>
-            <Text style={styles.title}>Choose Category</Text>
+          <StepHeader step={1} label="Step 1 of 3" onBack={() => router.back()} />
+
+          <View style={styles.heading}>
+            <Text style={styles.title} maxFontSizeMultiplier={1.4}>Pick a category</Text>
+            <Text style={styles.sub}>Words come from this pack.</Text>
           </View>
 
           <View style={styles.grid}>
             {CATEGORIES.map(cat => {
               const locked = !cat.free && !isPremium;
-              const selected = category === cat.id;
-              const Icon = CATEGORY_ICONS[cat.icon];
-              const iconColor = selected ? COLORS.honey : locked ? COLORS.textFaint : COLORS.textBody;
               return (
                 <Animated.View
                   key={cat.id}
-                  style={{ width: '31%', transform: [{ scale: pulseAnims[cat.id] }] }}
+                  style={[styles.cell, { transform: [{ scale: pulseAnims[cat.id] }] }]}
                 >
-                  <TouchableOpacity
-                    onPress={() => locked ? handleLockedPress(cat.id) : setCategory(cat.id)}
-                    activeOpacity={0.75}
-                    style={[
-                      styles.catBtn,
-                      selected && styles.catSelected,
-                      locked && styles.catLocked,
-                    ]}
-                  >
-                    {locked && (
-                      <View style={styles.premiumBadge}>
-                        <Crown size={10} color={COLORS.ink} />
-                      </View>
-                    )}
-                    <Icon size={24} color={iconColor} strokeWidth={1.75} />
-                    <Text style={[
-                      styles.catLabel,
-                      selected && styles.catLabelSelected,
-                      locked && styles.catLabelLocked,
-                    ]}>
-                      {cat.label}
-                    </Text>
-                  </TouchableOpacity>
+                  <CategoryTile
+                    icon={CATEGORY_ICONS[cat.icon]}
+                    label={cat.label}
+                    count={`${wordCount(cat.id)} words`}
+                    selected={category === cat.id}
+                    locked={locked}
+                    onPress={() => (locked ? handleLockedPress(cat.id) : setCategory(cat.id))}
+                  />
                 </Animated.View>
               );
             })}
           </View>
 
-          <View style={styles.sectionHeader}>
+          <View style={styles.difficulty}>
             <Text style={styles.label}>DIFFICULTY</Text>
+            <Segmented options={DIFFICULTIES} value={difficulty} onChange={setDifficulty} />
+            <Text style={styles.blurb}>{DIFFICULTY_BLURB[difficulty]}</Text>
           </View>
 
-          <View style={styles.diffRow}>
-            {DIFFICULTIES.map(d => (
-              <TouchableOpacity
-                key={d.key}
-                onPress={() => setDifficulty(d.key)}
-                style={[styles.diffBtn, difficulty === d.key && styles.diffSelected]}
-                activeOpacity={0.75}
-              >
-                <Text style={[styles.diffText, difficulty === d.key && styles.diffTextSelected]}>
-                  {d.label}
-                </Text>
-                <Text style={[styles.diffDesc, difficulty === d.key && styles.diffDescSelected]}>
-                  {d.desc}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <View style={styles.spacer} />
 
           <PrimaryButton
-            label="Next: Game Settings"
+            label="Continue"
             onPress={handleNext}
-            style={styles.startBtn}
-            icon={<ChevronRight size={18} color={COLORS.ink} />}
+            iconPosition="trailing"
+            icon={<ArrowRight size={18} color={COLORS.onHoney} />}
           />
         </Animated.ScrollView>
       </SafeAreaView>
@@ -178,107 +160,53 @@ export default function SetupScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 100 },
-
-  header: { marginBottom: SPACING.md },
-  label: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 4,
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    paddingBottom: 24,
+    gap: SPACING.gap,
   },
+
+  heading: { gap: 4 },
   title: {
     fontFamily: FONTS.displayBold,
-    fontSize: 22,
+    fontSize: 28,
+    lineHeight: 30,
+    letterSpacing: -0.7,
     color: COLORS.ink,
+  },
+  sub: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
   },
 
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: SPACING.md,
-  },
-  catBtn: {
-    aspectRatio: 0.95,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.glassFill,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.xs,
-    gap: 6,
-    overflow: 'hidden',
-  },
-  catSelected: {
-    borderColor: COLORS.honey,
-    backgroundColor: COLORS.honeySoft,
-  },
-  catLocked: {
-    backgroundColor: COLORS.glassFill,
-    borderColor: COLORS.divider,
-  },
-  catLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 11,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-  catLabelSelected: { color: COLORS.honey },
-  catLabelLocked: { color: COLORS.textFaint },
-  premiumBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: COLORS.honey,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-
-  sectionHeader: { marginBottom: SPACING.xs },
-
-  diffRow: {
-    flexDirection: 'row',
     gap: 8,
-    marginBottom: SPACING.md,
   },
-  diffBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glassFill,
-    alignItems: 'center',
-    gap: 3,
+  cell: {
+    // Three across, accounting for the two 8px gaps.
+    width: '31.5%',
   },
-  diffSelected: {
-    backgroundColor: COLORS.honeySoft,
-    borderColor: COLORS.honey,
-  },
-  diffText: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 13,
+
+  difficulty: { gap: 8 },
+  label: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
     color: COLORS.textMuted,
   },
-  diffTextSelected: { color: COLORS.honey },
-  diffDesc: {
+  blurb: {
     fontFamily: FONTS.bodyRegular,
-    fontSize: 10,
-    color: COLORS.textFaint,
+    fontSize: 12,
+    lineHeight: 17,
+    color: COLORS.textBody,
   },
-  diffDescSelected: { color: COLORS.honeyText },
 
-  startBtn: { marginTop: 0 },
+  // Pushes the one honey button to the end of the content on tall screens.
+  spacer: { flex: 1, minHeight: SPACING.sm },
 });

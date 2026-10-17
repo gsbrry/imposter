@@ -2,6 +2,7 @@
 // Values come from design/tokens.json (source of truth) plus a handful of
 // derived helpers that tokens.json doesn't define directly (textFaint,
 // honeyBorder, scrim, danger) — each documented below.
+import { Platform, TextStyle } from 'react-native';
 
 export const COLORS = {
   // Surfaces
@@ -45,6 +46,11 @@ export const COLORS = {
   glassFill: 'rgba(255,252,245,0.55)',
   glassFillStrong: 'rgba(255,253,248,0.80)',
   glassBorder: 'rgba(255,255,255,0.85)',
+  // Fallback fill for surfaces that must stay readable where the platform
+  // has no backdrop blur (react-native-web). design/README.md sanctions
+  // dropping the blur and keeping the fill; at 0.80 alpha the page shows
+  // through, so the no-blur path uses this near-opaque value instead.
+  glassFillSolid: 'rgba(255,253,248,0.97)',
 
   // Lines
   divider: 'rgba(27,24,19,0.09)',
@@ -141,3 +147,26 @@ export const BLUR = {
   intensity: 40,
   tint: 'light' as const,
 };
+
+/**
+ * Focus ring styles for text inputs on web. react-native-web paints the
+ * browser's default blue outline, which is off-brand; impostr.css uses a
+ * honey ring (`:focus-visible { outline: 2px solid var(--gold-deep) }`).
+ * The `outline*` properties are web-only and absent from React Native's
+ * style types, so the cast is confined here. Both are null on native.
+ *
+ * Use via the useWebFocusRing() hook, which swaps them on focus — style
+ * objects cannot express `:focus` on their own.
+ */
+export const WEB_FOCUS_RING_OFF = Platform.OS === 'web'
+  ? ({ outlineStyle: 'none' } as unknown as TextStyle)
+  : null;
+
+export const WEB_FOCUS_RING_ON = Platform.OS === 'web'
+  ? ({
+      outlineColor: COLORS.honeyText,
+      outlineWidth: 2,
+      outlineStyle: 'solid',
+      outlineOffset: 1,
+    } as unknown as TextStyle)
+  : null;

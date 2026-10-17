@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
-import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
+import Svg, {
+  Circle, Defs, Pattern, Rect, RadialGradient, Stop,
+} from 'react-native-svg';
 import { COLORS } from '../constants/theme';
 
 /**
@@ -9,67 +10,72 @@ import { COLORS } from '../constants/theme';
  * pattern, per impostr.css `.scr::before` / `.orb`. Without this behind a
  * glass layer, the glass looks flat — always render it behind GlassCard,
  * BottomSheet, and the tab bar.
+ *
+ * React Native has no CSS blur filter for plain Views, so each orb is an
+ * SVG circle filled with a radial gradient that fades to transparent. That
+ * reproduces the soft edge of the design's `filter: blur(38px)`.
  */
 export default function ScreenBackground() {
   const { width, height } = useWindowDimensions();
 
+  // Sizes are a share of the width, matching the design's cqi units.
   const o1 = width * 0.66;
   const o2 = width * 0.76;
   const o3 = width * 0.44;
-  // CSS fades the dot pattern out after the top 55% of the screen.
+  // The dot pattern fades out over the top 55% of the screen.
   const dotsHeight = height * 0.55;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <View style={[styles.base, { backgroundColor: COLORS.background }]} />
+      <View style={styles.base} />
 
-      <View
-        style={[
-          styles.orb,
-          {
-            width: o1, height: o1, borderRadius: o1 / 2,
-            backgroundColor: COLORS.orbHoney, top: -width * 0.2, right: -width * 0.24,
-            opacity: 0.55,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.orb,
-          {
-            width: o2, height: o2, borderRadius: o2 / 2,
-            backgroundColor: COLORS.orbCream, bottom: -width * 0.26, left: -width * 0.26,
-            opacity: 0.7,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.orb,
-          {
-            width: o3, height: o3, borderRadius: o3 / 2,
-            backgroundColor: COLORS.orbLight, top: '42%', left: '55%',
-            opacity: 0.7,
-          },
-        ]}
-      />
+      <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
+        <Defs>
+          <RadialGradient id="orbHoney" cx="50%" cy="50%" r="50%">
+            <Stop offset="0" stopColor={COLORS.orbHoney} stopOpacity={0.75} />
+            <Stop offset="0.55" stopColor={COLORS.orbHoney} stopOpacity={0.38} />
+            <Stop offset="1" stopColor={COLORS.orbHoney} stopOpacity={0} />
+          </RadialGradient>
+          <RadialGradient id="orbCream" cx="50%" cy="50%" r="50%">
+            <Stop offset="0" stopColor={COLORS.orbCream} stopOpacity={0.85} />
+            <Stop offset="0.55" stopColor={COLORS.orbCream} stopOpacity={0.42} />
+            <Stop offset="1" stopColor={COLORS.orbCream} stopOpacity={0} />
+          </RadialGradient>
+          <RadialGradient id="orbLight" cx="50%" cy="50%" r="50%">
+            <Stop offset="0" stopColor={COLORS.orbLight} stopOpacity={0.45} />
+            <Stop offset="0.55" stopColor={COLORS.orbLight} stopOpacity={0.2} />
+            <Stop offset="1" stopColor={COLORS.orbLight} stopOpacity={0} />
+          </RadialGradient>
+          <Pattern id="dots" width={14} height={14} patternUnits="userSpaceOnUse">
+            <Circle cx={1.1} cy={1.1} r={1.1} fill={COLORS.dot} />
+          </Pattern>
+        </Defs>
 
-      <View style={[styles.dotsClip, { height: dotsHeight }]}>
-        <Svg width={width} height={dotsHeight}>
-          <Defs>
-            <Pattern id="dots" width={14} height={14} patternUnits="userSpaceOnUse">
-              <Circle cx={1.1} cy={1.1} r={1.1} fill={COLORS.dot} />
-            </Pattern>
-          </Defs>
-          <Rect x={0} y={0} width={width} height={dotsHeight} fill="url(#dots)" />
-        </Svg>
-        <LinearGradient
-          colors={['transparent', COLORS.background]}
-          start={{ x: 0, y: 0.6 }}
-          end={{ x: 0, y: 1 }}
-          style={StyleSheet.absoluteFill}
+        {/* Top right honey orb */}
+        <Circle
+          cx={width + width * 0.24 - o1 / 2}
+          cy={-width * 0.2 + o1 / 2}
+          r={o1 / 2}
+          fill="url(#orbHoney)"
         />
-      </View>
+        {/* Bottom left cream orb */}
+        <Circle
+          cx={-width * 0.26 + o2 / 2}
+          cy={height + width * 0.26 - o2 / 2}
+          r={o2 / 2}
+          fill="url(#orbCream)"
+        />
+        {/* Soft centre highlight */}
+        <Circle
+          cx={width * 0.55 + o3 / 2}
+          cy={height * 0.42 + o3 / 2}
+          r={o3 / 2}
+          fill="url(#orbLight)"
+        />
+
+        {/* Dot grid, top portion only */}
+        <Rect x={0} y={0} width={width} height={dotsHeight} fill="url(#dots)" opacity={0.6} />
+      </Svg>
     </View>
   );
 }
@@ -77,17 +83,6 @@ export default function ScreenBackground() {
 const styles = StyleSheet.create({
   base: {
     ...StyleSheet.absoluteFillObject,
-  },
-  orb: {
-    position: 'absolute',
-    // RN has no CSS blur filter for plain Views — the soft edge comes from
-    // low opacity + large radius instead, which reads the same on a phone.
-  },
-  dotsClip: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    overflow: 'hidden',
+    backgroundColor: COLORS.background,
   },
 });
