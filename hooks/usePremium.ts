@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ENTITLEMENT_ID, getUsableKey } from '@/constants/revenuecat';
+import { reportError } from '@/utils/crashReporting';
 
 // Dynamic imports so web bundle never resolves native RC modules
 async function getPurchases() {
@@ -46,15 +47,15 @@ export function usePremium() {
       if (!key) {
         // Configuring with a missing or "test_" key makes the SDK show a
         // blocking dialog and close a release build. Run without purchases.
-        console.warn(
-          'RevenueCat has no production key for this platform. Purchases are ' +
-            'disabled. Set EXPO_PUBLIC_RC_ANDROID_KEY / EXPO_PUBLIC_RC_IOS_KEY.'
+        reportError(
+          new Error('RevenueCat has no production key for this platform'),
+          'revenuecat-missing-key'
         );
         return;
       }
       await Purchases.configure({ apiKey: key });
     } catch (e) {
-      console.error('RevenueCat init failed:', e);
+      reportError(e, 'revenuecat-init');
     }
   };
 

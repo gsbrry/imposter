@@ -25,6 +25,7 @@ import { useGame } from '../../context/GameContext';
 import { useAccessibility } from '../../context/AccessibilityContext';
 import { usePremium } from '@/hooks/usePremium';
 import { REVIEW_ACCESS_ENABLED, REVIEW_UNLOCK_TAPS } from '@/constants/reviewAccess';
+import { reportError } from '@/utils/crashReporting';
 import { PRIVACY_URL } from '../../constants/support';
 import {
   getTotalWordCount, getWordsUpdatedAt, checkForNewWords, WORD_UPDATES_ENABLED,
@@ -139,7 +140,7 @@ export default function SettingsScreen() {
     try {
       await CustomerCenterModule.CustomerCenter.presentCustomerCenter();
     } catch (e) {
-      console.warn('Customer Center failed:', e);
+      reportError(e, 'customer-center');
     }
   };
 

@@ -16,7 +16,7 @@ import * as Sentry from '@sentry/react-native';
 
 const DSN = process.env.EXPO_PUBLIC_SENTRY_DSN ?? '';
 
-export const CRASH_REPORTING_ENABLED = !__DEV__ && DSN.length > 0;
+const CRASH_REPORTING_ENABLED = !__DEV__ && DSN.length > 0;
 
 const PLACEHOLDER = '[redacted]';
 
@@ -36,16 +36,12 @@ export function setSensitiveStrings(values: string[]): void {
   }
 }
 
-export function clearSensitiveStrings(): void {
-  secrets.clear();
-}
-
 function escapeForRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /** Replaces any registered secret anywhere inside a string. */
-export function scrubString(input: string): string {
+function scrubString(input: string): string {
   if (!input || secrets.size === 0) return input;
   let out = input;
   for (const secret of secrets) {
@@ -55,7 +51,7 @@ export function scrubString(input: string): string {
 }
 
 /** Walks an event or breadcrumb and scrubs every string it holds. */
-export function scrubDeep<T>(value: T, depth = 0): T {
+function scrubDeep<T>(value: T, depth = 0): T {
   if (depth > 8) return value;
   if (typeof value === 'string') return scrubString(value) as unknown as T;
   if (Array.isArray(value)) {
@@ -100,8 +96,15 @@ export function initCrashReporting(): void {
   });
 }
 
-/** No-op when reporting is off, so callers never have to check. */
-export function reportError(error: unknown, context?: string): void {
+/**
+ * Record a caught failure. Logs to the console in development and reports
+ * to Sentry in release, so nothing ends up on a user's console log.
+ */
+export function reportError(error: unknown, context: string): void {
+  if (__DEV__) {
+    console.warn(`[${context}]`, error);
+    return;
+  }
   if (!CRASH_REPORTING_ENABLED) return;
-  Sentry.captureException(error, context ? { tags: { context } } : undefined);
+  Sentry.captureException(error, { tags: { context } });
 }
