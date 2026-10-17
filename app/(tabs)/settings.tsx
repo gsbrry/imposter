@@ -154,7 +154,7 @@ export default function SettingsScreen() {
               >
                 <LinearGradient
                   pointerEvents="none"
-                  colors={['rgba(255,255,255,0.3)', 'transparent']}
+                  colors={[COLORS.honeySheen, 'transparent']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 0, y: 1 }}
                   style={styles.premiumBannerSheen}
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(21,23,26,0.18)',
+    backgroundColor: COLORS.onHoneySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   premiumBannerSub: {
     fontFamily: FONTS.bodySemiBold,
     fontSize: 12,
-    color: 'rgba(21,23,26,0.65)',
+    color: COLORS.onHoneyMuted,
     marginTop: 1,
   },
 
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: COLORS.divider,
     marginHorizontal: SPACING.sm,
   },
   version: {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { COLORS, FONTS } from '../constants/theme';
+import { COLORS, FONTS, SHADOW } from '../constants/theme';
 
 interface SegmentedOption<T extends string> {
   key: T;
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   segmentActive: {
     backgroundColor: COLORS.ink,
-    shadowColor: '#1C1404',
+    shadowColor: SHADOW.card.color,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 10,

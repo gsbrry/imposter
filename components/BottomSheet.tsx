@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, View, Pressable, StyleSheet, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { COLORS, RADIUS, SPACING, BLUR } from '../constants/theme';
+import { COLORS, RADIUS, SPACING, BLUR, SHADOW } from '../constants/theme';
 
 interface BottomSheetProps {
   visible: boolean;
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     right: 8,
     bottom: 8,
     borderRadius: RADIUS.sheet,
-    shadowColor: '#1C1404',
+    shadowColor: SHADOW.card.color,
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.3,
     shadowRadius: 28,

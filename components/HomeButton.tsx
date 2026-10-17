@@ -5,7 +5,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { House } from 'lucide-react-native';
-import { COLORS, FONTS, RADIUS, SPACING, BLUR } from '../constants/theme';
+import { COLORS, FONTS, RADIUS, SPACING, BLUR, SHADOW } from '../constants/theme';
 import { useGame } from '../context/GameContext';
 import IconButton from './IconButton';
 import PrimaryButton from './PrimaryButton';
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 360,
     borderRadius: RADIUS.lg,
-    shadowColor: '#1C1404',
+    shadowColor: SHADOW.card.color,
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.3,
     shadowRadius: 28,

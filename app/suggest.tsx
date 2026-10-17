@@ -66,7 +66,7 @@ export default function SuggestCategoryScreen() {
                 value={categoryName}
                 onChangeText={setCategoryName}
                 placeholder="e.g. Indian Street Food"
-                placeholderTextColor="rgba(255,255,255,0.25)"
+                placeholderTextColor={COLORS.textFaint}
                 maxLength={50}
               />
             </View>
@@ -78,7 +78,7 @@ export default function SuggestCategoryScreen() {
                 value={reason}
                 onChangeText={setReason}
                 placeholder="Tell us why this category would make a great game..."
-                placeholderTextColor="rgba(255,255,255,0.25)"
+                placeholderTextColor={COLORS.textFaint}
                 multiline
                 numberOfLines={4}
                 maxLength={200}
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   sub: {
     fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.5)',
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
   form: { gap: SPACING.sm },
@@ -127,10 +127,10 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontFamily: FONTS.bodySemiBold,
     fontSize: 13,
-    color: 'rgba(255,255,255,0.6)',
+    color: COLORS.textBody,
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: COLORS.glassFill,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.divider,
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   successText: {
     fontFamily: FONTS.bodyRegular,
     fontSize: 15,
-    color: 'rgba(255,255,255,0.6)',
+    color: COLORS.textBody,
     textAlign: 'center',
     lineHeight: 22,
   },

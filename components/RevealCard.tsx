@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { COLORS, FONTS, BLUR } from '../constants/theme';
+import { COLORS, FONTS, BLUR, SHADOW } from '../constants/theme';
 
 interface RevealCardProps {
   icon?: React.ReactNode;
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   shadowWrap: {
     flex: 1,
     borderRadius: 26,
-    shadowColor: '#1C1404',
+    shadowColor: SHADOW.card.color,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
     shadowRadius: 18,

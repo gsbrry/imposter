@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
-import { COLORS } from '../constants/theme';
+import { COLORS, SHADOW } from '../constants/theme';
 
 interface ToggleProps {
   value: boolean;
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     backgroundColor: COLORS.white,
-    shadowColor: '#000',
+    shadowColor: SHADOW.card.color,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 5,

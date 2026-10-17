@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ghost, ChartBar as BarChart2, Settings2 } from 'lucide-react-native';
-import { COLORS } from '../../constants/theme';
+import { COLORS, SHADOW } from '../../constants/theme';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassTabBarBackground, TabIcon } from '../../components/GlassTabBar';
@@ -61,9 +61,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     overflow: 'hidden',
-    shadowColor: '#1C1404',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
+    shadowColor: SHADOW.card.color,
+    shadowOffset: { width: 0, height: SHADOW.card.offsetY },
+    shadowOpacity: SHADOW.card.opacity,
+    shadowRadius: SHADOW.card.radius,
   },
 });

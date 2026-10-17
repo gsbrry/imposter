@@ -213,9 +213,9 @@ export default function GameSettingsScreen() {
             <Switch
               value={teamVote}
               onValueChange={setTeamVote}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: COLORS.honey }}
-              thumbColor={teamVote ? COLORS.honey : 'rgba(255,255,255,0.4)'}
-              ios_backgroundColor="rgba(255,255,255,0.1)"
+              trackColor={{ false: COLORS.divider, true: COLORS.honey }}
+              thumbColor={teamVote ? COLORS.honey : COLORS.white}
+              ios_backgroundColor={COLORS.divider}
             />
           </View>
 
@@ -314,11 +314,11 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: COLORS.glassFill,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: COLORS.glassBorder,
   },
   countBtnDisabled: { opacity: 0.3 },
   countCenter: { alignItems: 'center', gap: 2 },
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomColor: COLORS.divider,
   },
   summaryLabel: {
     fontFamily: FONTS.bodyRegular,

@@ -122,7 +122,7 @@ export default function PlayerNamesScreen() {
                       accessibilityRole="button"
                       accessibilityLabel={`Remove saved name ${item}`}
                     >
-                      <X size={9} color={COLORS.ink} />
+                      <X size={9} color={COLORS.background} />
                     </TouchableOpacity>
                   </View>
                 )}
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: COLORS.white,
     alignSelf: 'flex-start',
   },
   toggleThumbActive: {
@@ -273,11 +273,11 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: 'rgba(21,23,26,0.8)',
+    backgroundColor: COLORS.ink,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: COLORS.glassBorder,
   },
 
   playerList: {

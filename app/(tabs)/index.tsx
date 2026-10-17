@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: COLORS.divider,
   },
   dotActive: {
     backgroundColor: COLORS.honey,

@@ -20,6 +20,9 @@ export const COLORS = {
   // ink-based alpha derivation, consistent with how tokens.json itself
   // derives `divider` from ink.
   textFaint: 'rgba(27,24,19,0.45)',
+  // Secondary/dimmed text drawn on top of an ink surface (a selected
+  // category tile, for example) — `.cat.sel .c` in impostr.css.
+  onInkMuted: 'rgba(244,239,228,0.6)',
 
   // Honey (the one primary accent)
   honey: '#F2B705',
@@ -29,6 +32,14 @@ export const COLORS = {
   // Translucent honey border for tinted badges/icon wraps — tokens.json
   // doesn't define this explicitly; derived from `honey` at low opacity.
   honeyBorder: 'rgba(242,183,5,0.35)',
+  // White diagonal highlight laid over a solid honey fill (gradient
+  // buttons/banners) — not in tokens.json, derived from `white`.
+  honeySheen: 'rgba(255,255,255,0.3)',
+  // Translucent ink, for small tinted shapes drawn on top of a honey
+  // surface (an icon wrap on the Go Premium banner, for example).
+  onHoneySoft: 'rgba(27,24,19,0.18)',
+  // Secondary/dimmed text drawn on top of a honey surface.
+  onHoneyMuted: 'rgba(27,24,19,0.65)',
 
   // Glass (floating layers only — cards, sheets, tab bar, icon buttons)
   glassFill: 'rgba(255,252,245,0.55)',
@@ -54,6 +65,10 @@ export const COLORS = {
   // "timer about to run out" urgency text. No red appears anywhere in the
   // crew/imposter reveal parity (see RevealCard).
   danger: '#C23B3B',
+  // Tint/border derived from `danger`, for warning banners (a vote tie,
+  // time running out).
+  dangerSoft: 'rgba(194,59,59,0.08)',
+  dangerBorder: 'rgba(194,59,59,0.2)',
 };
 
 export const GRADIENTS = {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Animated, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
-import { COLORS, FONTS, RADIUS, SIZE, SPACING } from '../constants/theme';
+import { COLORS, FONTS, RADIUS, SIZE, SPACING, SHADOW } from '../constants/theme';
 import { usePressScale } from '../hooks/usePressScale';
 
 interface InkButtonProps {
@@ -40,7 +40,7 @@ export default function InkButton({
 const styles = StyleSheet.create({
   shadowWrap: {
     borderRadius: RADIUS.md,
-    shadowColor: '#1C1404',
+    shadowColor: SHADOW.card.color,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.25,
     shadowRadius: 18,

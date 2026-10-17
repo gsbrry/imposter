@@ -85,6 +85,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
   },
   countSelected: {
-    color: 'rgba(244,239,228,0.6)',
+    color: COLORS.onInkMuted,
   },
 });

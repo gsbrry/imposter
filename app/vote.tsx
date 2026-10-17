@@ -207,12 +207,12 @@ const styles = StyleSheet.create({
   },
 
   tieBanner: {
-    backgroundColor: 'rgba(194,59,59,0.08)',
+    backgroundColor: COLORS.dangerSoft,
     borderRadius: 12,
     padding: 10,
     marginBottom: SPACING.xs,
     borderWidth: 1,
-    borderColor: 'rgba(194,59,59,0.2)',
+    borderColor: COLORS.dangerBorder,
   },
   tieBannerText: {
     fontFamily: FONTS.bodySemiBold,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: COLORS.glassBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: SPACING.xs,
