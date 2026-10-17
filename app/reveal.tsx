@@ -72,7 +72,8 @@ export default function RevealScreen() {
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
     async function setup() {
-      const safeDifficulty: Difficulty = (game.difficulty === 'chaos' ? 'medium' : game.difficulty) as Difficulty;
+      // Chaos draws from the hard pack; its extra twist is the second imposter below.
+      const safeDifficulty: Difficulty = (game.difficulty === 'chaos' ? 'hard' : game.difficulty) as Difficulty;
       const word = await getWord(game.category, safeDifficulty);
       const history = await storage.getImposterHistory();
       let imposterIds: string[];

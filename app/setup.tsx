@@ -18,18 +18,20 @@ import { CATEGORIES, CategoryKey, CategoryIcon, wordCount } from '../data/words'
 import { storage } from '../utils/storage';
 import { useGame } from '../context/GameContext';
 
-type SetupDifficulty = 'easy' | 'medium' | 'chaos';
+type SetupDifficulty = 'easy' | 'medium' | 'hard' | 'chaos';
 
 const DIFFICULTIES: { key: SetupDifficulty; label: string }[] = [
   { key: 'easy', label: 'Easy' },
   { key: 'medium', label: 'Medium' },
+  { key: 'hard', label: 'Hard' },
   { key: 'chaos', label: 'Chaos' },
 ];
 
 const DIFFICULTY_BLURB: Record<SetupDifficulty, string> = {
-  easy: 'Simpler words, imposter gets a hint.',
-  medium: 'Standard words, no hints.',
-  chaos: 'Standard words, sometimes two imposters.',
+  easy: 'Simple words, hints on',
+  medium: 'Standard words',
+  hard: 'Tricky words',
+  chaos: 'Tricky words, maybe two imposters',
 };
 
 const LAST_DIFFICULTY_KEY = 'IMPOSTR_LAST_DIFFICULTY';
@@ -63,12 +65,10 @@ export default function SetupScreen() {
     storage.getLastCategory().then(c => {
       if (c && CATEGORIES.some(cat => cat.id === c)) setCategory(c as CategoryKey);
     });
-    // Load last difficulty, default 'medium'. A stored 'hard' from an older
-    // build falls back to 'medium', which is the pack it now maps to.
+    // Load last difficulty, default 'medium'.
     import('@react-native-async-storage/async-storage').then(({ default: AS }) => {
       AS.getItem(LAST_DIFFICULTY_KEY).then(d => {
-        if (d === 'easy' || d === 'medium' || d === 'chaos') setDifficulty(d);
-        else if (d === 'hard') setDifficulty('medium');
+        if (d === 'easy' || d === 'medium' || d === 'hard' || d === 'chaos') setDifficulty(d);
       });
     });
     Animated.parallel([
@@ -93,9 +93,10 @@ export default function SetupScreen() {
     );
     setGame(g => ({
       ...g,
+      // 'chaos' is carried through as-is; reveal.tsx plays it from the hard
+      // word pack and adds the two-imposter roll.
       category,
-      // 'chaos' plays the medium word pack and enables the two-imposter roll.
-      difficulty: difficulty === 'chaos' ? 'chaos' : difficulty,
+      difficulty,
     }));
     router.push('/game-settings');
   };
