@@ -38,10 +38,6 @@ function isUnusableKey(key: string): boolean {
   return !/^(goog|appl)_/.test(key);
 }
 
-/** True while either platform still lacks a real production key. */
-export const IS_PLACEHOLDER_RC_KEY =
-  isUnusableKey(RC_ANDROID_KEY) || isUnusableKey(RC_IOS_KEY);
-
 /** The key for this platform, or null when it is missing or a test key. */
 export function getUsableKey(platform: string): string | null {
   const key = platform === 'ios' ? RC_IOS_KEY : RC_ANDROID_KEY;

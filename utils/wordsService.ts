@@ -21,7 +21,7 @@ export const WORD_UPDATES_ENABLED = FEED_URL.length > 0;
 let cachedFeed: WordsFeed | null = null;
 let cacheLoaded = false;
 
-export async function loadCachedFeed(): Promise<WordsFeed | null> {
+async function loadCachedFeed(): Promise<WordsFeed | null> {
   if (cacheLoaded) return cachedFeed;
   const raw = await storage.getWordsFeed();
   // Re-validated on read: a cache written by an older, laxer build, or
@@ -45,7 +45,7 @@ export async function getWordsUpdatedAt(): Promise<string | null> {
   return feed?.updatedAt ?? null;
 }
 
-export interface FeedCheckResult {
+interface FeedCheckResult {
   /** True when a newer, valid feed was accepted. */
   updated: boolean;
   /** True when we actually went to the network. */
@@ -114,10 +114,4 @@ export async function pendingNewWords(): Promise<WordsFeed | null> {
 
 export async function markNewWordsSeen(version: number): Promise<void> {
   await storage.setWordsFeedSeenVersion(version);
-}
-
-/** Test seam: drops the in-memory cache so the next read hits storage. */
-export function resetFeedCache(): void {
-  cachedFeed = null;
-  cacheLoaded = false;
 }

@@ -27,6 +27,9 @@ export const COLORS = {
 
   // Honey (the one primary accent)
   honey: '#F2B705',
+  // The app mark's gradient runs light to deep across the honey.
+  honeyLight: '#FFD95A',
+  honeyDeep: '#DE9E00',
   honeyText: '#805B00',
   honeySoft: '#FBE7A1',
   onHoney: '#1B1813',
@@ -86,26 +89,11 @@ export const FONTS = {
   displayExtraBold: 'Outfit_800ExtraBold',
   displayBold: 'Outfit_700Bold',
   displaySemiBold: 'Outfit_600SemiBold',
-  displayMedium: 'Outfit_500Medium',
   // Plus Jakarta Sans — body copy, labels, buttons
   bodyBold: 'PlusJakartaSans_700Bold',
   bodySemiBold: 'PlusJakartaSans_600SemiBold',
   bodyMedium: 'PlusJakartaSans_500Medium',
   bodyRegular: 'PlusJakartaSans_400Regular',
-};
-
-// Font sizes from design/tokens.json `type`. Screens that haven't been
-// rebuilt yet keep using raw fontSize numbers; new shared components use
-// this scale directly.
-export const TYPE = {
-  hero: { fontFamily: FONTS.displayExtraBold, fontSize: 44, letterSpacing: -1.2 },
-  word: { fontFamily: FONTS.displayExtraBold, fontSize: 52, letterSpacing: -1.6 },
-  titleL: { fontFamily: FONTS.displayBold, fontSize: 28 },
-  titleM: { fontFamily: FONTS.displayBold, fontSize: 20 },
-  titleS: { fontFamily: FONTS.displaySemiBold, fontSize: 16 },
-  body: { fontFamily: FONTS.bodyRegular, fontSize: 13.5, lineHeight: 19.6 },
-  button: { fontFamily: FONTS.bodyBold, fontSize: 15 },
-  label: { fontFamily: FONTS.bodySemiBold, fontSize: 10.5, letterSpacing: 1.2 },
 };
 
 export const SPACING = {

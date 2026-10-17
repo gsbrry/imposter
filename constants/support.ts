@@ -19,8 +19,6 @@ export const WEB_ORIGIN = 'https://apps.obio.in/imposter';
 
 /** Sections of the one-page site. There is no second copy of the policy. */
 export const PRIVACY_URL = `${WEB_ORIGIN}/#privacy`;
-export const TERMS_URL = `${WEB_ORIGIN}/#terms`;
-export const SUPPORT_URL = `${WEB_ORIGIN}/#support`;
 
 /**
  * The hosted word feed. The app reads EXPO_PUBLIC_WORDS_FEED_URL in

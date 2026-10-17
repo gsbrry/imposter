@@ -6,8 +6,6 @@ const KEYS = {
   SETTINGS: 'IMPOSTR_SETTINGS',
   USED_WORDS: 'IMPOSTR_USED_WORDS',
   IMPOSTER_HISTORY: 'IMPOSTR_IMPOSTER_HISTORY',
-  SUBSCRIPTION: 'IMPOSTR_SUBSCRIPTION',
-  CUSTOM_WORDS: 'IMPOSTR_CUSTOM_WORDS',
   LAST_CATEGORY: 'IMPOSTR_LAST_CATEGORY',
   GAME_SETTINGS: 'IMPOSTR_GAME_SETTINGS',
   SAVED_PLAYERS: 'IMPOSTR_SAVED_PLAYERS',
@@ -147,12 +145,6 @@ export const storage = {
 
   getImposterHistory: () => get<string[]>(KEYS.IMPOSTER_HISTORY, []),
   setImposterHistory: (history: string[]) => set(KEYS.IMPOSTER_HISTORY, history),
-
-  getSubscription: () => get<boolean>(KEYS.SUBSCRIPTION, false),
-  setSubscription: (val: boolean) => set(KEYS.SUBSCRIPTION, val),
-
-  getCustomWords: () => get<Record<string, string[]>>(KEYS.CUSTOM_WORDS, {}),
-  setCustomWords: (words: Record<string, string[]>) => set(KEYS.CUSTOM_WORDS, words),
 
   getLastCategory: () => get<string>(KEYS.LAST_CATEGORY, 'general'),
   setLastCategory: (cat: string) => set(KEYS.LAST_CATEGORY, cat),

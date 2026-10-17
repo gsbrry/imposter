@@ -6,7 +6,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts } from 'expo-font';
 import {
-  Outfit_500Medium,
   Outfit_600SemiBold,
   Outfit_700Bold,
   Outfit_800ExtraBold,
@@ -84,8 +83,7 @@ export default function RootLayout() {
   useFrameworkReady();
 
   const [fontsLoaded, fontError] = useFonts({
-    Outfit_500Medium,
-    Outfit_600SemiBold,
+      Outfit_600SemiBold,
     Outfit_700Bold,
     Outfit_800ExtraBold,
     PlusJakartaSans_400Regular,
