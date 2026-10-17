@@ -6,7 +6,7 @@ import AppText from '../../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import {
-  HelpCircle, Play, Users, WifiOff, RefreshCw, ChevronRight, X,
+  HelpCircle, Play, Users, WifiOff, RefreshCw, ChevronRight, X, Lightbulb, CloudDownload,
   Brain, Car, House, UtensilsCrossed, Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
 } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
@@ -17,11 +17,16 @@ import InkButton from '../../components/InkButton';
 import IconButton from '../../components/IconButton';
 import BottomSheet from '../../components/BottomSheet';
 import AppMark from '../../components/AppMark';
+import TextButton from '../../components/TextButton';
 import Pill from '../../components/Pill';
 import { CATEGORIES, CategoryIcon, CategoryKey } from '../../data/words';
 import { storage } from '../../utils/storage';
 import { useGame } from '../../context/GameContext';
 import { useHideTabBar } from '../../components/TabBarVisibility';
+import {
+  checkForNewWords, pendingNewWords, markNewWordsSeen,
+} from '../../utils/wordsService';
+import { activePackTitles, newWordCount, WordsFeed } from '../../utils/wordsFeed';
 
 const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
   brain: Brain,
@@ -54,13 +59,14 @@ export default function HomeScreen() {
   const router = useRouter();
   const { setGame } = useGame();
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [newWords, setNewWords] = useState<WordsFeed | null>(null);
   const [lastGame, setLastGame] = useState<{ category: CategoryKey; players: number } | null>(null);
 
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(16)).current;
 
   // The sheet is drawn inside this screen, so the tab bar steps aside.
-  useHideTabBar(showHowToPlay);
+  useHideTabBar(showHowToPlay || !!newWords);
 
   useEffect(() => {
     Animated.parallel([
@@ -68,6 +74,25 @@ export default function HomeScreen() {
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
   }, [entryAnim, entryY]);
+
+  // Word updates. The check is fire and forget: it never blocks the screen,
+  // and if it fails the player keeps the words they already had. The sheet
+  // is shown once per feed version.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      await checkForNewWords();
+      const pending = await pendingNewWords();
+      if (!cancelled && pending) setNewWords(pending);
+    })().catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  const dismissNewWords = useCallback(() => {
+    const version = newWords?.version;
+    setNewWords(null);
+    if (version !== undefined) markNewWordsSeen(version).catch(() => {});
+  }, [newWords]);
 
   // Refresh the "Play again" summary whenever the tab regains focus, so it
   // reflects a game that was just played.
@@ -205,6 +230,12 @@ export default function HomeScreen() {
       </SafeAreaView>
 
       <HowToPlaySheet visible={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
+
+      <NewWordsSheet
+        feed={newWords}
+        onClose={dismissNewWords}
+        onPlay={() => { dismissNewWords(); router.push('/setup'); }}
+      />
     </View>
   );
 }
@@ -236,7 +267,76 @@ function HowToPlaySheet({ visible, onClose }: { visible: boolean; onClose: () =>
   );
 }
 
+function NewWordsSheet({
+  feed, onClose, onPlay,
+}: {
+  feed: WordsFeed | null;
+  onClose: () => void;
+  onPlay: () => void;
+}) {
+  if (!feed) return null;
+  const titles = activePackTitles(feed);
+  const added = newWordCount(feed);
+  const headline = titles.length === 1
+    ? `${titles[0]} pack is here`
+    : 'New words are here';
+
+  return (
+    <BottomSheet visible onClose={onClose}>
+      <View style={styles.newWordsHead}>
+        <View style={styles.newWordsTile}>
+          <Lightbulb size={24} color={COLORS.honey} />
+        </View>
+        <View style={styles.newWordsHeadText}>
+          <Pill
+            tone="honey"
+            label="New words"
+            icon={<CloudDownload size={14} color={COLORS.honeyText} />}
+          />
+          <AppText style={styles.newWordsTitle} maxFontSizeMultiplier={1.4}>
+            {headline}
+          </AppText>
+        </View>
+      </View>
+
+      <AppText style={styles.sheetBody}>
+        {added} new word{added === 1 ? '' : 's'} added
+        {titles.length > 0 ? ` across ${titles.join(', ')}` : ''}. Free for everyone.
+      </AppText>
+
+      <PrimaryButton
+        label="Play now"
+        onPress={onPlay}
+        icon={<Play size={18} color={COLORS.onHoney} />}
+      />
+      <TextButton label="Later" onPress={onClose} />
+    </BottomSheet>
+  );
+}
+
 const styles = StyleSheet.create({
+  newWordsHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  newWordsTile: {
+    width: 48,
+    height: 48,
+    borderRadius: RADIUS.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.ink,
+  },
+  newWordsHeadText: { flex: 1, minWidth: 0, alignItems: 'flex-start', gap: 6 },
+  newWordsTitle: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 22,
+    lineHeight: 26,
+    letterSpacing: -0.5,
+    color: COLORS.ink,
+  },
+
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
   scroll: {
@@ -402,4 +502,10 @@ const styles = StyleSheet.create({
     color: COLORS.textBody,
   },
   sheetButton: { marginTop: 4 },
+  sheetBody: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
+  },
 });

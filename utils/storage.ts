@@ -15,6 +15,9 @@ const KEYS = {
   TIMER_SOUND: 'IMPOSTR_TIMER_SOUND',
   SUGGESTIONS: 'IMPOSTR_SUGGESTIONS',
   REVIEW_UNLOCK: 'IMPOSTR_REVIEW_UNLOCK',
+  WORDS_FEED: 'IMPOSTR_WORDS_FEED',
+  WORDS_FEED_CHECKED_AT: 'IMPOSTR_WORDS_FEED_CHECKED_AT',
+  WORDS_FEED_SEEN_VERSION: 'IMPOSTR_WORDS_FEED_SEEN_VERSION',
 };
 
 export interface PlayerData {
@@ -166,6 +169,17 @@ export const storage = {
 
   getReviewUnlock: () => get<boolean>(KEYS.REVIEW_UNLOCK, false),
   setReviewUnlock: (val: boolean) => set(KEYS.REVIEW_UNLOCK, val),
+
+  // The last feed that passed validation, and when we last looked.
+  getWordsFeed: () => get<unknown>(KEYS.WORDS_FEED, null),
+  setWordsFeed: (feed: unknown) => set(KEYS.WORDS_FEED, feed),
+
+  getWordsFeedCheckedAt: () => get<number>(KEYS.WORDS_FEED_CHECKED_AT, 0),
+  setWordsFeedCheckedAt: (at: number) => set(KEYS.WORDS_FEED_CHECKED_AT, at),
+
+  /** The feed version whose New words sheet has already been shown. */
+  getWordsFeedSeenVersion: () => get<number>(KEYS.WORDS_FEED_SEEN_VERSION, 0),
+  setWordsFeedSeenVersion: (v: number) => set(KEYS.WORDS_FEED_SEEN_VERSION, v),
 
   getSuggestions: () => get<Suggestion[]>(KEYS.SUGGESTIONS, []),
   addSuggestion: async (category: string, reason: string): Promise<void> => {

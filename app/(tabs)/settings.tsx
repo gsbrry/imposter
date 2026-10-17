@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import {
-  View, StyleSheet, Animated, Platform, TouchableOpacity, Linking,
+  View, StyleSheet, Animated, Platform, TouchableOpacity, Linking, ActivityIndicator,
 } from 'react-native';
 import AppText from '../../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,8 +25,10 @@ import { useGame } from '../../context/GameContext';
 import { useAccessibility } from '../../context/AccessibilityContext';
 import { usePremium } from '@/hooks/usePremium';
 import { REVIEW_ACCESS_ENABLED, REVIEW_UNLOCK_TAPS } from '@/constants/reviewAccess';
-import { CATEGORIES, wordCount, CategoryKey } from '../../data/words';
 import { PRIVACY_URL } from '../../constants/support';
+import {
+  getTotalWordCount, getWordsUpdatedAt, checkForNewWords, WORD_UPDATES_ENABLED,
+} from '../../utils/wordsService';
 
 // CustomerCenter is native-only.
 let CustomerCenterModule: any = null;
@@ -38,7 +40,12 @@ if (Platform.OS !== 'web') {
 
 const MIN_ROUNDS = 1;
 const MAX_ROUNDS = 4;
-const TOTAL_WORDS = CATEGORIES.reduce((n, c) => n + wordCount(c.id as CategoryKey), 0);
+/** "2026-10-17" as the reader's own short date. */
+function formatDay(iso: string): string {
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -54,7 +61,10 @@ export default function SettingsScreen() {
   const [expiryDate, setExpiryDate] = useState<string | null>(null);
   const [unlockTaps, setUnlockTaps] = useState(0);
   const [reviewUnlocked, setReviewUnlocked] = useState(false);
-  const [packsChecked, setPacksChecked] = useState(false);
+  const [totalWords, setTotalWords] = useState(0);
+  const [wordsUpdatedAt, setWordsUpdatedAt] = useState<string | null>(null);
+  const [checkingWords, setCheckingWords] = useState(false);
+  const [checkResult, setCheckResult] = useState<'none' | 'uptodate' | 'updated'>('none');
 
   useFocusEffect(
     useCallback(() => {
@@ -72,6 +82,10 @@ export default function SettingsScreen() {
           Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
           Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
         ]).start();
+      });
+      Promise.all([getTotalWordCount(), getWordsUpdatedAt()]).then(([n, at]) => {
+        setTotalWords(n);
+        setWordsUpdatedAt(at);
       });
       if (isPremium) getExpiryDate().then(setExpiryDate);
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,6 +145,17 @@ export default function SettingsScreen() {
 
   const openUrl = (url: string) => { Linking.openURL(url).catch(() => {}); };
 
+  /** The Check button goes to the real feed, bypassing the daily limit. */
+  const checkWords = async () => {
+    setCheckingWords(true);
+    const result = await checkForNewWords(true);
+    const [n, at] = await Promise.all([getTotalWordCount(), getWordsUpdatedAt()]);
+    setTotalWords(n);
+    setWordsUpdatedAt(at);
+    setCheckingWords(false);
+    setCheckResult(result.updated ? 'updated' : 'uptodate');
+  };
+
   if (!settings) return null;
 
   const timerOn = gameSettings.timerPerClue !== 'none';
@@ -143,6 +168,14 @@ export default function SettingsScreen() {
   const formattedExpiry = expiryDate
     ? new Date(expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     : null;
+
+  const wordsTitle =
+    checkResult === 'updated' ? 'New words added'
+    : checkResult === 'uptodate' ? 'Words are up to date'
+    : 'Word packs';
+  const wordsDescription = `${totalWords.toLocaleString()} words · ${
+    wordsUpdatedAt ? `updated ${formatDay(wordsUpdatedAt)}` : 'bundled with this version'
+  }`;
 
   const version = Constants.expoConfig?.version ?? '1.0.0';
   const versionLine = reviewUnlocked
@@ -327,19 +360,24 @@ export default function SettingsScreen() {
           <GlassCard style={styles.card}>
             <ListRow
               icon={<CloudDownload size={17} color={COLORS.honeyText} />}
-              title={packsChecked ? 'Words are up to date' : 'Words up to date'}
-              description={`${TOTAL_WORDS.toLocaleString()} words · bundled with this version`}
+              title={wordsTitle}
+              description={wordsDescription}
               trailing={
-                <TouchableOpacity
-                  onPress={() => setPacksChecked(true)}
-                  activeOpacity={0.75}
-                  accessibilityRole="button"
-                  accessibilityLabel="Check for new words"
-                  hitSlop={{ top: 7, bottom: 7, left: 8, right: 8 }}
-                  style={styles.checkBtn}
-                >
-                  <AppText style={styles.checkText}>Check</AppText>
-                </TouchableOpacity>
+                WORD_UPDATES_ENABLED ? (
+                  <TouchableOpacity
+                    onPress={checkWords}
+                    disabled={checkingWords}
+                    activeOpacity={0.75}
+                    accessibilityRole="button"
+                    accessibilityLabel="Check for new words"
+                    hitSlop={{ top: 7, bottom: 7, left: 8, right: 8 }}
+                    style={[styles.checkBtn, checkingWords && styles.disabled]}
+                  >
+                    {checkingWords
+                      ? <ActivityIndicator size="small" color={COLORS.honeyText} />
+                      : <AppText style={styles.checkText}>Check</AppText>}
+                  </TouchableOpacity>
+                ) : undefined
               }
             />
           </GlassCard>

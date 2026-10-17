@@ -11,7 +11,22 @@ export const SUPPORT_EMAIL = 'gsbrry@gmail.com';
 export const PLAY_SUBSCRIPTIONS_URL =
   'https://play.google.com/store/account/subscriptions';
 
-export const PRIVACY_URL = 'https://gooseberrymedia.in/impostr/privacy';
+/**
+ * The Vercel deploy that serves this repo's `public/` folder. One place to
+ * change if the domain moves; the privacy policy and the words feed both
+ * hang off it.
+ */
+export const WEB_ORIGIN = 'https://impostr.vercel.app';
+
+/** public/privacy-policy.html, as served by the web deploy. */
+export const PRIVACY_URL = `${WEB_ORIGIN}/privacy-policy.html`;
+
+/**
+ * public/words/feed.json. The app reads EXPO_PUBLIC_WORDS_FEED_URL in
+ * preference to this, so a build can be pointed elsewhere without a code
+ * change; this is the default the repo ships with.
+ */
+export const WORDS_FEED_URL = `${WEB_ORIGIN}/words/feed.json`;
 
 /** How long we tell people to expect to wait. */
 export const SUPPORT_REPLY_TIME = 'We reply within 2 working days.';

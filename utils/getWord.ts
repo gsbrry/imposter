@@ -1,8 +1,12 @@
-import { WORDS, CategoryKey, Difficulty } from '../data/words';
+import type { CategoryKey, Difficulty } from '../data/words';
 import { storage } from './storage';
+import { getWords } from './wordsService';
 
 export async function getWord(category: CategoryKey, difficulty: Difficulty): Promise<string> {
-  const all = WORDS[category][difficulty];
+  // Bundled words plus any the feed has added. Falls back to the bundled
+  // list on its own whenever no feed has been accepted.
+  const words = await getWords();
+  const all = words[category][difficulty];
   const used = await storage.getUsedWords();
   const usedCat = used[category] || [];
   let pool = all.filter(w => !usedCat.includes(w));
