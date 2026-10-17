@@ -1,38 +1,44 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, TouchableOpacity, Platform,
+  View, Text, StyleSheet, Animated, Platform, Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { RotateCcw, Ghost, Eye, EyeOff } from 'lucide-react-native';
-import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import { RefreshCw, Trophy, Eye, EyeOff } from 'lucide-react-native';
+import { COLORS, FONTS, SPACING } from '../constants/theme';
+import ScreenBackground from '../components/ScreenBackground';
+import GlassCard from '../components/GlassCard';
 import Avatar from '../components/Avatar';
+import Pill from '../components/Pill';
+import PrimaryButton from '../components/PrimaryButton';
+import TextButton from '../components/TextButton';
 import { useGame } from '../context/GameContext';
 import { storage } from '../utils/storage';
-import HomeButton from '../components/HomeButton';
+import { CATEGORIES } from '../data/words';
+
+const DIFFICULTY_LABEL: Record<string, string> = {
+  easy: 'Easy',
+  medium: 'Medium',
+  hard: 'Hard',
+  chaos: 'Chaos',
+};
 
 export default function ResultScreen() {
   const router = useRouter();
   const { game, setGame } = useGame();
-  const { votedOutId } = useLocalSearchParams<{ votedOutId: string }>();
+  const { votedOutId, votesFor, totalVotes } = useLocalSearchParams<{
+    votedOutId: string; votesFor: string; totalVotes: string;
+  }>();
 
-  // votedOutId present  → came from vote flow
-  // votedOutId absent   → came from "Reveal Imposter" button (skipped vote)
+  // votedOutId present → came from the vote flow
+  // votedOutId absent  → the table skipped straight to the reveal
   const skippedVote = !votedOutId;
 
-  const [imposterRevealed, setImposterRevealed] = useState(false);
-  const [wordRevealed, setWordRevealed] = useState(false);
-
+  const [revealed, setRevealed] = useState(false);
   const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
-
-  // Imposter card reveal animation
-  const imposterScale = useRef(new Animated.Value(0.8)).current;
-  const imposterOpacity = useRef(new Animated.Value(0)).current;
-
-  // Word card reveal animation (slide-up)
-  const wordTranslateY = useRef(new Animated.Value(24)).current;
-  const wordOpacity = useRef(new Animated.Value(0)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
+  const cardScale = useRef(new Animated.Value(0.92)).current;
+  const cardOpacity = useRef(new Animated.Value(0)).current;
 
   const imposter = game.players.find(p => game.imposterIds.includes(p.id));
   const votedOut = game.players.find(p => p.id === votedOutId);
@@ -46,11 +52,16 @@ export default function ResultScreen() {
     ]).start();
 
     if (!skippedVote) {
-      // Came from vote: auto-reveal everything after short delay
-      setTimeout(() => revealImposter(true), 500);
+      // Came from the vote: the table already committed, so show it.
+      const t = setTimeout(() => reveal(true), 500);
+      return () => clearTimeout(t);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  useEffect(() => {
     updateStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateStats = async () => {
@@ -68,39 +79,17 @@ export default function ResultScreen() {
     await storage.setStats(stats);
   };
 
-  const revealImposter = (auto = false) => {
+  const reveal = (auto = false) => {
     if (!auto && Platform.OS !== 'web') {
-      // Haptic feedback on manual reveal
       import('expo-haptics').then(Haptics => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       }).catch(() => {});
     }
-    setImposterRevealed(true);
-    Animated.sequence([
-      Animated.spring(imposterScale, { toValue: 1.1, useNativeDriver: true, friction: 4 }),
-      Animated.spring(imposterScale, { toValue: 1, useNativeDriver: true, friction: 6 }),
-    ]).start();
-    Animated.timing(imposterOpacity, { toValue: 1, duration: 300, useNativeDriver: true }).start();
-
-    // Word reveals 1 second after imposter
-    setTimeout(() => {
-      setWordRevealed(true);
-      Animated.parallel([
-        Animated.timing(wordOpacity, { toValue: 1, duration: 350, useNativeDriver: true }),
-        Animated.spring(wordTranslateY, { toValue: 0, friction: 6, tension: 80, useNativeDriver: true }),
-      ]).start();
-    }, 1000);
-  };
-
-  const hideImposter = () => {
-    setImposterRevealed(false);
-    setWordRevealed(false);
+    setRevealed(true);
     Animated.parallel([
-      Animated.spring(imposterScale, { toValue: 0.8, useNativeDriver: true }),
-      Animated.timing(imposterOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
-      Animated.timing(wordOpacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+      Animated.spring(cardScale, { toValue: 1, useNativeDriver: true, friction: 6 }),
+      Animated.timing(cardOpacity, { toValue: 1, duration: 320, useNativeDriver: true }),
     ]).start();
-    wordTranslateY.setValue(24);
   };
 
   const playAgain = () => {
@@ -108,120 +97,85 @@ export default function ResultScreen() {
     router.replace('/reveal');
   };
 
-  const changeCategory = () => {
-    router.replace('/setup');
-  };
+  const changeCategory = () => router.replace('/setup');
+
+  const category = CATEGORIES.find(c => c.id === game.category);
+  const packLabel = `${category?.label ?? 'General'} · ${DIFFICULTY_LABEL[game.difficulty] ?? 'Medium'}`;
+
+  const outcomeLabel = skippedVote ? 'No vote' : caughtImposter ? 'Crew wins' : 'Imposter wins';
+  const headline = skippedVote
+    ? 'The imposter was...'
+    : caughtImposter ? 'Caught them.' : 'They got away.';
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <Animated.ScrollView
-          contentContainerStyle={styles.inner}
+          contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
           style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
-          {/* Top bar */}
-          <View style={styles.topRow}>
-            <HomeButton />
-            <View style={{ width: 36 }} />
+          <View style={styles.headline}>
+            <Pill
+              tone="honey"
+              label={outcomeLabel}
+              icon={<Trophy size={14} color={COLORS.honeyText} />}
+            />
+            <Text style={styles.headlineText} maxFontSizeMultiplier={1.4}>{headline}</Text>
           </View>
 
-          {/* Header */}
-          <View style={styles.headerSection}>
-            {skippedVote ? (
-              <>
-                <Text style={styles.outcomeLabel}>VOTING SKIPPED</Text>
-                <Text style={styles.heroText}>The imposter was...</Text>
-              </>
-            ) : (
-              <>
-                <View style={styles.outcomeIconWrap}>
-                  <Ghost size={28} color={COLORS.honey} />
+          {/* The imposter */}
+          {revealed ? (
+            <Animated.View style={{ opacity: cardOpacity, transform: [{ scale: cardScale }] }}>
+              <GlassCard style={styles.imposterCard}>
+                <Text style={styles.label}>THE IMPOSTER WAS</Text>
+                <View style={styles.avatarWrap}>
+                  <Avatar name={imposter?.name ?? '?'} index={imposterIndex} size={82} />
+                  <View style={styles.avatarBadge}>
+                    <Eye size={15} color={COLORS.honey} />
+                  </View>
                 </View>
-                <Text style={styles.outcomeLabel}>
-                  {caughtImposter ? 'CREW WINS' : 'IMPOSTER WINS'}
-                </Text>
-                <Text style={styles.heroText}>
-                  {imposter?.name} was the liar
-                </Text>
-              </>
-            )}
-          </View>
-
-          {/* Imposter label */}
-          <Text style={styles.cardSectionLabel}>THE IMPOSTER</Text>
-
-          {/* Imposter card — hidden or revealed */}
-          {!imposterRevealed ? (
-            <View style={styles.hiddenCard}>
-              <Ghost size={32} color={COLORS.textFaint} />
-              <Text style={styles.hiddenCardText}>???</Text>
-            </View>
-          ) : (
-            <Animated.View
-              style={[
-                styles.identityCard,
-                { transform: [{ scale: imposterScale }], opacity: imposterOpacity },
-              ]}
-            >
-              {imposter && (
-                <Avatar name={imposter.name} index={imposterIndex} size={44} />
-              )}
-              <View style={styles.identityInfo}>
-                <Text style={styles.identityName}>{imposter?.name}</Text>
-                <Text style={styles.identitySubtitle}>WAS THE IMPOSTER</Text>
-              </View>
+                <Text style={styles.imposterName} numberOfLines={1}>{imposter?.name}</Text>
+                {!skippedVote && votesFor && totalVotes && (
+                  <Text style={styles.sub}>{votesFor} of {totalVotes} votes</Text>
+                )}
+              </GlassCard>
             </Animated.View>
-          )}
-
-          {/* Reveal / hide button */}
-          {!imposterRevealed ? (
-            <TouchableOpacity style={styles.revealBtn} onPress={() => revealImposter(false)} activeOpacity={0.85}>
-              <Eye size={20} color={COLORS.ink} fill={COLORS.ink} />
-              <Text style={styles.revealBtnText}>REVEAL IMPOSTER</Text>
-            </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.hideBtn} onPress={hideImposter} activeOpacity={0.75}>
-              <EyeOff size={16} color={COLORS.textFaint} />
-              <Text style={styles.hideBtnText}>HIDDEN — TAP TO HIDE AGAIN</Text>
-            </TouchableOpacity>
+            <Pressable onPress={() => reveal(false)} accessibilityRole="button" accessibilityLabel="Reveal the imposter">
+              <GlassCard style={styles.hiddenCard}>
+                <EyeOff size={28} color={COLORS.textMuted} />
+                <Text style={styles.hiddenTitle}>Tap to reveal the imposter</Text>
+                <Text style={styles.sub}>Make sure everyone is watching.</Text>
+              </GlassCard>
+            </Pressable>
           )}
 
-          {/* Word card — always rendered, opacity-animated */}
-          <Text style={[styles.cardSectionLabel, { marginTop: SPACING.sm }]}>THE WORD WAS</Text>
-          <Animated.View
-            style={[
-              styles.wordCard,
-              { opacity: wordOpacity, transform: [{ translateY: wordTranslateY }] },
-            ]}
-          >
-            {wordRevealed ? (
-              <>
-                <Text style={styles.wordCardValue}>{game.word}</Text>
-                <Text style={styles.wordCardCategory}>{game.category?.toUpperCase()}</Text>
-              </>
-            ) : (
-              <Text style={styles.hiddenWordText}>???</Text>
-            )}
-          </Animated.View>
-
-          {/* Wrong vote callout */}
-          {!skippedVote && !caughtImposter && votedOut && (
-            <View style={styles.wrongVoteCard}>
-              <Text style={styles.wrongVoteText}>{votedOut.name} was a crewmate</Text>
+          {/* The word */}
+          <GlassCard style={styles.wordCard}>
+            <View style={styles.wordText}>
+              <Text style={styles.label}>THE WORD WAS</Text>
+              <Text style={styles.word} numberOfLines={1}>{game.word}</Text>
             </View>
+            <Pill label={packLabel} />
+          </GlassCard>
+
+          {/* Who was voted out, when the crew got it wrong */}
+          {!skippedVote && !caughtImposter && votedOut && (
+            <Text style={styles.wrongVote}>
+              The table voted out {votedOut.name}, who was crew.
+            </Text>
           )}
 
-          {/* Actions */}
-          <View style={styles.actions}>
-            <TouchableOpacity style={styles.btnPrimary} onPress={playAgain} activeOpacity={0.9}>
-              <RotateCcw size={18} color={COLORS.ink} />
-              <Text style={styles.btnPrimaryText}>PLAY AGAIN</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btnSecondary} onPress={changeCategory} activeOpacity={0.85}>
-              <Text style={styles.btnSecondaryText}>Change Category</Text>
-            </TouchableOpacity>
-          </View>
+          <View style={styles.spacer} />
+
+          <PrimaryButton
+            label="Play again"
+            onPress={playAgain}
+            icon={<RefreshCw size={18} color={COLORS.onHoney} />}
+          />
+          <TextButton label="Change category" onPress={changeCategory} />
         </Animated.ScrollView>
       </SafeAreaView>
     </View>
@@ -231,229 +185,106 @@ export default function ResultScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  inner: {
-    padding: SPACING.md,
-    paddingTop: SPACING.md,
-    paddingBottom: 48,
-    gap: SPACING.xs,
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    paddingBottom: 24,
+    gap: SPACING.gap,
+    alignItems: 'stretch',
   },
 
-  topRow: {
-    flexDirection: 'row',
+  headline: {
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.sm,
+    gap: 6,
+    marginTop: 8,
   },
-
-  headerSection: {
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: SPACING.sm,
-  },
-  outcomeIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.honeySoft,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  outcomeLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.honeyText,
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-  },
-  heroText: {
+  headlineText: {
     fontFamily: FONTS.displayExtraBold,
-    fontSize: 32,
+    fontSize: 40,
+    lineHeight: 42,
+    letterSpacing: -1.2,
     color: COLORS.ink,
     textAlign: 'center',
-    lineHeight: 38,
+    marginTop: 6,
+  },
+  label: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
+    color: COLORS.textMuted,
+  },
+  sub: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
+    textAlign: 'center',
   },
 
-  cardSectionLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 6,
+  imposterCard: {
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 26,
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+  },
+  avatarWrap: { position: 'relative' },
+  avatarBadge: {
+    position: 'absolute',
+    right: -8,
+    bottom: -8,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.ink,
+    borderWidth: 3,
+    borderColor: COLORS.background,
+  },
+  imposterName: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 28,
+    letterSpacing: -0.7,
+    color: COLORS.ink,
   },
 
   hiddenCard: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.xs,
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    borderStyle: 'dashed',
-    width: '100%',
-  },
-  hiddenCardText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 28,
-    color: COLORS.textFaint,
-    letterSpacing: 6,
-  },
-
-  identityCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    width: '100%',
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  identityInfo: { flex: 1 },
-  identityName: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 20,
-    color: COLORS.honey,
-  },
-  identitySubtitle: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginTop: 2,
-  },
-
-  revealBtn: {
-    height: 56,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.honey,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  revealBtnText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 15,
-    color: COLORS.ink,
-    letterSpacing: 1,
-  },
-  hideBtn: {
-    height: 44,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     gap: 8,
+    borderRadius: 26,
+    paddingVertical: 32,
+    paddingHorizontal: 18,
   },
-  hideBtnText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 11,
-    color: COLORS.textMuted,
-    letterSpacing: 1,
+  hiddenTitle: {
+    fontFamily: FONTS.displaySemiBold,
+    fontSize: 16,
+    letterSpacing: -0.16,
+    color: COLORS.ink,
   },
 
   wordCard: {
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    padding: SPACING.md,
-    alignItems: 'center',
-    width: '100%',
-    gap: 8,
-    minHeight: 90,
-    justifyContent: 'center',
-  },
-  wordCardValue: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 36,
-    color: COLORS.honey,
-    letterSpacing: 3,
-    textAlign: 'center',
-  },
-  wordCardCategory: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  hiddenWordText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 28,
-    color: COLORS.textFaint,
-    letterSpacing: 6,
-  },
-
-  wrongVoteCard: {
-    backgroundColor: COLORS.glassFill,
-    borderRadius: 12,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    width: '100%',
-    alignItems: 'center',
-  },
-  wrongVoteText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 13,
-    color: COLORS.textBody,
-  },
-
-  actions: { gap: SPACING.xs, marginTop: SPACING.sm },
-  btnPrimary: {
-    height: 56,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.honey,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    gap: 12,
+    borderRadius: 18,
+    padding: 14,
   },
-  btnPrimaryText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 15,
-    color: COLORS.ink,
-    letterSpacing: 1,
-  },
-  btnSecondary: {
-    height: 56,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.glassFill,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnSecondaryText: {
+  wordText: { flex: 1, minWidth: 0 },
+  word: {
     fontFamily: FONTS.displayBold,
-    fontSize: 15,
-    color: COLORS.textBody,
+    fontSize: 20,
+    letterSpacing: -0.5,
+    color: COLORS.ink,
   },
+
+  wrongVote: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12.5,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+  },
+
+  spacer: { flex: 1, minHeight: SPACING.xs },
 });

@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated,
+  View, Text, StyleSheet, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { CircleCheck as CheckCircle } from 'lucide-react-native';
-import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import Avatar from '../components/Avatar';
+import { Eye } from 'lucide-react-native';
+import { COLORS, FONTS, SPACING } from '../constants/theme';
+import ScreenBackground from '../components/ScreenBackground';
+import GlassCard from '../components/GlassCard';
+import VoteCard from '../components/VoteCard';
+import ProgressBar from '../components/ProgressBar';
 import PrimaryButton from '../components/PrimaryButton';
+import GlassButton from '../components/GlassButton';
 import { useGame } from '../context/GameContext';
-import HomeButton from '../components/HomeButton';
 
 export default function VoteScreen() {
   const router = useRouter();
@@ -21,14 +24,14 @@ export default function VoteScreen() {
   const [phase, setPhase] = useState<'voting' | 'tally'>('voting');
   const [tieIds, setTieIds] = useState<string[]>([]);
   const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [entryAnim, entryY]);
 
   const voter = game.players[voterIndex];
 
@@ -66,119 +69,108 @@ export default function VoteScreen() {
     Object.values(votes).forEach(v => {
       if (v) counts[v] = (counts[v] ?? 0) + 1;
     });
-    const topId = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
-    router.push({ pathname: '/result', params: { votedOutId: topId } });
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    router.push({
+      pathname: '/result',
+      params: top
+        ? { votedOutId: top[0], votesFor: String(top[1]), totalVotes: String(game.players.length) }
+        : {},
+    });
   };
 
-  if (phase === 'tally') {
-    const counts: Record<string, number> = {};
-    Object.values(votes).forEach(v => {
-      if (v) counts[v] = (counts[v] ?? 0) + 1;
-    });
-    const maxVotes = Math.max(...Object.values(counts), 0);
+  const counts: Record<string, number> = {};
+  Object.values(votes).forEach(v => {
+    if (v) counts[v] = (counts[v] ?? 0) + 1;
+  });
+  const votesIn = Object.values(votes).filter(Boolean).length;
+  const total = game.players.length;
 
-    return (
-      <View style={styles.container}>
-        <SafeAreaView style={styles.safe}>
-          <Animated.View
-            style={[styles.inner, { opacity: entryAnim, transform: [{ translateY: entryY }] }]}
-          >
-            <View style={styles.header}>
-              <HomeButton />
-              <Text style={styles.title}>Vote Tally</Text>
-              <View style={{ width: 36 }} />
-            </View>
-
-            <ScrollView contentContainerStyle={styles.tallyScroll} showsVerticalScrollIndicator={false}>
-              {game.players
-                .sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0))
-                .map(player => {
-                  const voteCount = counts[player.id] ?? 0;
-                  const isTop = voteCount === maxVotes && maxVotes > 0;
-                  return (
-                    <View key={player.id} style={[styles.tallyRow, isTop && styles.tallyRowTop]}>
-                      <Avatar name={player.name} index={game.players.indexOf(player)} size={32} />
-                      <Text style={styles.tallyName}>{player.name}</Text>
-                      <View style={styles.tallyBarWrap}>
-                        {Array.from({ length: voteCount }).map((_, i) => (
-                          <View key={i} style={styles.tallyDot} />
-                        ))}
-                      </View>
-                      <Text style={[styles.tallyCount, isTop && styles.tallyCountTop]}>{voteCount}</Text>
-                    </View>
-                  );
-                })}
-            </ScrollView>
-
-            <PrimaryButton label="Reveal Imposter!" onPress={handleReveal} />
-          </Animated.View>
-        </SafeAreaView>
-      </View>
-    );
-  }
+  // The tally only appears once every vote is in, so an earlier voter's
+  // choice cannot steer the people who vote after them.
+  const showTally = phase === 'tally';
+  const ranked = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, n]) => ({
+      name: game.players.find(p => p.id === id)?.name ?? '',
+      percent: Math.round((n / total) * 100),
+    }));
+  const leader = ranked[0];
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
-        <Animated.View
-          style={[styles.inner, { opacity: entryAnim, transform: [{ translateY: entryY }] }]}
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+        <Animated.ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
           <View style={styles.header}>
-            <HomeButton />
-            <Text style={styles.title}>Vote</Text>
-            <View style={{ width: 36 }} />
+            <Text style={styles.label}>
+              VOTING · {votesIn} OF {total} IN
+            </Text>
           </View>
 
-          {tieIds.length > 0 && (
-            <View style={styles.tieBanner}>
-              <Text style={styles.tieBannerText}>TIE — Re-vote between tied players</Text>
-            </View>
+          <View style={styles.heading}>
+            <Text style={styles.title} maxFontSizeMultiplier={1.4}>Who is the imposter?</Text>
+            <Text style={styles.sub}>
+              {showTally
+                ? 'Every vote is in. Reveal when the table is ready.'
+                : `${voter.name}, tap the player you suspect.`}
+            </Text>
+            {tieIds.length > 0 && !showTally && (
+              <Text style={styles.tie}>It was a tie, so everyone votes again.</Text>
+            )}
+          </View>
+
+          <View style={styles.grid}>
+            {game.players.map((p, i) => {
+              const isSelf = !showTally && p.id === voter.id;
+              return (
+                <View key={p.id} style={styles.cell}>
+                  <VoteCard
+                    name={p.name}
+                    avatarIndex={i}
+                    voteCount={showTally ? counts[p.id] ?? 0 : undefined}
+                    selected={showTally && counts[p.id] === Math.max(...Object.values(counts), 0) && (counts[p.id] ?? 0) > 0}
+                    onPress={isSelf || showTally ? undefined : () => castVote(p.id)}
+                  />
+                  {isSelf && <Text style={styles.selfTag}>You</Text>}
+                </View>
+              );
+            })}
+          </View>
+
+          {showTally && ranked.length > 0 && (
+            <GlassCard style={styles.tallyCard}>
+              <View style={styles.tallyHead}>
+                <Text style={styles.label}>VOTE TALLY</Text>
+                {leader && <Text style={styles.leader}>{leader.name} leads</Text>}
+              </View>
+              {ranked.map(r => (
+                <View key={r.name} style={styles.tallyRow}>
+                  <View style={styles.tallyLabels}>
+                    <Text style={styles.tallyName} numberOfLines={1}>{r.name}</Text>
+                    <Text style={styles.tallyPercent}>{r.percent}%</Text>
+                  </View>
+                  <ProgressBar progress={r.percent / 100} />
+                </View>
+              ))}
+            </GlassCard>
           )}
 
-          <View style={styles.voterCard}>
-            <Avatar name={voter.name} index={voterIndex} size={36} />
-            <View style={styles.voterInfo}>
-              <Text style={styles.voterLabel}>VOTING NOW</Text>
-              <Text style={styles.voterName}>{voter.name}</Text>
-            </View>
-            <View style={styles.progressBadge}>
-              <Text style={styles.progressText}>{voterIndex}/{game.players.length}</Text>
-            </View>
-          </View>
+          <View style={styles.spacer} />
 
-          <Text style={styles.suspectLabel}>WHO IS THE IMPOSTER?</Text>
-
-          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-            {game.players
-              .filter(p => p.id !== voter.id)
-              .map(suspect => (
-                <TouchableOpacity
-                  key={suspect.id}
-                  style={styles.suspectCard}
-                  onPress={() => castVote(suspect.id)}
-                  activeOpacity={0.75}
-                >
-                  <Avatar
-                    name={suspect.name}
-                    index={game.players.indexOf(suspect)}
-                    size={36}
-                  />
-                  <Text style={styles.suspectName}>{suspect.name}</Text>
-                  <View style={styles.voteBtn}>
-                    <CheckCircle size={18} color={COLORS.honey} />
-                  </View>
-                </TouchableOpacity>
-              ))}
-          </ScrollView>
-
-          <TouchableOpacity
-            style={styles.revealGhostBtn}
-            onPress={() => router.push('/result')}
-            activeOpacity={0.75}
-          >
-            <Text style={styles.revealGhostText}>REVEAL IMPOSTER</Text>
-          </TouchableOpacity>
-        </Animated.View>
+          {showTally ? (
+            <PrimaryButton
+              label="Reveal imposter"
+              onPress={handleReveal}
+              icon={<Eye size={18} color={COLORS.onHoney} />}
+            />
+          ) : (
+            <GlassButton label="Skip to the reveal" onPress={handleReveal} />
+          )}
+        </Animated.ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -187,173 +179,95 @@ export default function VoteScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  inner: {
-    flex: 1,
-    padding: SPACING.md,
-    paddingTop: SPACING.md,
-    paddingBottom: 32,
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    paddingBottom: 24,
+    gap: SPACING.gap,
   },
 
-  header: {
+  header: { alignItems: 'center', paddingVertical: 4 },
+  label: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
+    color: COLORS.textMuted,
+  },
+
+  heading: { gap: 4 },
+  title: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 28,
+    lineHeight: 30,
+    letterSpacing: -0.7,
+    color: COLORS.ink,
+  },
+  sub: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
+  },
+  tie: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 12.5,
+    color: COLORS.honeyText,
+  },
+
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  cell: {
+    // Two across, accounting for the 8px gap.
+    width: '48.5%',
+    position: 'relative',
+  },
+  selfTag: {
+    position: 'absolute',
+    top: 6,
+    right: 8,
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
+    color: COLORS.textMuted,
+  },
+
+  tallyCard: {
+    padding: SPACING.cardPadding,
+    gap: 10,
+  },
+  tallyHead: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: SPACING.md,
+    gap: 8,
   },
-  title: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 22,
-    color: COLORS.ink,
+  leader: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 12.5,
+    color: COLORS.honeyText,
   },
-
-  // A tie is not an error, and red is barred from the vote screen, so this
-  // uses the ink attention pill from impostr.css instead.
-  tieBanner: {
-    backgroundColor: COLORS.ink,
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: SPACING.xs,
-  },
-  tieBannerText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 12,
-    color: COLORS.honey,
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-
-  voterCard: {
+  tallyRow: { gap: 5 },
+  tallyLabels: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.xs,
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.sm,
-    marginBottom: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  voterInfo: { flex: 1 },
-  voterLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 2,
-  },
-  voterName: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 17,
-    color: COLORS.ink,
-  },
-  progressBadge: {
-    backgroundColor: COLORS.honeySoft,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-  },
-  progressText: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 12,
-    color: COLORS.honey,
-  },
-
-  suspectLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: SPACING.xs,
-  },
-
-  scroll: { gap: SPACING.xs, paddingBottom: 20 },
-  suspectCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  suspectName: {
-    flex: 1,
-    fontFamily: FONTS.displayBold,
-    fontSize: 17,
-    color: COLORS.ink,
-  },
-  voteBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.honeySoft,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  revealGhostBtn: {
-    height: 44,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: SPACING.xs,
-  },
-  revealGhostText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 12,
-    color: COLORS.textMuted,
-    letterSpacing: 1.5,
-  },
-
-  // Tally phase
-  tallyScroll: { gap: SPACING.xs, paddingBottom: 20, flexGrow: 1 },
-  tallyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  tallyRowTop: {
-    borderColor: COLORS.honeyBorder,
-    backgroundColor: COLORS.honeySoft,
+    justifyContent: 'space-between',
+    gap: 8,
   },
   tallyName: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 15,
-    color: COLORS.ink,
-    width: 90,
-  },
-  tallyBarWrap: {
     flex: 1,
-    flexDirection: 'row',
-    gap: 4,
-    flexWrap: 'wrap',
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 12.5,
+    color: COLORS.ink,
   },
-  tallyDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: COLORS.honey,
-  },
-  tallyCount: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 20,
+  tallyPercent: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 12.5,
     color: COLORS.textMuted,
-    width: 24,
-    textAlign: 'right',
   },
-  tallyCountTop: { color: COLORS.honey },
+
+  spacer: { flex: 1, minHeight: SPACING.xs },
 });

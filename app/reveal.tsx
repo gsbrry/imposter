@@ -1,76 +1,97 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Animated,
+  View, Text, StyleSheet, Pressable, Animated, Easing, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ghost, ShieldCheck, Eye, EyeOff } from 'lucide-react-native';
-import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import Avatar from '../components/Avatar';
+import {
+  EyeOff, Pointer, X,
+  Brain, Car, House, UtensilsCrossed, Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
+} from 'lucide-react-native';
+import { COLORS, FONTS, SPACING } from '../constants/theme';
+import ScreenBackground from '../components/ScreenBackground';
+import RevealCard from '../components/RevealCard';
+import InkButton from '../components/InkButton';
+import IconButton from '../components/IconButton';
+import Pill from '../components/Pill';
+import ProgressBar from '../components/ProgressBar';
 import { useGame } from '../context/GameContext';
 import { storage } from '../utils/storage';
 import { getWord } from '../utils/getWord';
 import { selectImposter, selectTwoImposters } from '../utils/selectImposter';
-import { HINTS, CategoryKey, Difficulty } from '../data/words';
-import HomeButton from '../components/HomeButton';
+import { HINTS, CATEGORIES, CategoryIcon, CategoryKey, Difficulty } from '../data/words';
 
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// How long the word stays up once revealed, matching the card's countdown bar.
+const PEEK_MS = 3000;
 
-function useScramble(word: string, running: boolean) {
-  const [display, setDisplay] = useState(word);
-  const frame = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
+  brain: Brain,
+  car: Car,
+  house: House,
+  utensils: UtensilsCrossed,
+  clapperboard: Clapperboard,
+  trophy: Trophy,
+  paw: PawPrint,
+  briefcase: Briefcase,
+  party: PartyPopper,
+};
 
-  useEffect(() => {
-    if (!running || !word) {
-      setDisplay(word);
-      return;
-    }
-    let iteration = 0;
-    const totalFrames = word.length * 4;
-    clearInterval(frame.current);
-    frame.current = setInterval(() => {
-      setDisplay(
-        word
-          .split('')
-          .map((char, i) => {
-            if (i < Math.floor(iteration / 4)) return char;
-            if (char === ' ') return ' ';
-            return CHARS[Math.floor(Math.random() * CHARS.length)];
-          })
-          .join('')
-      );
-      iteration++;
-      if (iteration > totalFrames) {
-        clearInterval(frame.current);
-        setDisplay(word);
-      }
-    }, 40);
-    return () => clearInterval(frame.current);
-  }, [running, word]);
+const DIFFICULTY_LABEL: Record<string, string> = {
+  easy: 'Easy',
+  medium: 'Medium',
+  hard: 'Hard',
+  chaos: 'Chaos',
+};
 
-  return display;
+/**
+ * Body copy for the reveal card. Both roles get one sentence of the same
+ * shape so the card's height never depends on who is holding the phone.
+ */
+function subtitleFor(isImposter: boolean, isEasy: boolean, hint: string) {
+  if (!isImposter) return 'Give clues that prove you know it, without giving it away.';
+  if (isEasy && hint) return `You do not know the word. A hint: ${hint}.`;
+  return 'You do not know the word. Listen closely and blend in.';
+}
+
+/**
+ * One haptic pulse on reveal, fired identically for crew and imposter.
+ * Anyone listening must not be able to tell the roles apart.
+ */
+async function pulse() {
+  if (Platform.OS === 'web') return;
+  try {
+    const Haptics = await import('expo-haptics');
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  } catch { /* haptics unavailable */ }
 }
 
 export default function RevealScreen() {
   const router = useRouter();
-  const { game, setGame } = useGame();
+  const { game, setGame, resetGame } = useGame();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [wordVisible, setWordVisible] = useState(false);
   const [hasSeenWord, setHasSeenWord] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
-  const [scrambleRunning, setScrambleRunning] = useState(false);
 
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const lockTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const peekAnim = useRef(new Animated.Value(1)).current;
+  const peekTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
+  const holdPulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(holdPulse, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(holdPulse, { toValue: 0, duration: 1100, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ])
+    ).start();
+
     async function setup() {
       // Chaos draws from the hard pack; its extra twist is the second imposter below.
       const safeDifficulty: Difficulty = (game.difficulty === 'chaos' ? 'hard' : game.difficulty) as Difficulty;
@@ -98,44 +119,37 @@ export default function RevealScreen() {
       setSetupDone(true);
     }
     setup();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const player = setupDone ? game.players[currentIndex] : null;
-  const isImposter = player ? game.imposterIds.includes(player.id) : false;
-  const scrambledWord = useScramble(game.word || '', scrambleRunning);
+  useEffect(() => () => clearTimeout(peekTimer.current), []);
 
-  const showWord = () => {
-    clearTimeout(lockTimer.current);
+  const hideWord = useCallback(() => {
+    clearTimeout(peekTimer.current);
+    setWordVisible(false);
+    peekAnim.setValue(1);
+  }, [peekAnim]);
+
+  const showWord = useCallback(() => {
     setWordVisible(true);
     setHasSeenWord(true);
-    setScrambleRunning(true);
-    setTimeout(() => setScrambleRunning(false), 500);
+    pulse();
 
-    Animated.parallel([
-      Animated.spring(scaleAnim, { toValue: 1.05, useNativeDriver: true, friction: 5 }),
-      Animated.timing(opacityAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-    ]).start(() => {
-      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, friction: 6 }).start();
-    });
+    peekAnim.setValue(1);
+    Animated.timing(peekAnim, {
+      toValue: 0,
+      duration: PEEK_MS,
+      easing: Easing.linear,
+      useNativeDriver: false,
+    }).start();
 
-    lockTimer.current = setTimeout(() => hideWord(), 3000);
-  };
+    clearTimeout(peekTimer.current);
+    peekTimer.current = setTimeout(hideWord, PEEK_MS);
+  }, [peekAnim, hideWord]);
 
-  const hideWord = () => {
-    clearTimeout(lockTimer.current);
-    setWordVisible(false);
-    Animated.parallel([
-      Animated.spring(scaleAnim, { toValue: 0.8, useNativeDriver: true }),
-      Animated.timing(opacityAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-    ]).start();
-  };
-
-  const toggleWord = () => {
-    if (wordVisible) {
-      hideWord();
-    } else {
-      showWord();
-    }
+  const exitGame = () => {
+    resetGame();
+    router.replace('/(tabs)');
   };
 
   const handleNext = async () => {
@@ -144,7 +158,7 @@ export default function RevealScreen() {
       setHasSeenWord(false);
       setCurrentIndex(i => i + 1);
     } else {
-      // Last player done — check if timer is off; if so skip clue round
+      // Last player done — if the timer is off there is no clue round.
       const gs = await storage.getGameSettings();
       const tv = await storage.getTeamVote();
       if (gs.timerPerClue === 'none') {
@@ -155,105 +169,145 @@ export default function RevealScreen() {
     }
   };
 
+  const player = setupDone ? game.players[currentIndex] : null;
+
   if (!setupDone || !player) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <View style={styles.loadingDot} />
+      <View style={styles.container}>
+        <ScreenBackground />
+        <View style={styles.loading}>
+          <ProgressBar progress={0.4} />
+        </View>
       </View>
     );
   }
 
-  const isLast = currentIndex === game.players.length - 1;
+  const isImposter = game.imposterIds.includes(player.id);
+  const total = game.players.length;
+  const category = CATEGORIES.find(c => c.id === game.category);
+  const CategoryIconCmp = category ? CATEGORY_ICONS[category.icon] : Brain;
+  const packLabel = `${category?.label ?? 'General'} · ${DIFFICULTY_LABEL[game.difficulty] ?? 'Medium'}`;
+
+  const glowScale = holdPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] });
+  const glowOpacity = holdPulse.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.12] });
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <Animated.View
           style={[styles.inner, { opacity: entryAnim, transform: [{ translateY: entryY }] }]}
         >
-          {/* Header */}
-          <View style={styles.topRow}>
-            <HomeButton />
-            <View style={styles.progress}>
-              {game.players.map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.progressDot,
-                    i < currentIndex && styles.progressDone,
-                    i === currentIndex && styles.progressActive,
-                  ]}
-                />
-              ))}
+          {wordVisible ? (
+            /* Revealed: no exit button, so nobody taps away mid-peek. */
+            <View style={styles.revealHeader}>
+              <Text style={styles.label}>
+                {player.name.toUpperCase()} · PLAYER {currentIndex + 1}
+              </Text>
             </View>
-            <View style={{ width: 36 }} />
-          </View>
+          ) : (
+            <>
+              <View style={styles.header}>
+                <IconButton onPress={exitGame} accessibilityLabel="Exit game">
+                  <X size={20} color={COLORS.ink} />
+                </IconButton>
+                <Text style={styles.label}>PLAYER {currentIndex + 1} OF {total}</Text>
+                <View style={styles.headerSpacer} />
+              </View>
 
-          {/* Pass card */}
-          <View style={styles.passCard}>
-            <Text style={styles.passLabel}>PASS TO</Text>
-            <Avatar name={player.name} index={currentIndex} size={52} />
-            <Text style={styles.playerName}>{player.name}</Text>
-          </View>
+              <View style={styles.pips}>
+                {game.players.map((p, i) => (
+                  <View
+                    key={p.id}
+                    style={[
+                      styles.pip,
+                      i < currentIndex && styles.pipDone,
+                      i === currentIndex && styles.pipCurrent,
+                    ]}
+                  />
+                ))}
+              </View>
+            </>
+          )}
 
-          {/* Word area — always tappable to toggle */}
-          <TouchableOpacity
-            style={wordVisible ? styles.revealCardWrap : styles.tapArea}
-            onPress={toggleWord}
-            activeOpacity={0.85}
+          {!wordVisible && (
+            <View style={styles.passTo}>
+              <Text style={styles.label}>PASS THE PHONE TO</Text>
+              <Text style={styles.playerName} maxFontSizeMultiplier={1.4} numberOfLines={1} adjustsFontSizeToFit>
+                {player.name}
+              </Text>
+              <Text style={styles.sub}>Make sure nobody else can see the screen.</Text>
+            </View>
+          )}
+
+          {/* Press and hold to peek. Identical for crew and imposter. */}
+          <Pressable
+            style={styles.cardPress}
+            onPressIn={showWord}
+            onPressOut={hideWord}
+            accessibilityRole="button"
+            accessibilityLabel="Press and hold to see your word"
+            accessibilityHint="Your word stays hidden until you hold this card"
           >
-            {!wordVisible ? (
-              <>
-                <View style={styles.eyeCircle}>
-                  <Eye size={28} color={COLORS.honey} fill={COLORS.honey} />
-                </View>
-                <Text style={styles.tapText}>TAP TO SEE YOUR WORD</Text>
-                <Text style={styles.tapSubtext}>Make sure only {player.name} can see</Text>
-              </>
+            {wordVisible ? (
+              <RevealCard
+                badge={
+                  <Pill
+                    tone="honey"
+                    label={packLabel}
+                    icon={<CategoryIconCmp size={14} color={COLORS.honeyText} />}
+                  />
+                }
+                eyebrow={isImposter ? 'Your role' : 'Your secret word'}
+                title={isImposter ? 'Imposter' : game.word}
+                // The easy-mode hint rides inside the subtitle rather than in
+                // a badge of its own: an extra element would make the imposter
+                // card a different shape from the crew card, which is exactly
+                // what the reveal must never do.
+                subtitle={subtitleFor(isImposter, game.difficulty === 'easy', game.hint)}
+                footer={
+                  <View style={styles.peekWrap}>
+                    <View style={styles.peekBar}>
+                      <Animated.View
+                        style={[
+                          styles.peekFill,
+                          {
+                            width: peekAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: ['0%', '100%'],
+                            }),
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.peekText}>Let go to hide it</Text>
+                  </View>
+                }
+              />
             ) : (
-              <Animated.View
-                style={[
-                  styles.revealCardInner,
-                  { transform: [{ scale: scaleAnim }], opacity: opacityAnim },
-                ]}
-              >
-                {isImposter ? (
-                  <>
-                    <Ghost size={48} color={COLORS.honey} />
-                    <Text style={styles.imposterLabel}>IMPOSTER</Text>
-                    <Text style={styles.imposterSub}>Blend in — you don&apos;t know the word.</Text>
-                    {game.difficulty === 'easy' && (
-                      <View style={styles.hintBadge}>
-                        <Text style={styles.hintText}>HINT: {game.hint}</Text>
-                      </View>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={36} color={COLORS.honey} />
-                    <Text style={styles.wordLabel}>{scrambledWord}</Text>
-                    <Text style={styles.categoryLabel}>{game.category?.toUpperCase()}</Text>
-                  </>
-                )}
-                <View style={styles.hideHint}>
-                  <EyeOff size={14} color={COLORS.textFaint} />
-                  <Text style={styles.hideText}>Tap to hide (auto-hides in 3s)</Text>
+              <View style={styles.holdCard}>
+                <View style={styles.holdIconWrap}>
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[styles.holdGlow, { opacity: glowOpacity, transform: [{ scale: glowScale }] }]}
+                  />
+                  <View style={styles.holdIcon}>
+                    <Pointer size={38} color={COLORS.honey} />
+                  </View>
                 </View>
-              </Animated.View>
+                <Text style={styles.holdTitle}>Press and hold to see your word</Text>
+                <Text style={styles.holdSub}>Let go to hide it again</Text>
+              </View>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
-          {/* Next button */}
-          <TouchableOpacity
-            style={[styles.nextBtn, hasSeenWord && styles.nextBtnActive]}
-            onPress={handleNext}
-            disabled={!hasSeenWord}
-            activeOpacity={0.85}
-          >
-            <Text style={[styles.nextText, hasSeenWord && styles.nextTextActive]}>
-              {isLast ? 'START GAME' : `DONE — PASS TO ${game.players[currentIndex + 1]?.name?.toUpperCase()}`}
-            </Text>
-          </TouchableOpacity>
+          {hasSeenWord && !wordVisible && (
+            <InkButton
+              label="Hide and pass"
+              onPress={handleNext}
+              icon={<EyeOff size={18} color={COLORS.background} />}
+            />
+          )}
         </Animated.View>
       </SafeAreaView>
     </View>
@@ -263,181 +317,147 @@ export default function RevealScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  inner: { flex: 1, padding: SPACING.md, paddingTop: SPACING.md, justifyContent: 'space-between' },
-  center: { alignItems: 'center', justifyContent: 'center' },
-  loadingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.honey,
-    opacity: 0.5,
+  inner: {
+    flex: 1,
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    paddingBottom: 24,
+    gap: SPACING.gap,
+  },
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 120,
   },
 
-  topRow: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: SPACING.md,
+    gap: 10,
   },
-  progress: { flexDirection: 'row', gap: 6 },
-  progressDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  headerSpacer: { width: 40 },
+  revealHeader: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  label: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
+    color: COLORS.textMuted,
+  },
+
+  pips: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  pip: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: COLORS.divider,
   },
-  progressDone: { backgroundColor: COLORS.honeyBorder },
-  progressActive: { backgroundColor: COLORS.honey, width: 18 },
+  pipDone: { backgroundColor: COLORS.ink },
+  pipCurrent: { width: 22, backgroundColor: COLORS.honey },
 
-  passCard: {
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  passLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  playerName: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 22,
-    color: COLORS.ink,
-  },
-
-  tapArea: {
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    borderStyle: 'dashed',
-    backgroundColor: COLORS.glassFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.xs,
-    paddingVertical: SPACING.xl,
-    paddingHorizontal: SPACING.md,
-  },
-  eyeCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.honeySoft,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  tapText: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 13,
-    color: COLORS.textBody,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  tapSubtext: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-
-  revealCardWrap: {
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.glassFill,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    overflow: 'hidden',
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 32,
-    elevation: 10,
-  },
-  revealCardInner: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.xl,
-    paddingHorizontal: SPACING.md,
-    gap: SPACING.xs,
-  },
-  imposterLabel: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 36,
-    color: COLORS.honey,
-    letterSpacing: 4,
-  },
-  imposterSub: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.textBody,
-    textAlign: 'center',
-  },
-  hintBadge: {
-    backgroundColor: COLORS.honeySoft,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    marginTop: 4,
-  },
-  hintText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 12,
-    color: COLORS.honey,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  wordLabel: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 36,
-    color: COLORS.honey,
-    letterSpacing: 3,
-    textAlign: 'center',
-  },
-  categoryLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  hideHint: {
-    flexDirection: 'row',
+  passTo: {
     alignItems: 'center',
     gap: 6,
-    marginTop: SPACING.xs,
+    marginTop: 8,
   },
-  hideText: {
+  playerName: {
+    fontFamily: FONTS.displayExtraBold,
+    fontSize: 44,
+    lineHeight: 46,
+    letterSpacing: -1.2,
+    color: COLORS.ink,
+    textAlign: 'center',
+  },
+  sub: {
     fontFamily: FONTS.bodyRegular,
-    fontSize: 11,
-    color: COLORS.textFaint,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
+    textAlign: 'center',
   },
 
-  nextBtn: {
-    height: 56,
-    borderRadius: RADIUS.md,
+  cardPress: { flex: 1 },
+
+  // Pre-reveal card
+  holdCard: {
+    flex: 1,
+    minHeight: 300,
+    borderRadius: 26,
+    backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glassFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 24,
+  },
+  holdIconWrap: {
+    width: 96,
+    height: 96,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  nextBtnActive: {
+  holdGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 30,
     backgroundColor: COLORS.honey,
-    borderColor: COLORS.honey,
   },
-  nextText: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 13,
-    color: COLORS.textMuted,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+  holdIcon: {
+    width: 76,
+    height: 76,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.ink,
   },
-  nextTextActive: {
+  holdTitle: {
+    fontFamily: FONTS.displaySemiBold,
+    fontSize: 16,
+    letterSpacing: -0.16,
     color: COLORS.ink,
-    fontFamily: FONTS.displayExtraBold,
+    textAlign: 'center',
+  },
+  holdSub: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+  },
+
+  // Revealed card footer
+  peekWrap: {
+    width: 150,
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 16,
+  },
+  peekBar: {
+    width: '100%',
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+    backgroundColor: COLORS.divider,
+  },
+  peekFill: {
+    height: '100%',
+    borderRadius: 3,
+    backgroundColor: COLORS.honey,
+  },
+  peekText: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 11,
+    color: COLORS.textMuted,
   },
 });

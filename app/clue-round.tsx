@@ -1,19 +1,40 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Animated,
-  Modal, Platform,
+  View, Text, StyleSheet, Animated, Platform, useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Eye, FastForward } from 'lucide-react-native';
-import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import {
+  ArrowRight, Check, Pause,
+  Brain, Car, House, UtensilsCrossed, Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper,
+} from 'lucide-react-native';
+import { COLORS, FONTS, SPACING } from '../constants/theme';
+import ScreenBackground from '../components/ScreenBackground';
 import GlassCard from '../components/GlassCard';
 import Avatar from '../components/Avatar';
 import TimerRing from '../components/TimerRing';
 import PrimaryButton from '../components/PrimaryButton';
+import GlassButton from '../components/GlassButton';
+import InkButton from '../components/InkButton';
+import TextButton from '../components/TextButton';
+import IconButton from '../components/IconButton';
+import BottomSheet from '../components/BottomSheet';
+import Pill from '../components/Pill';
 import { useGame } from '../context/GameContext';
-import HomeButton from '../components/HomeButton';
 import { storage } from '../utils/storage';
+import { CATEGORIES, CategoryIcon } from '../data/words';
+
+const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
+  brain: Brain,
+  car: Car,
+  house: House,
+  utensils: UtensilsCrossed,
+  clapperboard: Clapperboard,
+  trophy: Trophy,
+  paw: PawPrint,
+  briefcase: Briefcase,
+  party: PartyPopper,
+};
 
 // ---------------------------------------------------------------------------
 // Web Audio sound helpers (no external files needed)
@@ -70,21 +91,23 @@ async function triggerHaptic(style: 'light' | 'heavy') {
   } catch { /* silently ignore */ }
 }
 
+
 export default function ClueRoundScreen() {
   const router = useRouter();
-  const { game } = useGame();
+  const { game, resetGame } = useGame();
+  const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [maxTime, setMaxTime] = useState(30);
   const [timeLeft, setTimeLeft] = useState(30);
   const [teamVote, setTeamVote] = useState(false);
+  const [rounds, setRounds] = useState(1);
   const [timerSoundEnabled, setTimerSoundEnabled] = useState(true);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
-  const [showSkipSheet, setShowSkipSheet] = useState(false);
+  const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
-  const sheetAnim = useRef(new Animated.Value(0)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
   // Track which countdown ticks we've already fired
   const firedAt = useRef<Set<number>>(new Set());
 
@@ -105,6 +128,7 @@ export default function ClueRoundScreen() {
       setMaxTime(seconds);
       setTimeLeft(seconds);
       setTeamVote(tv);
+      setRounds(gs.turnsBeforeGuess ?? 1);
       setTimerSoundEnabled(ts);
       setSettingsLoaded(true);
     });
@@ -112,7 +136,7 @@ export default function ClueRoundScreen() {
       Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [entryAnim, entryY]);
 
   // Reset fired ticks when player changes
   useEffect(() => {
@@ -123,8 +147,8 @@ export default function ClueRoundScreen() {
     if (!settingsLoaded) return;
     clearInterval(timerRef.current);
     if (!timerEnabled) return;
-    firedAt.current = new Set();
-    setTimeLeft(maxTime);
+    // Pausing stops the countdown, and with it the tick sounds.
+    if (paused) return;
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) { clearInterval(timerRef.current); return 0; }
@@ -132,11 +156,18 @@ export default function ClueRoundScreen() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [timerEnabled, maxTime, currentIndex, settingsLoaded]);
+  }, [timerEnabled, maxTime, currentIndex, settingsLoaded, paused]);
+
+  // Restart the clock for each new player
+  useEffect(() => {
+    if (!settingsLoaded || !timerEnabled) return;
+    firedAt.current = new Set();
+    setTimeLeft(maxTime);
+  }, [currentIndex, settingsLoaded, timerEnabled, maxTime]);
 
   // Countdown sound + haptic effects
   useEffect(() => {
-    if (!timerEnabled) return;
+    if (!timerEnabled || paused) return;
     if (timeLeft <= 3 && timeLeft > 0 && !firedAt.current.has(timeLeft)) {
       firedAt.current.add(timeLeft);
       if (timerSoundEnabled) playTick();
@@ -147,24 +178,7 @@ export default function ClueRoundScreen() {
       if (timerSoundEnabled) playTimeUp();
       triggerHaptic('heavy');
     }
-  }, [timeLeft, timerEnabled, timerSoundEnabled]);
-
-  const openSkipSheet = () => {
-    setShowSkipSheet(true);
-    Animated.spring(sheetAnim, { toValue: 1, useNativeDriver: true, friction: 8, tension: 80 }).start();
-  };
-
-  const closeSkipSheet = () => {
-    Animated.timing(sheetAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() =>
-      setShowSkipSheet(false)
-    );
-  };
-
-  const confirmSkip = () => {
-    closeSkipSheet();
-    clearInterval(timerRef.current);
-    router.push('/result');
-  };
+  }, [timeLeft, timerEnabled, timerSoundEnabled, paused]);
 
   const goToNext = () => {
     clearInterval(timerRef.current);
@@ -172,11 +186,7 @@ export default function ClueRoundScreen() {
     if (currentIndex < game.players.length - 1) {
       setCurrentIndex(i => i + 1);
     } else {
-      if (teamVote) {
-        router.push('/result');
-      } else {
-        router.push('/vote');
-      }
+      router.push(teamVote ? '/result' : '/vote');
     }
   };
 
@@ -190,14 +200,17 @@ export default function ClueRoundScreen() {
     router.push('/result');
   };
 
+  const exitGame = () => {
+    clearInterval(timerRef.current);
+    setPaused(false);
+    resetGame();
+    router.replace('/(tabs)');
+  };
+
   const player = game.players[currentIndex];
   const progress = timerEnabled ? timeLeft / maxTime : 1;
   const isLast = currentIndex === game.players.length - 1;
   const timeCritical = timerEnabled && timeLeft <= 10 && timeLeft > 0;
-
-  const primaryLabel = teamVote
-    ? (isLast ? 'REVEAL IMPOSTER' : `Next: ${game.players[currentIndex + 1]?.name}`)
-    : (isLast ? 'Go to Vote' : `Next: ${game.players[currentIndex + 1]?.name}`);
 
   const handlePrimary = () => {
     if (teamVote && isLast) revealImposter();
@@ -206,122 +219,121 @@ export default function ClueRoundScreen() {
 
   if (!player) return null;
 
-  const sheetTranslateY = sheetAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [300, 0],
-  });
+  const category = CATEGORIES.find(c => c.id === game.category);
+  const CategoryIconCmp = category ? CATEGORY_ICONS[category.icon] : Brain;
+  const ringSize = Math.min(190, width * 0.56);
+  const mins = Math.floor(timeLeft / 60);
+  const secs = timeLeft % 60;
+  const clock = timerEnabled ? `${mins}:${String(secs).padStart(2, '0')}` : '--';
+  const primaryLabel = teamVote && isLast
+    ? 'Reveal imposter'
+    : isLast ? 'Go to vote' : 'Next player';
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <Animated.View
           style={[styles.inner, { opacity: entryAnim, transform: [{ translateY: entryY }] }]}
         >
-          {/* Header */}
-          <View style={styles.topRow}>
-            <HomeButton />
-            <Text style={styles.title}>Clue Round</Text>
-            <View style={styles.topRight}>
-              <View style={styles.timerBadge}>
-                <Text style={[styles.timerText, timeCritical && styles.timerCritical]}>
-                  {timerEnabled ? `${timeLeft}s` : '—'}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={openSkipSheet}
-                style={styles.skipAllBtn}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="Skip all remaining clues"
-              >
-                <FastForward size={22} color={COLORS.honey} fill={COLORS.honey} />
-              </TouchableOpacity>
-            </View>
+          {/* Header: pause top left, round label, category pill */}
+          <View style={styles.header}>
+            <IconButton onPress={() => setPaused(true)} accessibilityLabel="Pause game">
+              <Pause size={20} color={COLORS.ink} />
+            </IconButton>
+            <Text style={styles.label}>CLUE ROUND 1 OF {rounds}</Text>
+            <Pill
+              tone="honey"
+              label={category?.label ?? 'General'}
+              icon={<CategoryIconCmp size={14} color={COLORS.honeyText} />}
+            />
           </View>
 
-          {/* Progress dots */}
-          <View style={styles.progress}>
-            {game.players.map((_, i) => (
+          {/* Timer ring */}
+          <View style={styles.ringWrap}>
+            <TimerRing size={ringSize} progress={progress} strokeWidth={10}>
+              <View style={styles.ringCentre}>
+                <Text
+                  style={[styles.clock, timeCritical && styles.clockCritical]}
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {clock}
+                </Text>
+                <Text style={styles.label}>
+                  {timerEnabled ? `OF ${maxTime}S` : 'NO TIMER'}
+                </Text>
+              </View>
+            </TimerRing>
+          </View>
+
+          {/* Who is speaking */}
+          <GlassCard style={styles.nowCard}>
+            <Avatar name={player.name} index={currentIndex} size={44} />
+            <View style={styles.nowText}>
+              <Text style={styles.label}>NOW GIVING A CLUE</Text>
+              <Text style={styles.nowName} numberOfLines={1}>{player.name}</Text>
+            </View>
+            <Text style={styles.nowCount}>
+              {currentIndex + 1} of {game.players.length}
+            </Text>
+          </GlassCard>
+
+          {/* Turn order */}
+          <View style={styles.pips}>
+            {game.players.map((p, i) => (
               <View
-                key={i}
+                key={p.id}
                 style={[
-                  styles.dot,
-                  i < currentIndex && styles.dotDone,
-                  i === currentIndex && styles.dotActive,
+                  styles.pipWrap,
+                  i === currentIndex && styles.pipCurrent,
+                  i > currentIndex && styles.pipUpcoming,
                 ]}
-              />
+              >
+                {i < currentIndex ? (
+                  <View style={styles.pipDone}>
+                    <Check size={14} color={COLORS.ink} />
+                  </View>
+                ) : (
+                  <Avatar name={p.name} index={i} size={30} />
+                )}
+              </View>
             ))}
           </View>
 
-          {/* Player card */}
-          <GlassCard style={styles.playerCard}>
-            <View style={styles.avatarWrap}>
-              <TimerRing size={96} progress={progress} strokeWidth={3} />
-              <View style={styles.avatarInner}>
-                <Avatar name={player.name} index={currentIndex} size={52} />
-              </View>
-            </View>
-            <Text style={styles.playerName}>{player.name}</Text>
-            <Text style={styles.instruction}>Give one word clue about the secret word</Text>
-            {timeLeft === 0 && timerEnabled && (
-              <View style={styles.timesUpBadge}>
-                <Text style={styles.timesUp}>TIME&apos;S UP</Text>
-              </View>
-            )}
+          {/* Rules */}
+          <GlassCard style={styles.rules}>
+            <Text style={styles.label}>RULES</Text>
+            <Text style={styles.rulesText}>One word only. Do not say the word itself.</Text>
           </GlassCard>
 
-          {/* Tips */}
-          <View style={styles.tips}>
-            <Text style={styles.tipsLabel}>TIPS</Text>
-            <Text style={styles.tipItem}>One word only — no phrases</Text>
-            <Text style={styles.tipItem}>Don&apos;t say the word itself</Text>
-            <Text style={styles.tipItem}>Imposters — be convincing!</Text>
-          </View>
+          <View style={styles.spacer} />
 
-          {/* Action buttons */}
           <View style={styles.actions}>
+            {!teamVote && (
+              <GlassButton label="Skip to vote" onPress={goToVote} style={styles.actionSkip} />
+            )}
             <PrimaryButton
               label={primaryLabel}
               onPress={handlePrimary}
-              icon={
-                teamVote && isLast
-                  ? <Eye size={18} color={COLORS.ink} />
-                  : <ChevronRight size={18} color={COLORS.ink} />
-              }
+              iconPosition="trailing"
+              icon={<ArrowRight size={18} color={COLORS.onHoney} />}
+              style={styles.actionNext}
             />
-
-            {!teamVote && (
-              <View style={styles.secondaryRow}>
-                <TouchableOpacity style={styles.ghostBtn} onPress={goToVote} activeOpacity={0.75}>
-                  <Text style={styles.ghostText}>Go to Vote</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.revealBtn} onPress={revealImposter} activeOpacity={0.75}>
-                  <Eye size={14} color={COLORS.honey} />
-                  <Text style={styles.revealText}>Reveal Imposter</Text>
-                </TouchableOpacity>
-              </View>
-            )}
           </View>
         </Animated.View>
       </SafeAreaView>
 
-      {/* Skip-all confirmation bottom sheet */}
-      {showSkipSheet && (
-        <Modal transparent animationType="none" onRequestClose={closeSkipSheet}>
-          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeSkipSheet} />
-          <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetTranslateY }] }]}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Skip all turns and reveal imposter?</Text>
-            <Text style={styles.sheetSub}>All remaining clue turns will be skipped.</Text>
-            <TouchableOpacity style={styles.sheetYes} onPress={confirmSkip} activeOpacity={0.85}>
-              <Text style={styles.sheetYesText}>Yes, skip</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.sheetNo} onPress={closeSkipSheet} activeOpacity={0.75}>
-              <Text style={styles.sheetNoText}>Keep playing</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </Modal>
-      )}
+      {/* Pause sheet. The countdown and its ticks stop while this is open. */}
+      <BottomSheet visible={paused} onClose={() => setPaused(false)}>
+        <Text style={styles.sheetTitle}>Paused</Text>
+        <Text style={styles.sheetSub}>The timer is stopped. Nobody can see the word from here.</Text>
+        <InkButton label="Resume" onPress={() => setPaused(false)} />
+        <GlassButton
+          label="Skip to the reveal"
+          onPress={() => { setPaused(false); revealImposter(); }}
+        />
+        <TextButton label="Exit game" onPress={exitGame} />
+      </BottomSheet>
     </View>
   );
 }
@@ -331,234 +343,107 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   inner: {
     flex: 1,
-    padding: SPACING.md,
-    paddingTop: SPACING.md,
-    justifyContent: 'space-between',
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    paddingBottom: 24,
+    gap: SPACING.gap,
   },
 
-  topRow: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: SPACING.sm,
+    gap: 10,
   },
-  title: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 18,
-    color: COLORS.ink,
-  },
-  topRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  timerBadge: {
-    backgroundColor: COLORS.honeySoft,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    minWidth: 48,
-    alignItems: 'center',
-  },
-  timerText: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 14,
-    color: COLORS.honeyText,
-  },
-  // Urgency is carried by weight and contrast, never by red: the reveal,
-  // clue, vote and result screens stay on the honey and ink palette.
-  timerCritical: { color: COLORS.ink },
-  skipAllBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: COLORS.honeySoft,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  progress: {
-    flexDirection: 'row',
-    gap: 6,
-    alignSelf: 'center',
-    marginBottom: SPACING.sm,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.divider,
-  },
-  dotDone: { backgroundColor: COLORS.honeyBorder },
-  dotActive: { backgroundColor: COLORS.honey, width: 18 },
-
-  playerCard: {
-    padding: SPACING.md,
-    alignItems: 'center',
-    gap: SPACING.xs,
-    paddingVertical: SPACING.lg,
-  },
-  avatarWrap: {
-    position: 'relative',
-    width: 96,
-    height: 96,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInner: { position: 'absolute' },
-  playerName: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 24,
-    color: COLORS.ink,
-  },
-  instruction: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-  timesUpBadge: {
-    backgroundColor: COLORS.ink,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    marginTop: 4,
-  },
-  timesUp: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 12,
-    color: COLORS.honey,
-    letterSpacing: 2,
-  },
-
-  tips: {
-    gap: 6,
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  tipsLabel: {
+  label: {
     fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
     color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 4,
   },
-  tipItem: {
+
+  ringWrap: { alignItems: 'center', paddingVertical: 4 },
+  ringCentre: { alignItems: 'center', gap: 2 },
+  clock: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 40,
+    letterSpacing: -1.2,
+    color: COLORS.ink,
+  },
+  // Urgency reads through weight and contrast; no red on this screen.
+  clockCritical: { color: COLORS.honeyText },
+
+  nowCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 18,
+  },
+  nowText: { flex: 1, minWidth: 0 },
+  nowName: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 20,
+    letterSpacing: -0.5,
+    color: COLORS.ink,
+  },
+  nowCount: {
     fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
+    fontSize: 12,
+    color: COLORS.textMuted,
+  },
+
+  pips: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  pipWrap: { borderRadius: 10 },
+  pipCurrent: {
+    borderWidth: 2,
+    borderColor: COLORS.honey,
+    padding: 2,
+    margin: -2,
+  },
+  pipUpcoming: { opacity: 0.35 },
+  pipDone: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.honeySoft,
+  },
+
+  rules: {
+    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  rulesText: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12.5,
+    lineHeight: 18,
     color: COLORS.textBody,
   },
 
-  actions: { gap: SPACING.xs },
-  secondaryRow: {
-    flexDirection: 'row',
-    gap: SPACING.xs,
-  },
-  ghostBtn: {
-    flex: 1,
-    paddingVertical: 13,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ghostText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 13,
-    color: COLORS.textMuted,
-  },
-  revealBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 13,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
-    backgroundColor: COLORS.honeySoft,
-  },
-  revealText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 13,
-    color: COLORS.honey,
-  },
+  spacer: { flex: 1, minHeight: SPACING.xs },
+  actions: { flexDirection: 'row', gap: 8 },
+  actionSkip: { flex: 1 },
+  actionNext: { flex: 1.4 },
 
-  // Bottom sheet
-  overlay: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: COLORS.scrim,
-  },
-  sheet: {
-    position: 'absolute',
-    bottom: 0, left: 0, right: 0,
-    backgroundColor: COLORS.glassFillStrong,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: SPACING.md,
-    paddingBottom: 40,
-    gap: SPACING.xs,
-    borderTopWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  sheetHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.divider,
-    alignSelf: 'center',
-    marginBottom: SPACING.sm,
-  },
   sheetTitle: {
     fontFamily: FONTS.displayBold,
-    fontSize: 18,
+    fontSize: 26,
+    letterSpacing: -0.7,
     color: COLORS.ink,
-    textAlign: 'center',
-    marginBottom: 4,
   },
   sheetSub: {
     fontFamily: FONTS.bodyRegular,
-    fontSize: 13,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    marginBottom: SPACING.xs,
-  },
-  sheetYes: {
-    height: 56,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.honey,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sheetYesText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 15,
-    color: COLORS.ink,
-    letterSpacing: 0.5,
-  },
-  sheetNo: {
-    height: 52,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sheetNoText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 15,
-    color: COLORS.textMuted,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
+    marginTop: -6,
   },
 });

@@ -7,9 +7,11 @@ interface TimerRingProps {
   size?: number;
   progress: number; // 0–1, where 1 = full
   strokeWidth?: number;
+  /** Centre content, e.g. the remaining time. */
+  children?: React.ReactNode;
 }
 
-export default function TimerRing({ size = 56, progress, strokeWidth = 3 }: TimerRingProps) {
+export default function TimerRing({ size = 56, progress, strokeWidth = 3, children }: TimerRingProps) {
   const radius = (size - strokeWidth * 2) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference * (1 - progress);
@@ -39,6 +41,7 @@ export default function TimerRing({ size = 56, progress, strokeWidth = 3 }: Time
           origin={`${size / 2}, ${size / 2}`}
         />
       </Svg>
+      {children}
     </View>
   );
 }

@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { COLORS, FONTS, BLUR, SHADOW } from '../constants/theme';
 
 interface RevealCardProps {
-  icon?: React.ReactNode;
-  eyebrow?: string;
+  /** Rendered above the eyebrow — the category pill in the reveal flow. */
+  badge?: React.ReactNode;
+  eyebrow: string;
   title: string;
   subtitle?: string;
   footer?: React.ReactNode;
@@ -13,11 +14,18 @@ interface RevealCardProps {
 
 /**
  * The single card used for both the crew word reveal and the imposter
- * reveal. Same colours, size and layout every time — only the text passed
- * in changes. Never branch this component's styling on who is viewing it;
- * that is the only thing that would give the imposter away in a dark room.
+ * reveal (design/screens/08 and 09, which are pixel-identical).
+ *
+ * Never branch this component's styling, size, animation or timing on who
+ * is looking at it — only the strings passed in may differ. In a dark room
+ * any difference in colour, brightness or layout would give the imposter
+ * away to anyone watching the screen from across the table.
  */
-export default function RevealCard({ icon, eyebrow, title, subtitle, footer }: RevealCardProps) {
+export default function RevealCard({ badge, eyebrow, title, subtitle, footer }: RevealCardProps) {
+  const { width } = useWindowDimensions();
+  // Matches the design's clamp(38px, 14.5cqi, 54px).
+  const titleSize = Math.max(38, Math.min(54, width * 0.145));
+
   return (
     <View style={styles.shadowWrap}>
       <View style={styles.card}>
@@ -25,10 +33,20 @@ export default function RevealCard({ icon, eyebrow, title, subtitle, footer }: R
           <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
         )}
         <View style={styles.content}>
-          {icon}
-          {eyebrow && <Text style={styles.eyebrow}>{eyebrow}</Text>}
-          <Text style={styles.title}>{title}</Text>
-          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          {badge}
+          <Text style={styles.eyebrow}>{eyebrow.toUpperCase()}</Text>
+          <Text
+            style={[styles.title, { fontSize: titleSize, lineHeight: titleSize * 1.02 }]}
+            numberOfLines={2}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+            maxFontSizeMultiplier={1.4}
+          >
+            {title}
+          </Text>
+          {subtitle && (
+            <Text style={styles.subtitle} numberOfLines={3}>{subtitle}</Text>
+          )}
           {footer}
         </View>
       </View>
@@ -41,10 +59,10 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 26,
     shadowColor: SHADOW.card.color,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    elevation: 4,
+    shadowOffset: { width: 0, height: SHADOW.card.offsetY },
+    shadowOpacity: SHADOW.card.opacity,
+    shadowRadius: SHADOW.card.radius,
+    elevation: SHADOW.card.elevation,
   },
   card: {
     flex: 1,
@@ -63,22 +81,26 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   eyebrow: {
+    marginTop: 2,
     fontFamily: FONTS.bodySemiBold,
     fontSize: 10.5,
     letterSpacing: 1.2,
-    textTransform: 'uppercase',
     color: COLORS.textMuted,
   },
   title: {
     fontFamily: FONTS.displayExtraBold,
-    fontSize: 36,
-    letterSpacing: -1,
+    letterSpacing: -1.6,
     textAlign: 'center',
     color: COLORS.ink,
   },
   subtitle: {
     fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    maxWidth: 260,
+    // Reserved at three lines so a longer string for one role cannot make
+    // that card taller than the other. See the note on this component.
+    height: 19.6 * 3,
     textAlign: 'center',
     color: COLORS.textBody,
   },

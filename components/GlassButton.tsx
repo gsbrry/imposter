@@ -35,7 +35,7 @@ export default function GlassButton({
           <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
         )}
         {icon}
-        <Text style={styles.text}>{label}</Text>
+        <Text style={styles.text} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
     gap: SPACING.xs,
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     overflow: 'hidden',
   },
   text: {
