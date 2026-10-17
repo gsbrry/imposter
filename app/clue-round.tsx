@@ -21,9 +21,13 @@ import IconButton from '../components/IconButton';
 import BottomSheet from '../components/BottomSheet';
 import Pill from '../components/Pill';
 import { useGame } from '../context/GameContext';
+import { useRequireGame } from '../hooks/useRequireGame';
 import { storage, defaultGameSettings } from '../utils/storage';
 import { CATEGORIES, CategoryIcon } from '../data/words';
 import { clueOrder } from '../utils/pickStarter';
+import {
+  ClueProgress, startProgress, nextTurn, oneMoreRound, isFinalTurn,
+} from '../utils/clueRounds';
 
 const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
   brain: Brain,
@@ -96,14 +100,16 @@ async function triggerHaptic(style: 'light' | 'heavy') {
 export default function ClueRoundScreen() {
   const router = useRouter();
   const { game, resetGame } = useGame();
+  const hasGame = useRequireGame();
   const { width } = useWindowDimensions();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [round, setRound] = useState(1);
+  const [progress, setProgress] = useState<ClueProgress>(
+    () => startProgress(defaultGameSettings.turnsBeforeGuess)
+  );
+  const currentIndex = progress.index;
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [maxTime, setMaxTime] = useState(30);
   const [timeLeft, setTimeLeft] = useState(30);
   const [teamVote, setTeamVote] = useState(false);
-  const [rounds, setRounds] = useState(1);
   const [timerSoundEnabled, setTimerSoundEnabled] = useState(true);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -130,7 +136,7 @@ export default function ClueRoundScreen() {
       setMaxTime(seconds);
       setTimeLeft(seconds);
       setTeamVote(tv);
-      setRounds(gs.turnsBeforeGuess ?? defaultGameSettings.turnsBeforeGuess);
+      setProgress(startProgress(gs.turnsBeforeGuess ?? defaultGameSettings.turnsBeforeGuess));
       setTimerSoundEnabled(ts);
       setSettingsLoaded(true);
     });
@@ -185,15 +191,17 @@ export default function ClueRoundScreen() {
   const goToNext = () => {
     clearInterval(timerRef.current);
     setTimeLeft(maxTime);
-    if (currentIndex < order.length - 1) {
-      setCurrentIndex(i => i + 1);
-    } else if (round < rounds) {
-      // Same order every round, so everyone gives one clue per round.
-      setRound(r => r + 1);
-      setCurrentIndex(0);
-    } else {
-      router.push(teamVote ? '/result' : '/vote');
-    }
+    // Same order every round, so everyone gives one clue per round.
+    const next = nextTurn(progress, order.length);
+    if (next) setProgress(next);
+    else router.push(teamVote ? '/result' : '/vote');
+  };
+
+  /** One more full pass in the same order, as many times as the table likes. */
+  const addRound = () => {
+    clearInterval(timerRef.current);
+    setTimeLeft(maxTime);
+    setProgress(oneMoreRound(progress));
   };
 
   const goToVote = () => {
@@ -217,8 +225,8 @@ export default function ClueRoundScreen() {
   const order = clueOrder(game.players, game.starterId);
   const player = order[currentIndex];
   const seat = player ? game.players.findIndex(p => p.id === player.id) : 0;
-  const progress = timerEnabled ? timeLeft / maxTime : 1;
-  const isLast = currentIndex === order.length - 1 && round >= rounds;
+  const timerProgress = timerEnabled ? timeLeft / maxTime : 1;
+  const isLast = isFinalTurn(progress, order.length);
   const timeCritical = timerEnabled && timeLeft <= 10 && timeLeft > 0;
 
   const handlePrimary = () => {
@@ -226,7 +234,7 @@ export default function ClueRoundScreen() {
     else goToNext();
   };
 
-  if (!player) return null;
+  if (!hasGame || !player) return null;
 
   const category = CATEGORIES.find(c => c.id === game.category);
   const CategoryIconCmp = category ? CATEGORY_ICONS[category.icon] : Brain;
@@ -250,7 +258,7 @@ export default function ClueRoundScreen() {
             <IconButton onPress={() => setPaused(true)} accessibilityLabel="Pause game">
               <Pause size={20} color={COLORS.ink} />
             </IconButton>
-            <Text style={styles.label}>CLUE ROUND {round} OF {rounds}</Text>
+            <Text style={styles.label}>CLUE ROUND {progress.round} OF {progress.totalRounds}</Text>
             <Pill
               tone="honey"
               label={category?.label ?? 'General'}
@@ -260,7 +268,7 @@ export default function ClueRoundScreen() {
 
           {/* Timer ring */}
           <View style={styles.ringWrap}>
-            <TimerRing size={ringSize} progress={progress} strokeWidth={10}>
+            <TimerRing size={ringSize} progress={timerProgress} strokeWidth={10}>
               <View style={styles.ringCentre}>
                 <Text
                   style={[styles.clock, timeCritical && styles.clockCritical]}
@@ -318,15 +326,21 @@ export default function ClueRoundScreen() {
           <View style={styles.spacer} />
 
           <View style={styles.actions}>
-            {!teamVote && (
+            {isLast ? (
+              <GlassButton
+                label="One more round"
+                onPress={addRound}
+                style={styles.actionMore}
+              />
+            ) : !teamVote ? (
               <GlassButton label="Skip to vote" onPress={goToVote} style={styles.actionSkip} />
-            )}
+            ) : null}
             <PrimaryButton
               label={primaryLabel}
               onPress={handlePrimary}
               iconPosition="trailing"
               icon={<ArrowRight size={18} color={COLORS.onHoney} />}
-              style={styles.actionNext}
+              style={isLast ? styles.actionVote : styles.actionNext}
             />
           </View>
         </Animated.View>
@@ -441,6 +455,9 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 8 },
   actionSkip: { flex: 1 },
   actionNext: { flex: 1.4 },
+  // "One more round" is the longer label, so it takes the larger share.
+  actionMore: { flex: 1.25 },
+  actionVote: { flex: 1 },
 
   sheetTitle: {
     fontFamily: FONTS.displayBold,

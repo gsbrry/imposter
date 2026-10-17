@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, Animated,
+  View, Text, StyleSheet, Animated, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -13,13 +13,15 @@ import ProgressBar from '../components/ProgressBar';
 import PrimaryButton from '../components/PrimaryButton';
 import GlassButton from '../components/GlassButton';
 import { useGame } from '../context/GameContext';
+import { useRequireGame } from '../hooks/useRequireGame';
+import { Ballots, tallyVotes } from '../utils/tallyVotes';
 
 export default function VoteScreen() {
   const router = useRouter();
   const { game } = useGame();
-  const [votes, setVotes] = useState<Record<string, string | null>>(
-    Object.fromEntries(game.players.map(p => [p.id, null]))
-  );
+  const hasGame = useRequireGame();
+  // A missing key is a voter still to go; null is a deliberate skip.
+  const [votes, setVotes] = useState<Ballots>({});
   const [voterIndex, setVoterIndex] = useState(0);
   const [phase, setPhase] = useState<'voting' | 'tally'>('voting');
   const [tieIds, setTieIds] = useState<string[]>([]);
@@ -35,11 +37,13 @@ export default function VoteScreen() {
 
   const voter = game.players[voterIndex];
 
+  if (!hasGame) return null;
   if (phase === 'voting' && !voter) return null;
 
-  const castVote = (targetId: string) => {
-    if (voter.id === targetId) return;
-    const newVotes = { ...votes, [voter.id]: targetId };
+  /** `null` is a skip: the voter passes and their ballot counts for nobody. */
+  const castVote = (targetId: string | null) => {
+    if (targetId !== null && voter.id === targetId) return;
+    const newVotes: Ballots = { ...votes, [voter.id]: targetId };
     setVotes(newVotes);
     if (voterIndex < game.players.length - 1) {
       setVoterIndex(v => v + 1);
@@ -48,52 +52,45 @@ export default function VoteScreen() {
     }
   };
 
-  const checkTally = (finalVotes: Record<string, string | null>) => {
-    const counts: Record<string, number> = {};
-    Object.values(finalVotes).forEach(v => {
-      if (v) counts[v] = (counts[v] ?? 0) + 1;
-    });
-    const maxVotes = Math.max(...Object.values(counts));
-    const tied = Object.entries(counts).filter(([, c]) => c === maxVotes).map(([id]) => id);
-    if (tied.length > 1) {
-      setTieIds(tied);
+  const checkTally = (finalVotes: Ballots) => {
+    const result = tallyVotes(finalVotes, game.players.length);
+    if (result.allSkipped) {
+      // Nobody was voted for, so the result shows its voting-skipped state.
+      router.push('/result');
+      return;
+    }
+    if (result.tiedIds.length > 1) {
+      setTieIds(result.tiedIds);
       setVoterIndex(0);
-      setVotes(Object.fromEntries(game.players.map(p => [p.id, null])));
+      setVotes({});
     } else {
       setPhase('tally');
     }
   };
 
   const handleReveal = () => {
-    const counts: Record<string, number> = {};
-    Object.values(votes).forEach(v => {
-      if (v) counts[v] = (counts[v] ?? 0) + 1;
-    });
-    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    const result = tallyVotes(votes, game.players.length);
+    const top = result.ranked[0];
     router.push({
       pathname: '/result',
-      params: top
-        ? { votedOutId: top[0], votesFor: String(top[1]), totalVotes: String(game.players.length) }
+      params: top && !result.allSkipped
+        ? { votedOutId: top.id, votesFor: String(top.count), totalVotes: String(game.players.length) }
         : {},
     });
   };
 
-  const counts: Record<string, number> = {};
-  Object.values(votes).forEach(v => {
-    if (v) counts[v] = (counts[v] ?? 0) + 1;
-  });
-  const votesIn = Object.values(votes).filter(Boolean).length;
+  const tally = tallyVotes(votes, game.players.length);
+  const counts = tally.counts;
+  const votesIn = tally.cast;
   const total = game.players.length;
 
   // The tally only appears once every vote is in, so an earlier voter's
   // choice cannot steer the people who vote after them.
   const showTally = phase === 'tally';
-  const ranked = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .map(([id, n]) => ({
-      name: game.players.find(p => p.id === id)?.name ?? '',
-      percent: Math.round((n / total) * 100),
-    }));
+  const ranked = tally.ranked.map(r => ({
+    name: game.players.find(p => p.id === r.id)?.name ?? '',
+    percent: r.percent,
+  }));
   const leader = ranked[0];
 
   return (
@@ -139,6 +136,21 @@ export default function VoteScreen() {
                 </View>
               );
             })}
+
+            {/* The dashed skip cell. A skipped ballot counts for nobody. */}
+            {!showTally && (
+              <View style={styles.cell}>
+                <TouchableOpacity
+                  onPress={() => castVote(null)}
+                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel="Skip this vote"
+                  style={styles.skipCell}
+                >
+                  <Text style={styles.skipText}>Skip vote</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           {showTally && ranked.length > 0 && (
@@ -156,6 +168,9 @@ export default function VoteScreen() {
                   <ProgressBar progress={r.percent / 100} />
                 </View>
               ))}
+              {tally.skipped > 0 && (
+                <Text style={styles.skipped}>{tally.skipped} skipped</Text>
+              )}
             </GlassCard>
           )}
 
@@ -250,6 +265,28 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     color: COLORS.honeyText,
   },
+  skipCell: {
+    // Matches the dashed Skip vote cell in design/screens/11-vote.html.
+    minHeight: 60,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: COLORS.divider,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  skipText: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 12.5,
+    color: COLORS.textMuted,
+  },
+  skipped: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    color: COLORS.textMuted,
+  },
+
   tallyRow: { gap: 5 },
   tallyLabels: {
     flexDirection: 'row',
