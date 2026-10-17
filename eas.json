@@ -6,12 +6,19 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_WORDS_FEED_URL": "https://apps.obio.in/imposter/words/feed.json"
       }
     },
     "production": {
@@ -20,7 +27,8 @@
         "EXPO_PUBLIC_RC_ANDROID_KEY": "goog_mvVZyLBlgQfzdyiUDrqugoNDKbb",
         "EXPO_PUBLIC_RC_IOS_KEY": "PASTE_APPL_KEY",
         "EXPO_PUBLIC_SENTRY_DSN": "$EXPO_PUBLIC_SENTRY_DSN",
-        "EXPO_PUBLIC_WORDS_FEED_URL": "$EXPO_PUBLIC_WORDS_FEED_URL"
+        "EXPO_PUBLIC_WORDS_FEED_URL": "https://apps.obio.in/imposter/words/feed.json",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },
