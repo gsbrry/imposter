@@ -25,6 +25,7 @@ import AppSplash from '@/components/SplashScreen';
 import { usePremium } from '@/hooks/usePremium';
 import { storage } from '@/utils/storage';
 import { ENTITLEMENT_ID } from '@/constants/revenuecat';
+import { REVIEW_ACCESS_ENABLED } from '@/constants/reviewAccess';
 import { COLORS } from '@/constants/theme';
 import type { CustomerInfo } from 'react-native-purchases';
 
@@ -43,10 +44,11 @@ function RCInitialiser() {
 
     (async () => {
       await initRevenueCat();
+      // RevenueCat is asked on every launch; its answer is authoritative.
       const premium = await checkPremiumStatus();
-      // A reviewer unlock persists across launches, so it has to survive
-      // RevenueCat reporting no active entitlement.
-      const reviewUnlocked = await storage.getReviewUnlock();
+      // The review unlock is a development aid and is never consulted in a
+      // release build, so it cannot be used to bypass the paywall.
+      const reviewUnlocked = REVIEW_ACCESS_ENABLED && (await storage.getReviewUnlock());
       setIsPremium(premium || reviewUnlocked);
 
       // Listen for any RC customer info changes (purchases, renewals, restores)
@@ -54,7 +56,8 @@ function RCInitialiser() {
         const Purchases = (await import('react-native-purchases')).default;
         const onCustomerInfo = async (info: CustomerInfo) => {
           const active = info.entitlements.active[ENTITLEMENT_ID] !== undefined;
-          setIsPremium(active || (await storage.getReviewUnlock()));
+          const unlocked = REVIEW_ACCESS_ENABLED && (await storage.getReviewUnlock());
+          setIsPremium(active || unlocked);
           await AsyncStorage.setItem(
             PREMIUM_CACHE_KEY,
             JSON.stringify({ isPremium: active, cachedAt: Date.now() })

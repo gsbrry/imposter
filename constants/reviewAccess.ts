@@ -1,13 +1,19 @@
 /**
- * Review access.
+ * Review access, development builds only.
  *
- * Google Play reviewers cannot create accounts, use their own, or take a
- * free trial, so without this they could never see the subscription-only
- * categories. Tapping the version label on the Settings screen the number
- * of times below unlocks premium locally on that device.
+ * Tapping the version label on Settings the number of times below used to
+ * unlock premium locally on any build. That shipped a permanent, offline
+ * bypass of the paywall to everyone who heard about the gesture, so it is
+ * now compiled out of release builds: REVIEW_ACCESS_ENABLED is false
+ * whenever __DEV__ is false, and nothing reads the stored flag in release.
  *
- * This grants nothing on the server: it only flips the local flag that
- * hides locked categories. It is documented in the Play Console "Sign in
- * details" declaration so reviewers know the gesture.
+ * It grants nothing on the server either way. It only flips the local flag
+ * that hides subscription-only categories.
+ *
+ * For Play review, grant the reviewer account the entitlement in the
+ * RevenueCat dashboard, or add them as a Play licence tester, rather than
+ * shipping a gesture that any user can perform.
  */
+export const REVIEW_ACCESS_ENABLED = __DEV__;
+
 export const REVIEW_UNLOCK_TAPS = 7;

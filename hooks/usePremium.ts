@@ -9,7 +9,16 @@ async function getPurchases() {
 }
 
 const CACHE_KEY = 'IMPOSTR_PREMIUM_CACHE';
-const CACHE_DURATION = 24 * 60 * 60 * 1000;
+
+/**
+ * The entitlement is checked against RevenueCat on every launch. The cached
+ * answer is a fallback for one case only, a launch with no connection, and
+ * it expires after this window so a lapsed or refunded subscription cannot
+ * keep working indefinitely by staying offline. Long enough to cover an
+ * evening's play after a daytime launch, short enough to be a grace period
+ * rather than a licence.
+ */
+const OFFLINE_GRACE_MS = 6 * 60 * 60 * 1000;
 
 type CustomerInfo = import('react-native-purchases').CustomerInfo;
 type PurchasesPackage = import('react-native-purchases').PurchasesPackage;
@@ -61,11 +70,13 @@ export function usePremium() {
       );
       return premium;
     } catch {
+      // Only reached when the entitlement could not be fetched at all,
+      // which in practice means the device is offline.
       try {
         const raw = await AsyncStorage.getItem(CACHE_KEY);
         if (raw) {
           const { isPremium, cachedAt } = JSON.parse(raw);
-          if (Date.now() - cachedAt < CACHE_DURATION) return isPremium;
+          if (Date.now() - cachedAt < OFFLINE_GRACE_MS) return isPremium;
         }
       } catch { /* ignore */ }
       return false;
