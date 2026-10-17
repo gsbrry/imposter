@@ -25,11 +25,13 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_RC_ANDROID_KEY": "goog_mvVZyLBlgQfzdyiUDrqugoNDKbb",
-        // No iOS build yet. RevenueCat ignores an empty key, so the app
-        // runs without purchases rather than force-closing, which is what a
-        // wrong or placeholder key would cause. Set the real appl_ key here
-        // when iOS ships.
-        "EXPO_PUBLIC_RC_IOS_KEY": "",
+        // No iOS build yet. The key is left unset rather than set to "" —
+        // EAS's own schema rejects an empty env value, which blocked every
+        // build on this profile. Unset resolves to the same '' fallback in
+        // constants/revenuecat.ts, so RevenueCat still sees no iOS key and
+        // the app runs without purchases rather than force-closing, which
+        // is what a wrong or placeholder key would cause. Set the real
+        // appl_ key here when iOS ships.
         "EXPO_PUBLIC_SENTRY_DSN": "$EXPO_PUBLIC_SENTRY_DSN",
         "EXPO_PUBLIC_WORDS_FEED_URL": "https://apps.obio.in/imposter/words/feed.json",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
