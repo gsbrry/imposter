@@ -36,6 +36,9 @@ export interface Settings {
   timerEnabled: boolean;
   soundEnabled: boolean;
   hapticsEnabled: boolean;
+  /** Accessibility preferences. Stored now, applied in a later change. */
+  largerText: boolean;
+  reduceMotion: boolean;
 }
 
 export interface Suggestion {
@@ -66,6 +69,8 @@ const defaultSettings: Settings = {
   timerEnabled: true,
   soundEnabled: true,
   hapticsEnabled: true,
+  largerText: false,
+  reduceMotion: false,
 };
 
 /** Bumped whenever a shipped default changes. */
@@ -126,7 +131,12 @@ export const storage = {
   getStats: () => get<Stats>(KEYS.STATS, defaultStats),
   setStats: (stats: Stats) => set(KEYS.STATS, stats),
 
-  getSettings: () => get<Settings>(KEYS.SETTINGS, defaultSettings),
+  // Merged over the defaults so a record written before a new preference
+  // existed comes back with that preference set rather than undefined.
+  getSettings: () =>
+    get<Partial<Settings>>(KEYS.SETTINGS, defaultSettings).then(
+      s => ({ ...defaultSettings, ...s })
+    ),
   setSettings: (settings: Settings) => set(KEYS.SETTINGS, settings),
 
   getUsedWords: () => get<Record<string, string[]>>(KEYS.USED_WORDS, {}),

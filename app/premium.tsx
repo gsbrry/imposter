@@ -1,79 +1,71 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Animated, ActivityIndicator, Platform, Linking,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X, Crown, Star } from 'lucide-react-native';
+import { X, Crown, Check } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import ScreenBackground from '../components/ScreenBackground';
+import GlassCard from '../components/GlassCard';
 import IconButton from '../components/IconButton';
+import PrimaryButton from '../components/PrimaryButton';
+import TextButton from '../components/TextButton';
 import { usePremium } from '@/hooks/usePremium';
 import { useGame } from '../context/GameContext';
 import { PRODUCTS } from '../constants/revenuecat';
 
 type PurchasesPackage = import('react-native-purchases').PurchasesPackage;
+type PlanKey = 'monthly' | 'yearly' | 'lifetime';
 
 interface PlanConfig {
-  key: 'monthly' | 'yearly' | 'lifetime';
+  key: PlanKey;
   label: string;
+  /** Fallback price, used until RevenueCat returns the localised string. */
   price: string;
   sub: string;
   badge?: string;
-  badgeStyle?: 'yellow' | 'glass';
-  highlight: boolean;
 }
 
 const PLAN_CONFIGS: PlanConfig[] = [
-  {
-    key: 'monthly',
-    label: 'MONTHLY',
-    price: '₹49 / month',
-    sub: 'Billed every month',
-    highlight: false,
-  },
-  {
-    key: 'yearly',
-    label: 'YEARLY',
-    price: '₹199 / year',
-    sub: 'Save 66%',
-    badge: 'BEST VALUE',
-    badgeStyle: 'yellow',
-    highlight: true,
-  },
-  {
-    key: 'lifetime',
-    label: 'LIFETIME',
-    price: '₹599 one time',
-    sub: 'Pay once, play forever',
-    badge: 'NO RENEWAL',
-    badgeStyle: 'glass',
-    highlight: false,
-  },
+  { key: 'monthly', label: 'Monthly', price: '₹49', sub: 'Billed every month' },
+  { key: 'yearly', label: 'Yearly', price: '₹199', sub: '₹16.6 a month', badge: 'SAVE 66%' },
+  { key: 'lifetime', label: 'Lifetime', price: '₹599', sub: 'Pay once, play forever' },
+];
+
+const BENEFITS = [
+  ['All 9 categories', 'Food, Bollywood, Sports and more'],
+  ['Custom word packs', 'Add your own inside jokes'],
+  ['No ads', 'A clean screen every game'],
 ];
 
 // ─── Web fallback ──────────────────────────────────────────────────────────
 function WebFallback({ onClose }: { onClose: () => void }) {
-  const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
-        <IconButton onPress={onClose} style={[styles.closeBtn, { top: insets.top + 12 }]} accessibilityLabel="Close">
-          <X size={20} color={COLORS.textFaint} />
-        </IconButton>
-        <View style={styles.webCenter}>
-          <View style={styles.starCircle}>
-            <Star size={48} color={COLORS.honey} fill={COLORS.honey} />
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+        <View style={styles.inner}>
+          <View style={styles.topRow}>
+            <IconButton onPress={onClose} accessibilityLabel="Close">
+              <X size={20} color={COLORS.ink} />
+            </IconButton>
           </View>
-          <Text style={styles.webTitle}>Premium is available on Android</Text>
-          <Text style={styles.webSub}>Download the free app to unlock all features</Text>
-          <TouchableOpacity
-            style={styles.trialBtn}
-            onPress={() => Linking.openURL('https://play.google.com/store')}
-            activeOpacity={0.88}
-          >
-            <Text style={styles.trialBtnText}>Download on Play Store</Text>
-          </TouchableOpacity>
+          <View style={styles.webCenter}>
+            <View style={styles.crownTile}>
+              <Crown size={24} color={COLORS.honey} />
+            </View>
+            <Text style={styles.title}>
+              Impostr <Text style={styles.titleAccent}>Pro</Text>
+            </Text>
+            <Text style={styles.sub}>Premium is bought inside the Android app.</Text>
+            <PrimaryButton
+              label="Open the Play Store"
+              onPress={() => Linking.openURL('https://play.google.com/store').catch(() => {})}
+              style={styles.webCta}
+            />
+          </View>
         </View>
       </SafeAreaView>
     </View>
@@ -83,29 +75,20 @@ function WebFallback({ onClose }: { onClose: () => void }) {
 // ─── Main screen ───────────────────────────────────────────────────────────
 export default function PremiumScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { setIsPremium } = useGame();
   const { getOfferings, purchasePackage, restorePurchases, checkPremiumStatus } = usePremium();
 
-  const [selected, setSelected] = useState<'monthly' | 'yearly' | 'lifetime'>('yearly');
+  const [selected, setSelected] = useState<PlanKey>('yearly');
   const [packages, setPackages] = useState<Record<string, PurchasesPackage>>({});
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const flashAnim = useRef(new Animated.Value(0)).current;
   const successAnim = useRef(new Animated.Value(0)).current;
   const toastAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnims = useRef(
-    Object.fromEntries(PLAN_CONFIGS.map(p => [p.key, new Animated.Value(1)]))
-  ).current;
 
-  useEffect(() => {
-    loadOfferings();
-  }, []);
-
-  const loadOfferings = async () => {
+  const loadOfferings = useCallback(async () => {
     const offerings = await getOfferings();
     if (!offerings?.current) return;
     const map: Record<string, PurchasesPackage> = {};
@@ -116,7 +99,12 @@ export default function PremiumScreen() {
       else if (id === PRODUCTS.lifetime) map.lifetime = pkg;
     }
     setPackages(map);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    loadOfferings();
+  }, [loadOfferings]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -128,10 +116,17 @@ export default function PremiumScreen() {
     ]).start(() => setToast(null));
   };
 
+  const triggerSuccess = () => {
+    setIsPremium(true);
+    setSuccess(true);
+    Animated.spring(successAnim, { toValue: 1, useNativeDriver: true, friction: 6 }).start();
+    setTimeout(() => router.back(), 2200);
+  };
+
   const handlePurchase = async () => {
     const pkg = packages[selected];
     if (!pkg) {
-      // No real offerings yet (test mode) — mock success
+      // No real offerings yet (test mode) — mock success.
       setIsPremium(true);
       triggerSuccess();
       return;
@@ -141,7 +136,7 @@ export default function PremiumScreen() {
     setLoading(false);
     if (result.cancelled) return;
     if (result.success) {
-      // Immediately refresh premium status in context from RC source of truth
+      // Refresh from RevenueCat, the source of truth, before trusting it.
       const fresh = await checkPremiumStatus();
       setIsPremium(fresh);
       triggerSuccess();
@@ -150,157 +145,139 @@ export default function PremiumScreen() {
     }
   };
 
-  const triggerSuccess = () => {
-    setIsPremium(true);
-    setSuccess(true);
-    // Full-screen yellow flash
-    Animated.sequence([
-      Animated.timing(flashAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
-      Animated.timing(flashAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-    ]).start();
-    Animated.spring(successAnim, { toValue: 1, useNativeDriver: true, friction: 6 }).start();
-    setTimeout(() => router.back(), 2200);
-  };
-
   const handleRestore = async () => {
     setRestoring(true);
     const restored = await restorePurchases();
-    // Always re-fetch from RC to get the authoritative premium state
     const fresh = await checkPremiumStatus();
     setIsPremium(fresh);
     setRestoring(false);
     if (restored || fresh) {
-      showToast('Premium restored!');
+      showToast('Premium restored.');
       setTimeout(() => router.back(), 1500);
     } else {
-      showToast('Nothing to restore');
+      showToast('Nothing to restore.');
     }
-  };
-
-  const pressPlan = (key: 'monthly' | 'yearly' | 'lifetime') => {
-    setSelected(key);
-    const anim = scaleAnims[key];
-    Animated.sequence([
-      Animated.timing(anim, { toValue: 0.96, duration: 70, useNativeDriver: true }),
-      Animated.spring(anim, { toValue: 1.02, useNativeDriver: true, friction: 6 }),
-      Animated.spring(anim, { toValue: 1, useNativeDriver: true, friction: 5 }),
-    ]).start();
   };
 
   if (Platform.OS === 'web') {
     return <WebFallback onClose={() => router.back()} />;
   }
 
+  if (success) {
+    return (
+      <View style={styles.container}>
+        <ScreenBackground />
+        <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+          <Animated.View
+            style={[
+              styles.successWrap,
+              { opacity: successAnim, transform: [{ scale: successAnim }] },
+            ]}
+          >
+            <View style={styles.crownTile}>
+              <Crown size={24} color={COLORS.honey} />
+            </View>
+            <Text style={styles.title}>Welcome to Pro.</Text>
+            <Text style={styles.sub}>Every category and mode is unlocked.</Text>
+          </Animated.View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
+  const selectedLabel = PLAN_CONFIGS.find(p => p.key === selected)?.label ?? 'Yearly';
+
   return (
     <View style={styles.container}>
-      {/* Yellow flash overlay */}
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.flashOverlay, { opacity: flashAnim }]}
-      />
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+        <View style={styles.inner}>
+          <View style={styles.topRow}>
+            <IconButton onPress={() => router.back()} accessibilityLabel="Close">
+              <X size={20} color={COLORS.ink} />
+            </IconButton>
+            {restoring ? (
+              <ActivityIndicator size="small" color={COLORS.textBody} />
+            ) : (
+              <TextButton label="Restore" onPress={handleRestore} />
+            )}
+          </View>
 
-      <SafeAreaView style={styles.safe}>
-        <IconButton onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]} accessibilityLabel="Close">
-          <X size={20} color={COLORS.textFaint} />
-        </IconButton>
-
-        {success ? (
-          <Animated.View style={[styles.successWrap, { opacity: successAnim, transform: [{ scale: successAnim }] }]}>
-            <Crown size={72} color={COLORS.honey} fill={COLORS.honey} />
-            <Text style={styles.successTitle}>Welcome to Premium!</Text>
-            <Text style={styles.successSub}>All categories and features unlocked.</Text>
-          </Animated.View>
-        ) : (
-          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={styles.scroll}
+            showsVerticalScrollIndicator={false}
+          >
             {/* Hero */}
             <View style={styles.hero}>
-              <View style={styles.starCircle}>
-                <Star size={48} color={COLORS.honey} fill={COLORS.honey} />
+              <View style={styles.crownTile}>
+                <Crown size={24} color={COLORS.honey} />
               </View>
-              <Text style={styles.heroLabel}>UNLOCK ALL CATEGORIES</Text>
-              <Text style={styles.heroTitle}>Go Premium</Text>
-              <Text style={styles.heroSub}>
-                Play with all 9 categories, no ads, add custom words
+              <Text style={styles.title} maxFontSizeMultiplier={1.3}>
+                Impostr <Text style={styles.titleAccent}>Pro</Text>
               </Text>
+              <Text style={styles.sub}>Every pack, every mode, no ads.</Text>
             </View>
 
-            {/* Plan cards */}
+            {/* What you get */}
+            <GlassCard style={styles.benefits}>
+              {BENEFITS.map(([title, desc]) => (
+                <View key={title} style={styles.benefitRow}>
+                  <Check size={16} color={COLORS.honeyText} />
+                  <View style={styles.benefitText}>
+                    <Text style={styles.benefitTitle}>{title}</Text>
+                    <Text style={styles.benefitDesc}>{desc}</Text>
+                  </View>
+                </View>
+              ))}
+            </GlassCard>
+
+            {/* Plans */}
             <View style={styles.plans}>
               {PLAN_CONFIGS.map(plan => {
                 const isSelected = selected === plan.key;
+                const price = packages[plan.key]?.product.priceString ?? plan.price;
                 return (
-                  <Animated.View key={plan.key} style={{ transform: [{ scale: scaleAnims[plan.key] }] }}>
-                    <TouchableOpacity
-                      style={[
-                        styles.planCard,
-                        isSelected && styles.planCardActive,
-                        plan.highlight && styles.planCardHighlight,
-                      ]}
-                      onPress={() => pressPlan(plan.key)}
-                      activeOpacity={0.85}
-                    >
-                      {plan.badge && (
-                        <View style={[
-                          styles.planBadge,
-                          plan.badgeStyle === 'yellow' ? styles.planBadgeYellow : styles.planBadgeGlass,
-                        ]}>
-                          <Text style={[
-                            styles.planBadgeText,
-                            plan.badgeStyle === 'glass' && styles.planBadgeTextGlass,
-                          ]}>
-                            {plan.badge}
-                          </Text>
-                        </View>
-                      )}
+                  <TouchableOpacity
+                    key={plan.key}
+                    onPress={() => setSelected(plan.key)}
+                    activeOpacity={0.85}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isSelected }}
+                    accessibilityLabel={`${plan.label}, ${price}`}
+                    style={[styles.plan, isSelected && styles.planSelected]}
+                  >
+                    <View style={[styles.radio, isSelected && styles.radioOn]}>
+                      {isSelected && <View style={styles.radioDot} />}
+                    </View>
+                    <View style={styles.planText}>
                       <Text style={styles.planLabel}>{plan.label}</Text>
-                      <Text style={[styles.planPrice, isSelected && styles.planPriceActive]}>
-                        {plan.price}
+                      <Text style={[styles.planSub, isSelected && styles.planSubSelected]}>
+                        {plan.sub}
                       </Text>
-                      <Text style={styles.planSub}>{plan.sub}</Text>
-                      {isSelected && <View style={styles.selectedDot} />}
-                    </TouchableOpacity>
-                  </Animated.View>
+                    </View>
+                    <Text style={styles.planPrice}>{price}</Text>
+                    {plan.badge && (
+                      <View style={styles.planBadge}>
+                        <Text style={styles.planBadgeText}>{plan.badge}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
                 );
               })}
             </View>
 
-            {/* CTA */}
-            <TouchableOpacity
-              style={[styles.trialBtn, loading && styles.trialBtnLoading]}
+            <View style={styles.spacer} />
+
+            <PrimaryButton
+              label={loading ? 'Working...' : `Continue with ${selectedLabel}`}
               onPress={handlePurchase}
-              activeOpacity={0.88}
               disabled={loading}
-            >
-              {loading
-                ? <ActivityIndicator color={COLORS.ink} />
-                : <Text style={styles.trialBtnText}>UNLOCK PREMIUM</Text>
-              }
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.laterBtn} onPress={() => router.back()} activeOpacity={0.7}>
-              <Text style={styles.laterBtnText}>Maybe Later</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.restoreBtn}
-              onPress={handleRestore}
-              disabled={restoring}
-              activeOpacity={0.7}
-            >
-              {restoring
-                ? <ActivityIndicator size="small" color={COLORS.textFaint} />
-                : <Text style={styles.restoreText}>Restore purchases</Text>
-              }
-            </TouchableOpacity>
-
-            <Text style={styles.note}>
-              Cancel anytime. Prices shown in INR. Subscriptions auto-renew unless cancelled.
-            </Text>
+            />
+            <Text style={styles.note}>Cancel any time in Play Store</Text>
           </ScrollView>
-        )}
+        </View>
       </SafeAreaView>
 
-      {/* Toast */}
       {toast && (
         <Animated.View style={[styles.toast, { opacity: toastAnim }]}>
           <Text style={styles.toastText}>{toast}</Text>
@@ -313,241 +290,177 @@ export default function PremiumScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  flashOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.honey,
-    zIndex: 99,
+  inner: {
+    flex: 1,
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
   },
-  closeBtn: {
-    position: 'absolute',
-    left: SPACING.sm,
-    zIndex: 10,
+
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 40,
   },
   scroll: {
-    padding: SPACING.md,
-    paddingTop: 72,
-    paddingBottom: 48,
-    gap: SPACING.sm,
+    flexGrow: 1,
+    paddingTop: SPACING.gap,
+    paddingBottom: 20,
+    gap: SPACING.gap,
   },
 
-  // Hero
-  hero: {
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: SPACING.xs,
-  },
-  starCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.honeySoft,
-    borderWidth: 1,
-    borderColor: COLORS.honeyBorder,
+  hero: { gap: 8, alignItems: 'flex-start' },
+  crownTile: {
+    width: 52,
+    height: 52,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 8,
-    marginBottom: 4,
+    backgroundColor: COLORS.ink,
   },
-  heroLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.honeyText,
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-  },
-  heroTitle: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 32,
+  title: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -0.7,
     color: COLORS.ink,
   },
-  heroSub: {
+  titleAccent: { color: COLORS.honeyText },
+  sub: {
     fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    lineHeight: 21,
-    paddingHorizontal: SPACING.sm,
+    fontSize: 13.5,
+    lineHeight: 19.6,
+    color: COLORS.textBody,
   },
 
-  // Plans
-  plans: { gap: SPACING.xs },
-  planCard: {
-    borderRadius: RADIUS.lg,
+  benefits: { borderRadius: 18, paddingVertical: 6 },
+  benefitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  benefitText: { flex: 1, minWidth: 0 },
+  benefitTitle: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 13.5,
+    color: COLORS.ink,
+  },
+  benefitDesc: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 11.5,
+    color: COLORS.textMuted,
+    marginTop: 1,
+  },
+
+  plans: { gap: 10 },
+  plan: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 62,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 18,
     backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
-    padding: SPACING.sm,
-    alignItems: 'center',
-    gap: 4,
-    overflow: 'hidden',
   },
-  planCardActive: {
-    borderColor: COLORS.honey,
+  planSelected: {
     backgroundColor: COLORS.honeySoft,
+    borderColor: COLORS.honey,
+    borderWidth: 2,
   },
-  planCardHighlight: {
-    borderColor: COLORS.honeyBorder,
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: COLORS.divider,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  planBadge: {
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    marginBottom: 4,
+  radioOn: { borderColor: COLORS.honeyText },
+  radioDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: COLORS.honeyText,
   },
-  planBadgeYellow: { backgroundColor: COLORS.honey },
-  planBadgeGlass: {
-    backgroundColor: COLORS.glassFillStrong,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-  },
-  planBadgeText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 9,
-    color: COLORS.ink,
-    letterSpacing: 0.5,
-  },
-  planBadgeTextGlass: { color: COLORS.textBody },
+  planText: { flex: 1, minWidth: 0 },
   planLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 11,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-  },
-  planPrice: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 26,
+    fontFamily: FONTS.bodyBold,
+    fontSize: 14,
     color: COLORS.ink,
-    lineHeight: 32,
   },
-  planPriceActive: { color: COLORS.honey },
   planSub: {
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textFaint,
+    color: COLORS.textMuted,
+    marginTop: 1,
   },
-  selectedDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.honey,
-    marginTop: 6,
+  planSubSelected: { color: COLORS.textBody },
+  planPrice: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 16,
+    letterSpacing: -0.3,
+    color: COLORS.ink,
+  },
+  planBadge: {
+    position: 'absolute',
+    top: -8,
+    right: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 7,
+    backgroundColor: COLORS.ink,
+  },
+  planBadgeText: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 9.5,
+    letterSpacing: 0.5,
+    color: COLORS.honey,
   },
 
-  // Buttons
-  trialBtn: {
-    height: 56,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.honey,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  trialBtnLoading: { opacity: 0.7 },
-  trialBtnText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 16,
-    color: COLORS.ink,
-    letterSpacing: 1,
-  },
-  laterBtn: {
-    height: 48,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  laterBtnText: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 14,
-    color: COLORS.textMuted,
-  },
-  restoreBtn: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  restoreText: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 13,
-    color: COLORS.textFaint,
-    textDecorationLine: 'underline',
-  },
+  spacer: { flex: 1, minHeight: SPACING.xs },
   note: {
     fontFamily: FONTS.bodyRegular,
     fontSize: 11,
-    color: COLORS.textFaint,
+    color: COLORS.textMuted,
     textAlign: 'center',
-    lineHeight: 16,
   },
 
-  // Success
   successWrap: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: SPACING.sm,
-    padding: SPACING.md,
-  },
-  successTitle: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 28,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-  successSub: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 15,
-    color: COLORS.textMuted,
-    textAlign: 'center',
+    gap: 12,
+    paddingHorizontal: SPACING.screenX,
   },
 
-  // Web fallback
   webCenter: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.md,
-    gap: SPACING.sm,
+    gap: 12,
   },
-  webTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 22,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-  webSub: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
+  webCta: { marginTop: SPACING.xs },
 
-  // Toast
   toast: {
     position: 'absolute',
-    bottom: 48,
-    left: SPACING.md,
-    right: SPACING.md,
-    backgroundColor: COLORS.glassFillStrong,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
+    bottom: 40,
+    left: SPACING.screenX,
+    right: SPACING.screenX,
+    borderRadius: RADIUS.md,
     paddingVertical: 14,
     paddingHorizontal: SPACING.sm,
     alignItems: 'center',
+    backgroundColor: COLORS.ink,
   },
   toastText: {
     fontFamily: FONTS.bodySemiBold,
-    fontSize: 14,
-    color: COLORS.ink,
+    fontSize: 13.5,
+    color: COLORS.background,
     textAlign: 'center',
   },
 });

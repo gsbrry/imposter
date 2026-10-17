@@ -1,20 +1,31 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Switch,
-  TouchableOpacity, Animated, Platform,
+  View, Text, StyleSheet, Animated, Platform, TouchableOpacity, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import { Timer, Volume2, Vibrate, Star, MessageSquare, ChevronRight, Crown } from 'lucide-react-native';
-import { COLORS, FONTS, SPACING, RADIUS, GRADIENTS } from '../../constants/theme';
+import { useRouter, useFocusEffect } from 'expo-router';
+import Constants from 'expo-constants';
+import {
+  Crown, ChevronRight, Timer, Repeat, Volume2, Bell, Vibrate,
+  ALargeSmall, Waves, CloudDownload, LifeBuoy, MessageSquare, FileText, Minus, Plus,
+} from 'lucide-react-native';
+import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
+import ScreenBackground from '../../components/ScreenBackground';
 import GlassCard from '../../components/GlassCard';
-import { storage, Settings } from '../../utils/storage';
+import SectionLabel from '../../components/SectionLabel';
+import ListRow, { listRowStyles } from '../../components/ListRow';
+import Toggle from '../../components/Toggle';
+import IconButton from '../../components/IconButton';
+import {
+  storage, Settings, GameSettings, defaultGameSettings,
+  GAME_SETTINGS_DEFAULTS_VERSION,
+} from '../../utils/storage';
 import { useGame } from '../../context/GameContext';
 import { usePremium } from '@/hooks/usePremium';
-import { REVIEW_UNLOCK_TAPS } from '@/constants/reviewAccess';
+import { REVIEW_ACCESS_ENABLED, REVIEW_UNLOCK_TAPS } from '@/constants/reviewAccess';
+import { CATEGORIES, wordCount, CategoryKey } from '../../data/words';
 
-// CustomerCenter is native-only
+// CustomerCenter is native-only.
 let CustomerCenterModule: any = null;
 if (Platform.OS !== 'web') {
   try {
@@ -22,41 +33,80 @@ if (Platform.OS !== 'web') {
   } catch { /* not available */ }
 }
 
+const MIN_ROUNDS = 1;
+const MAX_ROUNDS = 4;
+const PRIVACY_URL = 'https://gooseberrymedia.in/impostr/privacy';
+const SUPPORT_EMAIL = 'support@gooseberrymedia.in';
+
+const TOTAL_WORDS = CATEGORIES.reduce((n, c) => n + wordCount(c.id as CategoryKey), 0);
+
 export default function SettingsScreen() {
   const router = useRouter();
   const { isPremium, setIsPremium } = useGame();
   const { getExpiryDate } = usePremium();
   const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
 
-  const [settings, setSettings] = useState<Settings>({
-    timerEnabled: true,
-    soundEnabled: true,
-    hapticsEnabled: true,
-  });
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [gameSettings, setGameSettings] = useState<GameSettings>(defaultGameSettings);
   const [timerSound, setTimerSound] = useState(true);
   const [expiryDate, setExpiryDate] = useState<string | null>(null);
   const [unlockTaps, setUnlockTaps] = useState(0);
   const [reviewUnlocked, setReviewUnlocked] = useState(false);
+  const [packsChecked, setPacksChecked] = useState(false);
 
-  useEffect(() => {
-    Promise.all([storage.getSettings(), storage.getTimerSound()]).then(([s, ts]) => {
-      setSettings(s);
-      setTimerSound(ts);
-      Animated.parallel([
-        Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-        Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
-      ]).start();
+  useFocusEffect(
+    useCallback(() => {
+      Promise.all([
+        storage.getSettings(),
+        storage.getGameSettings(),
+        storage.getTimerSound(),
+      ]).then(([s, gs, ts]) => {
+        setSettings(s);
+        setGameSettings(gs);
+        setTimerSound(ts);
+        entryAnim.setValue(0);
+        entryY.setValue(16);
+        Animated.parallel([
+          Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
+        ]).start();
+      });
+      if (isPremium) getExpiryDate().then(setExpiryDate);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isPremium, entryAnim, entryY])
+  );
+
+  const update = async (key: keyof Settings, value: boolean) => {
+    if (!settings) return;
+    const next = { ...settings, [key]: value };
+    setSettings(next);
+    await storage.setSettings(next);
+  };
+
+  const updateGame = async (patch: Partial<GameSettings>) => {
+    const next: GameSettings = {
+      ...gameSettings,
+      ...patch,
+      defaultsVersion: GAME_SETTINGS_DEFAULTS_VERSION,
+    };
+    setGameSettings(next);
+    await storage.setGameSettings(next);
+  };
+
+  const updateTimerSound = async (value: boolean) => {
+    setTimerSound(value);
+    await storage.setTimerSound(value);
+  };
+
+  const adjustRounds = (delta: number) =>
+    updateGame({
+      turnsBeforeGuess: Math.min(MAX_ROUNDS, Math.max(MIN_ROUNDS, gameSettings.turnsBeforeGuess + delta)),
     });
-    if (isPremium) {
-      getExpiryDate().then(setExpiryDate);
-    }
-  }, [isPremium]);
 
-  // Lets a Play reviewer reach the subscription-only categories. See
-  // constants/reviewAccess.ts for why this exists.
+  /** Development aid only. Compiled out of release builds. */
   const handleVersionTap = async () => {
-    if (isPremium) return;
+    if (!REVIEW_ACCESS_ENABLED || isPremium) return;
     const next = unlockTaps + 1;
     setUnlockTaps(next);
     if (next >= REVIEW_UNLOCK_TAPS) {
@@ -65,17 +115,6 @@ export default function SettingsScreen() {
       setReviewUnlocked(true);
       setUnlockTaps(0);
     }
-  };
-
-  const update = async (key: keyof Settings, value: boolean) => {
-    const next = { ...settings, [key]: value };
-    setSettings(next);
-    await storage.setSettings(next);
-  };
-
-  const updateTimerSound = async (value: boolean) => {
-    setTimerSound(value);
-    await storage.setTimerSound(value);
   };
 
   const openCustomerCenter = async () => {
@@ -87,138 +126,252 @@ export default function SettingsScreen() {
     }
   };
 
+  const openUrl = (url: string) => { Linking.openURL(url).catch(() => {}); };
+
+  if (!settings) return null;
+
+  const timerOn = gameSettings.timerPerClue !== 'none';
+  const timerSummary = !timerOn
+    ? 'Off'
+    : gameSettings.timerPerClue === 'custom'
+    ? `${gameSettings.customTimerSeconds || 60}s per clue`
+    : `${gameSettings.timerPerClue}s per clue`;
+
   const formattedExpiry = expiryDate
     ? new Date(expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     : null;
 
+  const version = Constants.expoConfig?.version ?? '1.0.0';
+  const versionLine = reviewUnlocked
+    ? `Impostr ${version} · review access on`
+    : `Impostr ${version} · Gooseberry Media`;
+
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <Animated.ScrollView
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
           style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
-          <View style={styles.header}>
-            <Text style={styles.label}>PREFERENCES</Text>
-            <View style={styles.titleRow}>
-              <Text style={styles.title}>Settings</Text>
-              {isPremium && (
-                <View style={styles.crownBadge}>
-                  <Crown size={14} color={COLORS.ink} />
-                  <Text style={styles.crownText}>PREMIUM</Text>
-                </View>
-              )}
-            </View>
-          </View>
+          <Text style={styles.title} maxFontSizeMultiplier={1.4}>Settings</Text>
 
-          {/* Premium status card */}
+          {/* Premium */}
           {isPremium ? (
-            <>
-              <Text style={styles.sectionLabel}>SUBSCRIPTION</Text>
-              <GlassCard style={styles.premiumCard}>
-                <View style={styles.premiumCardInner}>
-                  <View style={styles.premiumIconWrap}>
-                    <Crown size={20} color={COLORS.ink} />
-                  </View>
-                  <View style={styles.premiumCardText}>
-                    <Text style={styles.premiumActiveLabel}>Premium Active</Text>
-                    {formattedExpiry && (
-                      <Text style={styles.premiumExpiry}>Renews {formattedExpiry}</Text>
-                    )}
-                  </View>
-                </View>
-                {Platform.OS !== 'web' && (
-                  <>
-                    <View style={styles.divider} />
-                    <SettingLink
-                      icon={<Star size={18} color={COLORS.honey} />}
-                      label="Manage Subscription"
-                      onPress={openCustomerCenter}
-                    />
-                  </>
-                )}
-              </GlassCard>
-            </>
+            <GlassCard style={styles.card}>
+              <ListRow
+                icon={<Crown size={17} color={COLORS.honeyText} />}
+                title="Premium active"
+                description={formattedExpiry ? `Renews ${formattedExpiry}` : 'Every pack unlocked'}
+              />
+              {Platform.OS !== 'web' && (
+                <>
+                  <View style={listRowStyles.divider} />
+                  <ListRow
+                    icon={<Crown size={17} color={COLORS.honeyText} />}
+                    title="Manage subscription"
+                    trailing={<ChevronRight size={18} color={COLORS.textMuted} />}
+                    onPress={openCustomerCenter}
+                  />
+                </>
+              )}
+            </GlassCard>
           ) : (
             <TouchableOpacity
               activeOpacity={0.88}
               onPress={() => router.push('/premium')}
-              style={styles.premiumBannerShadow}
+              accessibilityRole="button"
+              accessibilityLabel="Go Premium"
+              style={styles.goPremium}
             >
-              <LinearGradient
-                colors={GRADIENTS.honeyButton}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.premiumBanner}
-              >
-                <LinearGradient
-                  pointerEvents="none"
-                  colors={[COLORS.honeySheen, 'transparent']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                  style={styles.premiumBannerSheen}
-                />
-                <View style={styles.premiumBannerIconWrap}>
-                  <Crown size={22} color={COLORS.ink} />
-                </View>
-                <View style={styles.premiumCardText}>
-                  <Text style={styles.premiumBannerTitle}>Go Premium</Text>
-                  <Text style={styles.premiumBannerSub}>Unlock every category, no ads</Text>
-                </View>
-                <ChevronRight size={20} color={COLORS.ink} />
-              </LinearGradient>
+              <View style={styles.goPremiumTile}>
+                <Crown size={18} color={COLORS.onHoney} />
+              </View>
+              <View style={styles.goPremiumText}>
+                <Text style={styles.goPremiumTitle}>Go Premium</Text>
+                <Text style={styles.goPremiumSub}>All 9 categories, no ads</Text>
+              </View>
+              <ChevronRight size={18} color={COLORS.honey} />
             </TouchableOpacity>
           )}
 
-          <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>GAMEPLAY</Text>
-          <GlassCard style={styles.section}>
-            <SettingRow
-              icon={<Timer size={18} color={COLORS.honey} />}
-              label="Round Timer"
-              description="Show countdown during clue round"
-              value={settings.timerEnabled}
-              onChange={v => update('timerEnabled', v)}
+          {/* Gameplay */}
+          <SectionLabel>Gameplay</SectionLabel>
+          <GlassCard style={styles.card}>
+            <ListRow
+              icon={<Timer size={17} color={COLORS.honeyText} />}
+              title="Round timer"
+              description={`Countdown in the clue round · ${timerSummary}`}
+              trailing={
+                <Toggle
+                  value={timerOn}
+                  onValueChange={v => updateGame({ timerPerClue: v ? 30 : 'none' })}
+                  accessibilityLabel="Round timer"
+                />
+              }
             />
-            <Divider />
-            <SettingRow
-              icon={<Timer size={18} color={COLORS.honey} />}
-              label="Timer sounds"
-              description="Tick and shutter sounds during countdown"
-              value={timerSound}
-              onChange={updateTimerSound}
-            />
-            <Divider />
-            <SettingRow
-              icon={<Volume2 size={18} color={COLORS.honey} />}
-              label="Sound Effects"
-              description="Blip on reveal, fanfare on game end"
-              value={settings.soundEnabled}
-              onChange={v => update('soundEnabled', v)}
-            />
-            <Divider />
-            <SettingRow
-              icon={<Vibrate size={18} color={COLORS.honey} />}
-              label="Haptic Feedback"
-              description="Vibration on imposter reveal"
-              value={settings.hapticsEnabled}
-              onChange={v => update('hapticsEnabled', v)}
+            <View style={listRowStyles.divider} />
+            <ListRow
+              icon={<Repeat size={17} color={COLORS.honeyText} />}
+              title="Clue rounds"
+              description="Turns before voting"
+              trailing={
+                <View style={styles.stepper}>
+                  <IconButton
+                    size={32}
+                    onPress={() => adjustRounds(-1)}
+                    accessibilityLabel="Fewer clue rounds"
+                    style={gameSettings.turnsBeforeGuess <= MIN_ROUNDS ? styles.disabled : undefined}
+                  >
+                    <Minus
+                      size={16}
+                      color={gameSettings.turnsBeforeGuess <= MIN_ROUNDS ? COLORS.textFaint : COLORS.ink}
+                    />
+                  </IconButton>
+                  <Text style={styles.stepperValue}>{gameSettings.turnsBeforeGuess}</Text>
+                  <IconButton
+                    size={32}
+                    onPress={() => adjustRounds(1)}
+                    accessibilityLabel="More clue rounds"
+                    style={gameSettings.turnsBeforeGuess >= MAX_ROUNDS ? styles.disabled : undefined}
+                  >
+                    <Plus
+                      size={16}
+                      color={gameSettings.turnsBeforeGuess >= MAX_ROUNDS ? COLORS.textFaint : COLORS.ink}
+                    />
+                  </IconButton>
+                </View>
+              }
             />
           </GlassCard>
 
-          <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>MORE</Text>
-          <GlassCard style={styles.section}>
-            <SettingLink
-              icon={<MessageSquare size={18} color={COLORS.honey} />}
-              label="Suggest a Category"
+          {/* Sound and feel */}
+          <SectionLabel>Sound and feel</SectionLabel>
+          <GlassCard style={styles.card}>
+            <ListRow
+              icon={<Volume2 size={17} color={COLORS.honeyText} />}
+              title="Sound effects"
+              description="Blip on reveal, fanfare at the end"
+              trailing={
+                <Toggle
+                  value={settings.soundEnabled}
+                  onValueChange={v => update('soundEnabled', v)}
+                  accessibilityLabel="Sound effects"
+                />
+              }
+            />
+            <View style={listRowStyles.divider} />
+            <ListRow
+              icon={<Bell size={17} color={COLORS.honeyText} />}
+              title="Timer sounds"
+              description="Tick in the last 10 seconds"
+              trailing={
+                <Toggle
+                  value={timerSound}
+                  onValueChange={updateTimerSound}
+                  accessibilityLabel="Timer sounds"
+                />
+              }
+            />
+            <View style={listRowStyles.divider} />
+            <ListRow
+              icon={<Vibrate size={17} color={COLORS.honeyText} />}
+              title="Haptics"
+              description="Buzz on every reveal, the same for everyone"
+              trailing={
+                <Toggle
+                  value={settings.hapticsEnabled}
+                  onValueChange={v => update('hapticsEnabled', v)}
+                  accessibilityLabel="Haptics"
+                />
+              }
+            />
+          </GlassCard>
+
+          {/* Accessibility */}
+          <SectionLabel>Accessibility</SectionLabel>
+          <GlassCard style={styles.card}>
+            <ListRow
+              icon={<ALargeSmall size={17} color={COLORS.honeyText} />}
+              title="Larger text"
+              description="Bigger words and buttons"
+              trailing={
+                <Toggle
+                  value={settings.largerText}
+                  onValueChange={v => update('largerText', v)}
+                  accessibilityLabel="Larger text"
+                />
+              }
+            />
+            <View style={listRowStyles.divider} />
+            <ListRow
+              icon={<Waves size={17} color={COLORS.honeyText} />}
+              title="Reduce motion"
+              description="Turn off pulses and glows"
+              trailing={
+                <Toggle
+                  value={settings.reduceMotion}
+                  onValueChange={v => update('reduceMotion', v)}
+                  accessibilityLabel="Reduce motion"
+                />
+              }
+            />
+          </GlassCard>
+
+          {/* Word packs */}
+          <SectionLabel>Word packs</SectionLabel>
+          <GlassCard style={styles.card}>
+            <ListRow
+              icon={<CloudDownload size={17} color={COLORS.honeyText} />}
+              title={packsChecked ? 'Words are up to date' : 'Words up to date'}
+              description={`${TOTAL_WORDS.toLocaleString()} words · bundled with this version`}
+              trailing={
+                <TouchableOpacity
+                  onPress={() => setPacksChecked(true)}
+                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel="Check for new words"
+                  style={styles.checkBtn}
+                >
+                  <Text style={styles.checkText}>Check</Text>
+                </TouchableOpacity>
+              }
+            />
+          </GlassCard>
+
+          {/* Help */}
+          <SectionLabel>Help</SectionLabel>
+          <GlassCard style={styles.card}>
+            <ListRow
+              icon={<LifeBuoy size={17} color={COLORS.honeyText} />}
+              title="Help and support"
+              description="Report a problem or a word"
+              trailing={<ChevronRight size={18} color={COLORS.textMuted} />}
+              onPress={() => openUrl(`mailto:${SUPPORT_EMAIL}?subject=Impostr%20${version}`)}
+            />
+            <View style={listRowStyles.divider} />
+            <ListRow
+              icon={<MessageSquare size={17} color={COLORS.honeyText} />}
+              title="Suggest a category"
+              trailing={<ChevronRight size={18} color={COLORS.textMuted} />}
               onPress={() => router.push('/suggest')}
             />
+            <View style={listRowStyles.divider} />
+            <ListRow
+              icon={<FileText size={17} color={COLORS.honeyText} />}
+              title="Privacy policy"
+              trailing={<ChevronRight size={18} color={COLORS.textMuted} />}
+              onPress={() => openUrl(PRIVACY_URL)}
+            />
           </GlassCard>
 
-          <TouchableOpacity activeOpacity={1} onPress={handleVersionTap}>
-            <Text style={styles.version}>
-              {reviewUnlocked ? 'Impostr v1.0 - review access on' : 'Impostr v1.0'}
-            </Text>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={handleVersionTap}
+            accessibilityRole="text"
+          >
+            <Text style={styles.version}>{versionLine}</Text>
           </TouchableOpacity>
         </Animated.ScrollView>
       </SafeAreaView>
@@ -226,207 +379,91 @@ export default function SettingsScreen() {
   );
 }
 
-function Divider() {
-  return <View style={styles.divider} />;
-}
-
-function SettingRow({
-  icon, label, description, value, onChange,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  description: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <View style={styles.row}>
-      <View style={styles.rowIcon}>{icon}</View>
-      <View style={styles.rowText}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        <Text style={styles.rowDesc}>{description}</Text>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ false: COLORS.divider, true: COLORS.honeyBorder }}
-        thumbColor={value ? COLORS.honey : COLORS.white}
-      />
-    </View>
-  );
-}
-
-function SettingLink({ icon, label, onPress }: { icon: React.ReactNode; label: string; onPress: () => void }) {
-  return (
-    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.rowIcon}>{icon}</View>
-      <Text style={[styles.rowLabel, { flex: 1 }]}>{label}</Text>
-      <ChevronRight size={16} color={COLORS.textMuted} />
-    </TouchableOpacity>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 130 },
-  header: { marginBottom: SPACING.md },
-  label: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 4,
+  scroll: {
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    // Clears the floating tab bar.
+    paddingBottom: 120,
+    gap: 10,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
+
   title: {
     fontFamily: FONTS.displayBold,
-    fontSize: 22,
+    fontSize: 28,
+    lineHeight: 30,
+    letterSpacing: -0.7,
     color: COLORS.ink,
-  },
-  crownBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORS.honey,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  crownText: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 10,
-    color: COLORS.ink,
-    letterSpacing: 0.5,
+    marginBottom: 2,
   },
 
-  sectionLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    marginBottom: SPACING.xs,
-    paddingLeft: 2,
-  },
-  section: { marginBottom: 0 },
+  card: { borderRadius: 18 },
 
-  // Premium card
-  premiumCard: { marginBottom: 0 },
-  premiumCardInner: {
+  // Go Premium
+  goPremium: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 16,
     gap: 12,
+    padding: SPACING.cardPadding,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.ink,
   },
-  premiumIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.honey,
+  goPremiumTile: {
+    width: 34,
+    height: 34,
+    borderRadius: RADIUS.sm,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.honey,
   },
-  premiumCardText: { flex: 1, gap: 2 },
-  premiumActiveLabel: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 15,
-    color: COLORS.honey,
+  goPremiumText: { flex: 1, minWidth: 0 },
+  goPremiumTitle: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 14,
+    color: COLORS.background,
   },
-  premiumExpiry: {
+  goPremiumSub: {
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.textMuted,
-  },
-
-  // Go Premium banner
-  premiumBannerShadow: {
-    borderRadius: RADIUS.lg,
-    shadowColor: COLORS.honey,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 18,
-    elevation: 8,
-  },
-  premiumBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 16,
-    gap: 12,
-    overflow: 'hidden',
-  },
-  premiumBannerSheen: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '60%',
-  },
-  premiumBannerIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.onHoneySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  premiumBannerTitle: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 16,
-    color: COLORS.ink,
-  },
-  premiumBannerSub: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 12,
-    color: COLORS.onHoneyMuted,
+    color: COLORS.onInkMuted,
     marginTop: 1,
   },
 
-  row: {
+  stepper: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 16,
-    gap: 12,
+    gap: 6,
   },
-  rowIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: COLORS.honeySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowText: { flex: 1 },
-  rowLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 15,
+  stepperValue: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 17,
+    width: 18,
+    textAlign: 'center',
     color: COLORS.ink,
   },
-  rowDesc: {
-    fontFamily: FONTS.bodyRegular,
+  disabled: { opacity: 0.4 },
+
+  checkBtn: {
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.honeySoft,
+  },
+  checkText: {
+    fontFamily: FONTS.bodyBold,
     fontSize: 12,
-    color: COLORS.textMuted,
-    marginTop: 2,
+    color: COLORS.honeyText,
   },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.divider,
-    marginHorizontal: SPACING.sm,
-  },
+
   version: {
     fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.textFaint,
+    fontSize: 11.5,
+    color: COLORS.textMuted,
     textAlign: 'center',
-    marginTop: SPACING.xl,
+    paddingVertical: 10,
   },
 });

@@ -1,176 +1,232 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, Animated,
-} from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ghost } from 'lucide-react-native';
+import { useFocusEffect } from 'expo-router';
+import {
+  Users, Check, Eye, Trophy,
+  Brain, Car, House, UtensilsCrossed, Clapperboard, PawPrint, Briefcase, PartyPopper,
+} from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
+import ScreenBackground from '../../components/ScreenBackground';
 import GlassCard from '../../components/GlassCard';
+import SectionLabel from '../../components/SectionLabel';
+import TimerRing from '../../components/TimerRing';
 import { storage, Stats } from '../../utils/storage';
-import { CATEGORIES } from '../../data/words';
+import { CATEGORIES, CategoryIcon } from '../../data/words';
+
+const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
+  brain: Brain,
+  car: Car,
+  house: House,
+  utensils: UtensilsCrossed,
+  clapperboard: Clapperboard,
+  trophy: Trophy,
+  paw: PawPrint,
+  briefcase: Briefcase,
+  party: PartyPopper,
+};
+
+/** The headline above the win rate, so the number carries a meaning. */
+function rankFor(winRate: number, gamesPlayed: number): string {
+  if (gamesPlayed === 0) return 'No games yet';
+  if (winRate >= 75) return 'Master reader';
+  if (winRate >= 60) return 'Sharp detective';
+  if (winRate >= 40) return 'Holding your own';
+  return 'Easily fooled';
+}
 
 export default function StatsScreen() {
   const [stats, setStats] = useState<Stats | null>(null);
   const entryAnim = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(20)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
 
-  useEffect(() => {
-    storage.getStats().then(s => {
-      setStats(s);
-      Animated.parallel([
-        Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-        Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
-      ]).start();
-    });
-  }, []);
+  // Re-read on focus so a game that just finished is already counted.
+  useFocusEffect(
+    useCallback(() => {
+      storage.getStats().then(s => {
+        setStats(s);
+        entryAnim.setValue(0);
+        entryY.setValue(16);
+        Animated.parallel([
+          Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
+        ]).start();
+      });
+    }, [entryAnim, entryY])
+  );
 
   if (!stats) return null;
 
-  const winRate = stats.gamesPlayed > 0
-    ? Math.round(((stats.crewmatesWon + stats.impostersWon) / stats.gamesPlayed) * 100)
-    : 0;
+  const played = stats.gamesPlayed;
+  const winRate = played > 0 ? Math.round((stats.crewmatesWon / played) * 100) : 0;
 
-  const bestCatLabel = CATEGORIES.find(c => c.id === stats.bestCategory)?.label ?? '—';
+  const bestCategory = CATEGORIES.find(c => c.id === stats.bestCategory);
+  const bestWins = stats.categoryWins[stats.bestCategory] ?? 0;
+  const BestIcon = bestCategory ? CATEGORY_ICONS[bestCategory.icon] : Brain;
+  const bestRate = played > 0 ? Math.round((bestWins / played) * 100) : 0;
+
+  const tiles = [
+    { label: 'Games played', value: String(played), Icon: Users },
+    { label: 'Crew wins', value: String(stats.crewmatesWon), Icon: Check },
+    { label: 'As imposter', value: String(stats.gamesAsImposter), Icon: Eye },
+    { label: 'Imposter wins', value: String(stats.impostersWon), Icon: Trophy },
+  ];
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <Animated.ScrollView
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
           style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
           <View style={styles.header}>
-            <Text style={styles.label}>YOUR STATS</Text>
-            <Text style={styles.title}>Performance</Text>
+            <SectionLabel>Your stats</SectionLabel>
+            <Text style={styles.title} maxFontSizeMultiplier={1.4}>Performance</Text>
           </View>
 
-          <View style={styles.grid}>
-            <StatCard value={String(stats.gamesPlayed)} label="GAMES PLAYED" />
-            <StatCard value={`${winRate}%`} label="WIN RATE" />
-            <StatCard value={String(stats.gamesAsImposter)} label="AS IMPOSTER" />
-            <StatCard value={String(stats.crewmatesWon)} label="CREW WINS" />
-          </View>
-
-          <GlassCard style={styles.bestCard}>
-            <Text style={styles.bestLabel}>BEST CATEGORY</Text>
-            <Text style={styles.bestValue}>{bestCatLabel}</Text>
+          {/* Win rate */}
+          <GlassCard style={styles.rateCard}>
+            <View style={styles.ringWrap}>
+              <TimerRing size={92} progress={winRate / 100} strokeWidth={9}>
+                <Text style={styles.ringValue}>{winRate}%</Text>
+              </TimerRing>
+            </View>
+            <View style={styles.rateText}>
+              <SectionLabel>Win rate</SectionLabel>
+              <Text style={styles.rateTitle} numberOfLines={2}>
+                {rankFor(winRate, played)}
+              </Text>
+              <Text style={styles.rateSub}>
+                {played === 0
+                  ? 'Play a game to start the count.'
+                  : `Across ${played} game${played === 1 ? '' : 's'} on this phone.`}
+              </Text>
+            </View>
           </GlassCard>
 
-          {stats.gamesPlayed === 0 && (
-            <View style={styles.empty}>
-              <View style={styles.emptyIcon}>
-                <Ghost size={32} color={COLORS.textMuted} />
+          {/* Counters */}
+          <View style={styles.grid}>
+            {tiles.map(({ label, value, Icon }) => (
+              <View key={label} style={styles.cell}>
+                <GlassCard style={styles.statCard}>
+                  <Icon size={16} color={COLORS.honeyText} />
+                  <Text style={styles.statValue}>{value}</Text>
+                  <SectionLabel>{label}</SectionLabel>
+                </GlassCard>
               </View>
-              <Text style={styles.emptyText}>No games played yet</Text>
-              <Text style={styles.emptySubtext}>Play a game to see your stats here</Text>
+            ))}
+          </View>
+
+          {/* Best category */}
+          <GlassCard style={styles.bestCard}>
+            <View style={styles.bestTile}>
+              <BestIcon size={17} color={COLORS.honeyText} />
             </View>
-          )}
+            <View style={styles.bestText}>
+              <SectionLabel>Best category</SectionLabel>
+              <Text style={styles.bestValue} numberOfLines={1}>
+                {bestCategory ? `${bestCategory.label} · ${bestRate}% wins` : 'Not enough games yet'}
+              </Text>
+            </View>
+          </GlassCard>
         </Animated.ScrollView>
       </SafeAreaView>
     </View>
   );
 }
 
-function StatCard({ value, label }: { value: string; label: string }) {
-  return (
-    <GlassCard style={styles.statCard}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </GlassCard>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   safe: { flex: 1 },
-  scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 130 },
-  header: {
-    marginBottom: SPACING.md,
+  scroll: {
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    // Clears the floating tab bar.
+    paddingBottom: 120,
+    gap: SPACING.gap,
   },
-  label: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
+
+  header: { gap: 2 },
   title: {
     fontFamily: FONTS.displayBold,
-    fontSize: 22,
+    fontSize: 28,
+    lineHeight: 30,
+    letterSpacing: -0.7,
     color: COLORS.ink,
   },
+
+  rateCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    padding: SPACING.cardPadding,
+    borderRadius: 22,
+  },
+  ringWrap: { width: 92, height: 92 },
+  ringValue: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 22,
+    letterSpacing: -0.5,
+    color: COLORS.ink,
+  },
+  rateText: { flex: 1, minWidth: 0, gap: 4 },
+  rateTitle: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 20,
+    letterSpacing: -0.5,
+    color: COLORS.ink,
+  },
+  rateSub: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12.5,
+    lineHeight: 17,
+    color: COLORS.textBody,
+  },
+
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: SPACING.md,
+    gap: SPACING.xs,
+  },
+  cell: {
+    // Two across, accounting for the 8px gap. The width lives on the
+    // wrapper because GlassCard's shadow layer sits above its own style.
+    width: '48.5%',
   },
   statCard: {
-    width: '47.5%',
-    padding: SPACING.md,
-    alignItems: 'center',
-    gap: 6,
-    minHeight: 110,
-    justifyContent: 'center',
+    gap: 4,
+    padding: 14,
+    borderRadius: 18,
   },
   statValue: {
     fontFamily: FONTS.displayExtraBold,
-    fontSize: 36,
-    color: COLORS.honey,
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.8,
+    color: COLORS.ink,
   },
-  statLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
+
   bestCard: {
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+    padding: 14,
+    borderRadius: 18,
   },
-  bestLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  bestValue: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 22,
-    color: COLORS.honey,
-  },
-  empty: {
-    alignItems: 'center',
-    marginTop: SPACING.xl,
-    gap: SPACING.xs,
-  },
-  emptyIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.glassFill,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
+  bestTile: {
+    width: 34,
+    height: 34,
+    borderRadius: RADIUS.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.xs,
+    backgroundColor: COLORS.honeySoft,
   },
-  emptyText: {
+  bestText: { flex: 1, minWidth: 0, gap: 1 },
+  bestValue: {
     fontFamily: FONTS.bodySemiBold,
-    fontSize: 16,
-    color: COLORS.textMuted,
-  },
-  emptySubtext: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 13,
-    color: COLORS.textFaint,
-    textAlign: 'center',
+    fontSize: 13.5,
+    color: COLORS.ink,
   },
 });

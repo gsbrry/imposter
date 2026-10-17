@@ -1,97 +1,124 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, TextInput,
+  View, Text, StyleSheet, Animated, Keyboard,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { MessageSquare, X, CircleCheck as CheckCircle } from 'lucide-react-native';
-import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
-import PrimaryButton from '../components/PrimaryButton';
+import { Send, Check } from 'lucide-react-native';
+import { COLORS, FONTS, SPACING } from '../constants/theme';
+import ScreenBackground from '../components/ScreenBackground';
+import StepHeader from '../components/StepHeader';
+import SectionLabel from '../components/SectionLabel';
+import TextField from '../components/TextField';
+import Chip from '../components/Chip';
+import InkButton from '../components/InkButton';
 import GlassButton from '../components/GlassButton';
-import IconButton from '../components/IconButton';
 import { storage } from '../utils/storage';
+
+const POPULAR_IDEAS = ['Street food', '90s cartoons', 'Indian cities', 'Board games'];
 
 export default function SuggestCategoryScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [categoryName, setCategoryName] = useState('');
   const [reason, setReason] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const entryAnim = useRef(new Animated.Value(0)).current;
+  const entryY = useRef(new Animated.Value(16)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(entryAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.timing(entryY, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start();
+  }, [entryAnim, entryY]);
 
   const handleSubmit = async () => {
     if (!categoryName.trim()) return;
-    setLoading(true);
+    Keyboard.dismiss();
+    setSaving(true);
     // Suggestions stay on the device. Nothing about this app leaves the phone.
     await storage.addSuggestion(categoryName.trim(), reason.trim());
-    setLoading(false);
+    setSaving(false);
     setSubmitted(true);
   };
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safe}>
-        <IconButton
-          onPress={() => router.back()}
-          style={[styles.closeBtn, { top: insets.top + 12 }]}
-          accessibilityLabel="Close"
+      <ScreenBackground />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+        <Animated.View
+          style={[styles.inner, { opacity: entryAnim, transform: [{ translateY: entryY }] }]}
         >
-          <X size={22} color={COLORS.textFaint} />
-        </IconButton>
+          <StepHeader label="Feedback" onBack={() => router.back()} />
 
-        <View style={styles.header}>
-          <MessageSquare size={32} color={COLORS.honey} />
-          <Text style={styles.title}>Suggest a Category</Text>
-          <Text style={styles.sub}>
-            Got an idea for a new category? Jot it down.
-          </Text>
-        </View>
+          {submitted ? (
+            <View style={styles.doneWrap}>
+              <View style={styles.doneTile}>
+                <Check size={26} color={COLORS.honeyText} />
+              </View>
+              <Text style={styles.title} maxFontSizeMultiplier={1.3}>Saved.</Text>
+              <Text style={[styles.sub, styles.doneSub]}>
+                Your idea is kept on this phone. We gather suggestions with each
+                update, so watch for new packs.
+              </Text>
+              <GlassButton
+                label="Back to settings"
+                onPress={() => router.back()}
+                style={styles.doneCta}
+              />
+            </View>
+          ) : (
+            <>
+              <View style={styles.heading}>
+                <Text style={styles.title} maxFontSizeMultiplier={1.4}>Suggest a category</Text>
+                <Text style={styles.sub}>The best ideas become new packs.</Text>
+              </View>
 
-        {submitted ? (
-          <View style={styles.successWrap}>
-            <CheckCircle size={64} color={COLORS.honey}  />
-            <Text style={styles.successTitle}>Saved!</Text>
-            <Text style={styles.successText}>
-              Your idea is saved on this device. We gather suggestions in app
-              updates, so keep an eye out for new categories.
-            </Text>
-            <GlassButton label="Back to Settings" onPress={() => router.back()} style={{ marginTop: SPACING.sm }} />
-          </View>
-        ) : (
-          <View style={styles.form}>
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Category Name *</Text>
-              <TextInput
-                style={styles.input}
+              <TextField
+                label="Category name"
                 value={categoryName}
                 onChangeText={setCategoryName}
-                placeholder="e.g. Indian Street Food"
-                placeholderTextColor={COLORS.textFaint}
+                placeholder="Cricket legends"
                 maxLength={50}
+                returnKeyType="next"
               />
-            </View>
 
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Why would it be fun? (optional)</Text>
-              <TextInput
-                style={[styles.input, styles.inputMulti]}
+              <TextField
+                label="Why would it be fun? (optional)"
                 value={reason}
                 onChangeText={setReason}
-                placeholder="Tell us why this category would make a great game..."
-                placeholderTextColor={COLORS.textFaint}
+                placeholder="Everyone in our group argues about who the greatest is..."
                 multiline
-                numberOfLines={4}
                 maxLength={200}
               />
-            </View>
 
-            <PrimaryButton
-              label={loading ? 'Saving...' : 'Save Suggestion'}
-              onPress={handleSubmit}
-              disabled={!categoryName.trim() || loading}
-            />
-          </View>
-        )}
+              <View style={styles.ideas}>
+                <SectionLabel>Popular ideas</SectionLabel>
+                <View style={styles.chips}>
+                  {POPULAR_IDEAS.map(idea => (
+                    <Chip
+                      key={idea}
+                      label={idea}
+                      selected={categoryName === idea}
+                      onPress={() => setCategoryName(idea)}
+                    />
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.spacer} />
+
+              <InkButton
+                label={saving ? 'Saving...' : 'Send suggestion'}
+                onPress={handleSubmit}
+                disabled={!categoryName.trim() || saving}
+                icon={<Send size={17} color={COLORS.background} />}
+              />
+            </>
+          )}
+        </Animated.View>
       </SafeAreaView>
     </View>
   );
@@ -99,69 +126,54 @@ export default function SuggestCategoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  safe: { flex: 1, padding: SPACING.sm, paddingTop: SPACING.md },
-  closeBtn: {
-    position: 'absolute',
-    right: SPACING.sm,
-    zIndex: 10,
+  safe: { flex: 1 },
+  inner: {
+    flex: 1,
+    paddingHorizontal: SPACING.screenX,
+    paddingTop: 10,
+    paddingBottom: 24,
+    gap: SPACING.gap,
   },
-  header: {
-    alignItems: 'center',
-    gap: SPACING.xs,
-    marginBottom: SPACING.md,
-    marginTop: 32,
-  },
+
+  heading: { gap: 4 },
   title: {
     fontFamily: FONTS.displayBold,
-    fontSize: 24,
+    fontSize: 28,
+    lineHeight: 30,
+    letterSpacing: -0.7,
     color: COLORS.ink,
   },
   sub: {
     fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-  form: { gap: SPACING.sm },
-  field: { gap: 6 },
-  fieldLabel: {
-    fontFamily: FONTS.bodySemiBold,
-    fontSize: 13,
+    fontSize: 13.5,
+    lineHeight: 19.6,
     color: COLORS.textBody,
   },
-  input: {
-    backgroundColor: COLORS.glassFill,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.divider,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 14,
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 15,
-    color: COLORS.ink,
+
+  ideas: { gap: 8 },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
-  inputMulti: {
-    height: 100,
-    textAlignVertical: 'top',
-    paddingTop: 14,
-  },
-  successWrap: {
+
+  spacer: { flex: 1, minHeight: SPACING.xs },
+
+  doneWrap: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: SPACING.xs,
-    paddingHorizontal: SPACING.md,
+    gap: 10,
   },
-  successTitle: {
-    fontFamily: FONTS.displayExtraBold,
-    fontSize: 28,
-    color: COLORS.honey,
+  doneTile: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.honeySoft,
+    marginBottom: 2,
   },
-  successText: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 15,
-    color: COLORS.textBody,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
+  doneSub: { textAlign: 'center' },
+  doneCta: { marginTop: SPACING.xs, alignSelf: 'stretch' },
 });
