@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Animated, SafeAreaView,
+  View, Text, StyleSheet, TouchableOpacity, Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ghost, ShieldCheck } from 'lucide-react-native';
 import { Eye, EyeSlash } from 'phosphor-react-native';
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: 'rgba(255,255,255,0.12)',
   },
-  progressDone: { backgroundColor: 'rgba(255,214,0,0.4)' },
+  progressDone: { backgroundColor: 'rgba(111,207,71,0.4)' },
   progressActive: { backgroundColor: COLORS.yellow, width: 18 },
 
   passCard: {

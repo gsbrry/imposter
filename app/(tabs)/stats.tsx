@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, SafeAreaView, Animated,
+  View, Text, StyleSheet, ScrollView, Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChartBar as BarChart2, Ghost } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
 import GlassCard from '../../components/GlassCard';
@@ -83,7 +84,7 @@ function StatCard({ value, label }: { value: string; label: string }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.nearBlack },
   safe: { flex: 1 },
-  scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 100 },
+  scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 130 },
   header: {
     marginBottom: SPACING.md,
   },

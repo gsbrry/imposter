@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity,
-  SafeAreaView, FlatList, Animated,
+  View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, FlatList, Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Shuffle, ChevronRight, X, Users } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: 'rgba(6,4,18,0.8)',
+    backgroundColor: 'rgba(21,23,26,0.8)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,

@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, TextInput, SafeAreaView, TouchableOpacity,
+  View, Text, StyleSheet, TextInput,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MessageSquare, X, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import PillButton from '../components/PillButton';
+import GlassIconButton from '../components/GlassIconButton';
 import { storage } from '../utils/storage';
 
 export default function SuggestCategoryScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [categoryName, setCategoryName] = useState('');
   const [reason, setReason] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -27,9 +30,9 @@ export default function SuggestCategoryScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-          <X size={22} color="rgba(255,255,255,0.5)"  />
-        </TouchableOpacity>
+        <GlassIconButton onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]}>
+          <X size={22} color="rgba(255,255,255,0.5)" />
+        </GlassIconButton>
 
         <View style={styles.header}>
           <MessageSquare size={32} color={COLORS.yellow} />
@@ -95,10 +98,8 @@ const styles = StyleSheet.create({
   safe: { flex: 1, padding: SPACING.sm, paddingTop: SPACING.md },
   closeBtn: {
     position: 'absolute',
-    top: 56,
     right: SPACING.sm,
     zIndex: 10,
-    padding: 8,
   },
   header: {
     alignItems: 'center',

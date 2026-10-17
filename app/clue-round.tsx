@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Animated,
+  View, Text, StyleSheet, TouchableOpacity, Animated,
   Modal, Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronRight, Eye } from 'lucide-react-native';
 import { FastForward } from 'phosphor-react-native';
@@ -387,7 +388,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: 'rgba(255,255,255,0.12)',
   },
-  dotDone: { backgroundColor: 'rgba(255,214,0,0.4)' },
+  dotDone: { backgroundColor: 'rgba(111,207,71,0.4)' },
   dotActive: { backgroundColor: COLORS.yellow, width: 18 },
 
   playerCard: {
@@ -416,12 +417,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   timesUpBadge: {
-    backgroundColor: 'rgba(244,63,94,0.1)',
+    backgroundColor: 'rgba(244,83,107,0.1)',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: 'rgba(244,63,94,0.25)',
+    borderColor: 'rgba(244,83,107,0.25)',
     marginTop: 4,
   },
   timesUp: {
@@ -499,7 +500,7 @@ const styles = StyleSheet.create({
   sheet: {
     position: 'absolute',
     bottom: 0, left: 0, right: 0,
-    backgroundColor: '#0E0C1A',
+    backgroundColor: COLORS.nearBlack,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: SPACING.md,

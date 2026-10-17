@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Animated,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { CircleCheck as CheckCircle } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
@@ -206,12 +207,12 @@ const styles = StyleSheet.create({
   },
 
   tieBanner: {
-    backgroundColor: 'rgba(244,63,94,0.08)',
+    backgroundColor: 'rgba(244,83,107,0.08)',
     borderRadius: 12,
     padding: 10,
     marginBottom: SPACING.xs,
     borderWidth: 1,
-    borderColor: 'rgba(244,63,94,0.2)',
+    borderColor: 'rgba(244,83,107,0.2)',
   },
   tieBannerText: {
     fontFamily: FONTS.semiBold,

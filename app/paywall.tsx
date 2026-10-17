@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import GlassIconButton from '../components/GlassIconButton';
 
 // RevenueCat Paywall UI is native-only — guard for web
 let RevenueCatUI: any = null;
@@ -14,14 +16,15 @@ if (Platform.OS !== 'web') {
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   if (Platform.OS === 'web' || !RevenueCatUI) {
     return (
       <View style={styles.container}>
         <SafeAreaView style={styles.safe}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn} activeOpacity={0.7}>
+          <GlassIconButton onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]}>
             <X size={20} color="rgba(255,255,255,0.5)" />
-          </TouchableOpacity>
+          </GlassIconButton>
           <View style={styles.center}>
             <Text style={styles.title}>Premium is available on Android</Text>
             <Text style={styles.sub}>Download the app to unlock all features.</Text>
@@ -37,7 +40,7 @@ export default function PaywallScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]} activeOpacity={0.7}>
           <X size={20} color="rgba(255,255,255,0.5)" />
         </TouchableOpacity>
         <RevenueCatUI.Paywall
@@ -55,17 +58,8 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   closeBtn: {
     position: 'absolute',
-    top: 56,
     left: SPACING.sm,
     zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.glass,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   center: {
     flex: 1,

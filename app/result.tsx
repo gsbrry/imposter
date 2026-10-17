@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, SafeAreaView, TouchableOpacity, Platform,
+  View, Text, StyleSheet, Animated, TouchableOpacity, Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { RotateCcw, Ghost } from 'lucide-react-native';
 import { Eye, EyeSlash } from 'phosphor-react-native';
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
   outcomeLabel: {
     fontFamily: FONTS.semiBold,
     fontSize: 10,
-    color: 'rgba(255,214,0,0.6)',
+    color: 'rgba(111,207,71,0.6)',
     letterSpacing: 3,
     textTransform: 'uppercase',
   },

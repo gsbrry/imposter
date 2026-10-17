@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Animated, ActivityIndicator, Platform, Linking,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { Crown, Star } from 'phosphor-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
+import GlassIconButton from '../components/GlassIconButton';
 import { usePremium } from '@/hooks/usePremium';
 import { useGame } from '../context/GameContext';
 import { PRODUCTS } from '../constants/revenuecat';
@@ -53,12 +55,13 @@ const PLAN_CONFIGS: PlanConfig[] = [
 
 // ─── Web fallback ──────────────────────────────────────────────────────────
 function WebFallback({ onClose }: { onClose: () => void }) {
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
-        <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
+        <GlassIconButton onPress={onClose} style={[styles.closeBtn, { top: insets.top + 12 }]}>
           <X size={20} color="rgba(255,255,255,0.5)" />
-        </TouchableOpacity>
+        </GlassIconButton>
         <View style={styles.webCenter}>
           <View style={styles.starCircle}>
             <Star size={48} color={COLORS.yellow} weight="fill" />
@@ -81,6 +84,7 @@ function WebFallback({ onClose }: { onClose: () => void }) {
 // ─── Main screen ───────────────────────────────────────────────────────────
 export default function PremiumScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { setIsPremium } = useGame();
   const { getOfferings, purchasePackage, restorePurchases, checkPremiumStatus } = usePremium();
 
@@ -197,9 +201,9 @@ export default function PremiumScreen() {
       />
 
       <SafeAreaView style={styles.safe}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn} activeOpacity={0.7}>
+        <GlassIconButton onPress={() => router.back()} style={[styles.closeBtn, { top: insets.top + 12 }]}>
           <X size={20} color="rgba(255,255,255,0.5)" />
-        </TouchableOpacity>
+        </GlassIconButton>
 
         {success ? (
           <Animated.View style={[styles.successWrap, { opacity: successAnim, transform: [{ scale: successAnim }] }]}>
@@ -317,17 +321,8 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     position: 'absolute',
-    top: 56,
     left: SPACING.sm,
     zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.glass,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   scroll: {
     padding: SPACING.md,
@@ -361,7 +356,7 @@ const styles = StyleSheet.create({
   heroLabel: {
     fontFamily: FONTS.semiBold,
     fontSize: 10,
-    color: 'rgba(255,214,0,0.7)',
+    color: 'rgba(111,207,71,0.7)',
     letterSpacing: 3,
     textTransform: 'uppercase',
   },
@@ -393,10 +388,10 @@ const styles = StyleSheet.create({
   },
   planCardActive: {
     borderColor: COLORS.yellow,
-    backgroundColor: 'rgba(255,214,0,0.07)',
+    backgroundColor: 'rgba(111,207,71,0.07)',
   },
   planCardHighlight: {
-    borderColor: 'rgba(255,214,0,0.4)',
+    borderColor: 'rgba(111,207,71,0.4)',
   },
   planBadge: {
     borderRadius: 6,
