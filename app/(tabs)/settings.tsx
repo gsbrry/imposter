@@ -1,7 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, Platform, TouchableOpacity, Linking,
+  View, StyleSheet, Animated, Platform, TouchableOpacity, Linking,
 } from 'react-native';
+import AppText from '../../components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import Constants from 'expo-constants';
@@ -21,9 +22,11 @@ import {
   GAME_SETTINGS_DEFAULTS_VERSION,
 } from '../../utils/storage';
 import { useGame } from '../../context/GameContext';
+import { useAccessibility } from '../../context/AccessibilityContext';
 import { usePremium } from '@/hooks/usePremium';
 import { REVIEW_ACCESS_ENABLED, REVIEW_UNLOCK_TAPS } from '@/constants/reviewAccess';
 import { CATEGORIES, wordCount, CategoryKey } from '../../data/words';
+import { PRIVACY_URL } from '../../constants/support';
 
 // CustomerCenter is native-only.
 let CustomerCenterModule: any = null;
@@ -35,15 +38,13 @@ if (Platform.OS !== 'web') {
 
 const MIN_ROUNDS = 1;
 const MAX_ROUNDS = 4;
-const PRIVACY_URL = 'https://gooseberrymedia.in/impostr/privacy';
-const SUPPORT_EMAIL = 'support@gooseberrymedia.in';
-
 const TOTAL_WORDS = CATEGORIES.reduce((n, c) => n + wordCount(c.id as CategoryKey), 0);
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { isPremium, setIsPremium } = useGame();
   const { getExpiryDate } = usePremium();
+  const { refresh: refreshAccessibility } = useAccessibility();
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(16)).current;
 
@@ -82,6 +83,8 @@ export default function SettingsScreen() {
     const next = { ...settings, [key]: value };
     setSettings(next);
     await storage.setSettings(next);
+    // Larger text and Reduce motion take effect straight away.
+    refreshAccessibility();
   };
 
   const updateGame = async (patch: Partial<GameSettings>) => {
@@ -155,7 +158,7 @@ export default function SettingsScreen() {
           showsVerticalScrollIndicator={false}
           style={{ opacity: entryAnim, transform: [{ translateY: entryY }] } as any}
         >
-          <Text style={styles.title} maxFontSizeMultiplier={1.4}>Settings</Text>
+          <AppText style={styles.title} maxFontSizeMultiplier={1.4}>Settings</AppText>
 
           {/* Premium */}
           {isPremium ? (
@@ -189,8 +192,8 @@ export default function SettingsScreen() {
                 <Crown size={18} color={COLORS.onHoney} />
               </View>
               <View style={styles.goPremiumText}>
-                <Text style={styles.goPremiumTitle}>Go Premium</Text>
-                <Text style={styles.goPremiumSub}>All 9 categories, no ads</Text>
+                <AppText style={styles.goPremiumTitle}>Go Premium</AppText>
+                <AppText style={styles.goPremiumSub}>All 9 categories, no ads</AppText>
               </View>
               <ChevronRight size={18} color={COLORS.honey} />
             </TouchableOpacity>
@@ -229,7 +232,7 @@ export default function SettingsScreen() {
                       color={gameSettings.turnsBeforeGuess <= MIN_ROUNDS ? COLORS.textFaint : COLORS.ink}
                     />
                   </IconButton>
-                  <Text style={styles.stepperValue}>{gameSettings.turnsBeforeGuess}</Text>
+                  <AppText style={styles.stepperValue}>{gameSettings.turnsBeforeGuess}</AppText>
                   <IconButton
                     size={32}
                     onPress={() => adjustRounds(1)}
@@ -332,9 +335,10 @@ export default function SettingsScreen() {
                   activeOpacity={0.75}
                   accessibilityRole="button"
                   accessibilityLabel="Check for new words"
+                  hitSlop={{ top: 7, bottom: 7, left: 8, right: 8 }}
                   style={styles.checkBtn}
                 >
-                  <Text style={styles.checkText}>Check</Text>
+                  <AppText style={styles.checkText}>Check</AppText>
                 </TouchableOpacity>
               }
             />
@@ -348,7 +352,7 @@ export default function SettingsScreen() {
               title="Help and support"
               description="Report a problem or a word"
               trailing={<ChevronRight size={18} color={COLORS.textMuted} />}
-              onPress={() => openUrl(`mailto:${SUPPORT_EMAIL}?subject=Impostr%20${version}`)}
+              onPress={() => router.push('/help')}
             />
             <View style={listRowStyles.divider} />
             <ListRow
@@ -371,7 +375,7 @@ export default function SettingsScreen() {
             onPress={handleVersionTap}
             accessibilityRole="text"
           >
-            <Text style={styles.version}>{versionLine}</Text>
+            <AppText style={styles.version}>{versionLine}</AppText>
           </TouchableOpacity>
         </Animated.ScrollView>
       </SafeAreaView>
