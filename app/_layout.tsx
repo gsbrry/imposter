@@ -20,6 +20,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GameProvider, useGame } from '../context/GameContext';
+import { AccessibilityProvider } from '../context/AccessibilityContext';
 import PhoneFrame from '@/components/PhoneFrame';
 import AppSplash from '@/components/SplashScreen';
 import { usePremium } from '@/hooks/usePremium';
@@ -99,6 +100,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <GameProvider>
+        <AccessibilityProvider>
         <RCInitialiser />
         <PhoneFrame>
           {!fontsLoaded && !fontError ? (
@@ -117,11 +119,14 @@ export default function RootLayout() {
               <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
               <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
               <Stack.Screen name="suggest" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="help" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="report" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="+not-found" />
             </Stack>
           )}
         </PhoneFrame>
         <StatusBar style="dark" />
+        </AccessibilityProvider>
       </GameProvider>
     </SafeAreaProvider>
   );
