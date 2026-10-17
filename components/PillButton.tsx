@@ -1,14 +1,16 @@
 import React, { useRef } from 'react';
 import {
-  TouchableOpacity, Text, StyleSheet, Animated, ViewStyle, TextStyle,
+  TouchableOpacity, Text, StyleSheet, Animated, ViewStyle, TextStyle, Platform, StyleProp,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 
 interface PillButtonProps {
   label: string;
   onPress: () => void;
   variant?: 'yellow' | 'secondary' | 'ghost' | 'violet' | 'rose' | 'outline';
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   textStyle?: TextStyle;
   disabled?: boolean;
   icon?: React.ReactNode;
@@ -40,7 +42,13 @@ export default function PillButton({
   const textColor = isPrimary ? COLORS.nearBlack : COLORS.white;
 
   return (
-    <Animated.View style={{ transform: [{ scale }], opacity: disabled ? 0.4 : 1 }}>
+    <Animated.View
+      style={[
+        isPrimary && styles.primaryShadow,
+        { transform: [{ scale }], opacity: disabled ? 0.4 : 1 },
+        style,
+      ]}
+    >
       <TouchableOpacity
         onPress={onPress}
         onPressIn={handlePressIn}
@@ -51,9 +59,20 @@ export default function PillButton({
           styles.button,
           { backgroundColor: bg },
           (isGhost || isSecondary) && styles.bordered,
-          style,
         ]}
       >
+        {isSecondary && Platform.OS !== 'web' && (
+          <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+        )}
+        {!isGhost && (
+          <LinearGradient
+            pointerEvents="none"
+            colors={isPrimary ? ['rgba(255,255,255,0.35)', 'transparent'] : [COLORS.glassSheen, 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.sheen}
+          />
+        )}
         {icon}
         <Text style={[styles.text, { color: textColor }, isPrimary && styles.textPrimary, textStyle]}>
           {label}
@@ -64,6 +83,14 @@ export default function PillButton({
 }
 
 const styles = StyleSheet.create({
+  primaryShadow: {
+    borderRadius: RADIUS.button,
+    shadowColor: COLORS.yellow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+  },
   button: {
     height: 56,
     borderRadius: RADIUS.button,
@@ -72,10 +99,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: SPACING.xs,
     paddingHorizontal: SPACING.md,
+    overflow: 'hidden',
   },
   bordered: {
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
+  },
+  sheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '60%',
   },
   text: {
     fontFamily: FONTS.bold,

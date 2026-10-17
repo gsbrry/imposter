@@ -1,27 +1,34 @@
+// Premium glass palette: rich spring-leaf green accent on dark graphite.
+// The `yellow*` keys are kept (not renamed) since ~150 call sites reference
+// them — they now hold the green accent, not an actual yellow.
 export const COLORS = {
-  yellow: '#FFD600',
+  yellow: '#6FCF47',
+  yellowDeep: '#3F8F24',
   white: '#FFFFFF',
-  nearBlack: '#060412',
-  rose: '#F43F5E',
+  nearBlack: '#15171A',
+  rose: '#F4536B',
   // Glass system
-  glass: 'rgba(255,255,255,0.04)',
-  glassBorder: 'rgba(255,214,0,0.15)',
-  glassHover: 'rgba(255,255,255,0.07)',
+  glass: 'rgba(255,255,255,0.06)',
+  glassBorder: 'rgba(111,207,71,0.22)',
+  glassBorderBright: 'rgba(255,255,255,0.5)',
+  glassHover: 'rgba(255,255,255,0.1)',
+  glassSheen: 'rgba(255,255,255,0.16)',
+  glassTint: 'rgba(111,207,71,0.05)',
   // Text hierarchy
   textPrimary: '#FFFFFF',
   textBody: 'rgba(255,255,255,0.7)',
-  textLabel: 'rgba(255,255,255,0.4)',
-  textMuted: 'rgba(255,255,255,0.25)',
-  // Yellow tints
-  yellowGlass: 'rgba(255,214,0,0.08)',
-  yellowBorder: 'rgba(255,214,0,0.25)',
-  yellowGlow: 'rgba(255,214,0,0.3)',
-  // Legacy aliases (kept for remaining references)
-  violet: '#060412',
-  violetGlass: 'rgba(255,255,255,0.04)',
-  violetBorder: 'rgba(255,214,0,0.15)',
-  violetOverlay: 'rgba(6,4,18,0.85)',
-  roseGlow: 'rgba(244,63,94,0.4)',
+  textLabel: 'rgba(255,255,255,0.45)',
+  textMuted: 'rgba(255,255,255,0.28)',
+  // Accent (green) tints
+  yellowGlass: 'rgba(111,207,71,0.16)',
+  yellowBorder: 'rgba(111,207,71,0.4)',
+  yellowGlow: 'rgba(111,207,71,0.5)',
+  // Legacy aliases (kept for remaining references) — same dark-graphite family
+  violet: '#15171A',
+  violetGlass: 'rgba(255,255,255,0.06)',
+  violetBorder: 'rgba(111,207,71,0.22)',
+  violetOverlay: 'rgba(14,16,18,0.88)',
+  roseGlow: 'rgba(244,83,107,0.4)',
 };
 
 export const FONTS = {
@@ -40,6 +47,7 @@ export const SPACING = {
 };
 
 export const RADIUS = {
-  card: 24,
+  card: 28,
   button: 50,
+  icon: 18,
 };

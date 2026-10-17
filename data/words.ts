@@ -11,23 +11,27 @@ export type CategoryKey =
   | 'jobs'
   | 'festival';
 
+export type CategoryIcon =
+  | 'brain' | 'car' | 'house' | 'utensils' | 'clapperboard'
+  | 'trophy' | 'paw' | 'briefcase' | 'party';
+
 export interface Category {
   id: CategoryKey;
   label: string;
-  emoji: string;
+  icon: CategoryIcon;
   free: boolean;
 }
 
 export const CATEGORIES: Category[] = [
-  { id: 'general', label: 'General', emoji: '🧠', free: true },
-  { id: 'vehicles', label: 'Vehicles', emoji: '🚗', free: true },
-  { id: 'home', label: 'Home & Household', emoji: '🏠', free: true },
-  { id: 'food', label: 'Food & Drinks', emoji: '🍛', free: false },
-  { id: 'bollywood', label: 'Bollywood & Movies', emoji: '🎬', free: false },
-  { id: 'sports', label: 'Sports & Games', emoji: '🏏', free: false },
-  { id: 'animals', label: 'Animals & Nature', emoji: '🦁', free: false },
-  { id: 'jobs', label: 'Jobs & Professions', emoji: '💼', free: false },
-  { id: 'festival', label: 'Festival & Celebration', emoji: '🎉', free: false },
+  { id: 'general', label: 'General', icon: 'brain', free: true },
+  { id: 'vehicles', label: 'Vehicles', icon: 'car', free: true },
+  { id: 'home', label: 'Home & Household', icon: 'house', free: true },
+  { id: 'food', label: 'Food & Drinks', icon: 'utensils', free: false },
+  { id: 'bollywood', label: 'Bollywood & Movies', icon: 'clapperboard', free: false },
+  { id: 'sports', label: 'Sports & Games', icon: 'trophy', free: false },
+  { id: 'animals', label: 'Animals & Nature', icon: 'paw', free: false },
+  { id: 'jobs', label: 'Jobs & Professions', icon: 'briefcase', free: false },
+  { id: 'festival', label: 'Festival & Celebration', icon: 'party', free: false },
 ];
 
 export const WORDS: Record<CategoryKey, Record<Difficulty, string[]>> = {

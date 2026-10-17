@@ -18,7 +18,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#060412"
+        "backgroundColor": "#15171A"
       },
       "permissions": [
         "android.permission.VIBRATE"

@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Modal, Pressable,
+  View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Platform,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { House } from 'lucide-react-native';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/theme';
 import { useGame } from '../context/GameContext';
+import GlassIconButton from './GlassIconButton';
 
 export default function HomeButton() {
   const [visible, setVisible] = useState(false);
@@ -20,14 +23,9 @@ export default function HomeButton() {
 
   return (
     <>
-      <TouchableOpacity
-        style={styles.btn}
-        onPress={() => setVisible(true)}
-        activeOpacity={0.7}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
+      <GlassIconButton onPress={() => setVisible(true)} size={36} style={styles.btnShape}>
         <House size={18} color={COLORS.textLabel} />
-      </TouchableOpacity>
+      </GlassIconButton>
 
       <Modal
         visible={visible}
@@ -37,21 +35,40 @@ export default function HomeButton() {
         statusBarTranslucent
       >
         <Pressable style={styles.backdrop} onPress={() => setVisible(false)}>
-          <Pressable style={styles.modal} onPress={e => e.stopPropagation()}>
-            <View style={styles.iconWrap}>
-              <House size={28} color={COLORS.yellow} />
-            </View>
-            <Text style={styles.heading}>End this game?</Text>
-            <Text style={styles.sub}>Current game progress will be lost.</Text>
+          <View style={styles.modalShadow}>
+            <Pressable style={styles.modal} onPress={e => e.stopPropagation()}>
+              {Platform.OS !== 'web' && (
+                <BlurView intensity={85} tint="dark" style={StyleSheet.absoluteFill} />
+              )}
+              <LinearGradient
+                pointerEvents="none"
+                colors={[COLORS.glassSheen, 'transparent']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={styles.modalSheen}
+              />
+              <View style={styles.iconWrap}>
+                <House size={28} color={COLORS.yellow} />
+              </View>
+              <Text style={styles.heading}>End this game?</Text>
+              <Text style={styles.sub}>Current game progress will be lost.</Text>
 
-            <TouchableOpacity style={styles.btnYes} onPress={confirm} activeOpacity={0.85}>
-              <Text style={styles.btnYesText}>YES, GO HOME</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.btnYes} onPress={confirm} activeOpacity={0.85}>
+                <LinearGradient
+                  pointerEvents="none"
+                  colors={['rgba(255,255,255,0.35)', 'transparent']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={styles.btnYesSheen}
+                />
+                <Text style={styles.btnYesText}>YES, GO HOME</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnKeep} onPress={() => setVisible(false)} activeOpacity={0.85}>
-              <Text style={styles.btnKeepText}>Keep Playing</Text>
-            </TouchableOpacity>
-          </Pressable>
+              <TouchableOpacity style={styles.btnKeep} onPress={() => setVisible(false)} activeOpacity={0.85}>
+                <Text style={styles.btnKeepText}>Keep Playing</Text>
+              </TouchableOpacity>
+            </Pressable>
+          </View>
         </Pressable>
       </Modal>
     </>
@@ -59,33 +76,42 @@ export default function HomeButton() {
 }
 
 const styles = StyleSheet.create({
-  btn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: COLORS.glass,
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
+  btnShape: {
+    borderRadius: RADIUS.icon,
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(6,4,18,0.85)',
+    backgroundColor: COLORS.violetOverlay,
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.md,
   },
-  modal: {
+  modalShadow: {
     width: '100%',
     maxWidth: 360,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: RADIUS.card,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.4,
+    shadowRadius: 28,
+    elevation: 12,
+  },
+  modal: {
+    backgroundColor: COLORS.glass,
     borderRadius: RADIUS.card,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     padding: SPACING.md,
     alignItems: 'center',
     gap: SPACING.xs,
+    overflow: 'hidden',
+  },
+  modalSheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
   },
   iconWrap: {
     width: 56,
@@ -118,6 +144,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.yellow,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    shadowColor: COLORS.yellow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  btnYesSheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '55%',
   },
   btnYesText: {
     fontFamily: FONTS.extraBold,

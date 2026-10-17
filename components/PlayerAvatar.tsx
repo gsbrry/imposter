@@ -39,10 +39,10 @@ export default function PlayerAvatar({ iconIndex, playerIndex, size = 40, onPres
 const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
-    borderColor: 'rgba(255,214,0,0.25)',
+    borderColor: COLORS.yellowBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,214,0,0.06)',
+    backgroundColor: COLORS.yellowGlass,
   },
 });
 
