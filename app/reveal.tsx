@@ -16,6 +16,7 @@ import IconButton from '../components/IconButton';
 import Pill from '../components/Pill';
 import ProgressBar from '../components/ProgressBar';
 import { useGame } from '../context/GameContext';
+import { useRequireGame } from '../hooks/useRequireGame';
 import { storage } from '../utils/storage';
 import { getWord } from '../utils/getWord';
 import { selectImposter, selectTwoImposters } from '../utils/selectImposter';
@@ -68,6 +69,7 @@ async function pulse() {
 export default function RevealScreen() {
   const router = useRouter();
   const { game, setGame, resetGame } = useGame();
+  const hasGame = useRequireGame();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [wordVisible, setWordVisible] = useState(false);
   const [hasSeenWord, setHasSeenWord] = useState(false);
@@ -91,6 +93,8 @@ export default function RevealScreen() {
         Animated.timing(holdPulse, { toValue: 0, duration: 1100, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       ])
     ).start();
+
+    if (!hasGame) return;
 
     async function setup() {
       // Chaos draws from the hard pack; its extra twist is the second imposter below.
@@ -120,7 +124,7 @@ export default function RevealScreen() {
     }
     setup();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasGame]);
 
   useEffect(() => () => clearTimeout(peekTimer.current), []);
 
@@ -164,7 +168,7 @@ export default function RevealScreen() {
     }
   };
 
-  const player = setupDone ? game.players[currentIndex] : null;
+  const player = setupDone && hasGame ? game.players[currentIndex] : null;
 
   if (!setupDone || !player) {
     return (

@@ -14,6 +14,7 @@ import Pill from '../components/Pill';
 import PrimaryButton from '../components/PrimaryButton';
 import TextButton from '../components/TextButton';
 import { useGame } from '../context/GameContext';
+import { useRequireGame } from '../hooks/useRequireGame';
 import { storage, defaultGameSettings } from '../utils/storage';
 import { pickStarter, clueOrder } from '../utils/pickStarter';
 
@@ -25,6 +26,7 @@ import { pickStarter, clueOrder } from '../utils/pickStarter';
 export default function WhoStartsScreen() {
   const router = useRouter();
   const { game, setGame } = useGame();
+  const hasGame = useRequireGame();
   const [rounds, setRounds] = useState(defaultGameSettings.turnsBeforeGuess);
   const [timerLabel, setTimerLabel] = useState('timer off');
 
@@ -91,7 +93,7 @@ export default function WhoStartsScreen() {
 
   const order = clueOrder(game.players, game.starterId);
   const starter = order[0];
-  if (!starter) return null;
+  if (!hasGame || !starter) return null;
 
   const starterSeat = game.players.findIndex(p => p.id === starter.id);
   const glowScale = glow.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] });

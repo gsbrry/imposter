@@ -13,6 +13,7 @@ import Pill from '../components/Pill';
 import PrimaryButton from '../components/PrimaryButton';
 import TextButton from '../components/TextButton';
 import { useGame } from '../context/GameContext';
+import { useRequireGame } from '../hooks/useRequireGame';
 import { storage } from '../utils/storage';
 import { CATEGORIES } from '../data/words';
 
@@ -26,6 +27,7 @@ const DIFFICULTY_LABEL: Record<string, string> = {
 export default function ResultScreen() {
   const router = useRouter();
   const { game, setGame } = useGame();
+  const hasGame = useRequireGame();
   const { votedOutId, votesFor, totalVotes } = useLocalSearchParams<{
     votedOutId: string; votesFor: string; totalVotes: string;
   }>();
@@ -101,6 +103,8 @@ export default function ResultScreen() {
 
   const category = CATEGORIES.find(c => c.id === game.category);
   const packLabel = `${category?.label ?? 'General'} · ${DIFFICULTY_LABEL[game.difficulty] ?? 'Medium'}`;
+
+  if (!hasGame) return null;
 
   const outcomeLabel = skippedVote ? 'No vote' : caughtImposter ? 'Crew wins' : 'Imposter wins';
   const headline = skippedVote
