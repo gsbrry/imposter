@@ -189,7 +189,7 @@ export default function SettingsScreen() {
     wordsUpdatedAt ? `updated ${formatDay(wordsUpdatedAt)}` : 'bundled with this version'
   }`;
 
-  const version = Constants.expoConfig?.version ?? '1.0.0';
+  const version = Constants.expoConfig?.version ?? 'unknown';
   const versionLine = reviewUnlocked
     ? `Impostr ${version} · review access on`
     : `Impostr ${version} · Gooseberry Media`;
