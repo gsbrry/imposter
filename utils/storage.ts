@@ -49,6 +49,8 @@ export interface GameSettings {
   turnsBeforeGuess: number;
   timerPerClue: number | 'none' | 'custom';
   customTimerSeconds: number;
+  /** Which generation of shipped defaults this record has been through. */
+  defaultsVersion?: number;
 }
 
 const defaultStats: Stats = {
@@ -66,12 +68,43 @@ const defaultSettings: Settings = {
   hapticsEnabled: true,
 };
 
+/** Bumped whenever a shipped default changes. */
+export const GAME_SETTINGS_DEFAULTS_VERSION = 2;
+
 export const defaultGameSettings: GameSettings = {
   playerCount: 4,
-  turnsBeforeGuess: 1,
-  timerPerClue: 30,
+  turnsBeforeGuess: 2,
+  timerPerClue: 'none',
   customTimerSeconds: 60,
+  defaultsVersion: GAME_SETTINGS_DEFAULTS_VERSION,
 };
+
+/** What version 1 of the app shipped as defaults. */
+const v1Defaults = {
+  turnsBeforeGuess: 1,
+  timerPerClue: 30 as GameSettings['timerPerClue'],
+};
+
+/**
+ * New defaults reach new installs and anyone who never touched the setting.
+ * A value that still matches the old default was never chosen, so it moves on;
+ * anything else is the player's own choice and is left alone.
+ */
+export function applyGameSettingsDefaults(s: GameSettings): GameSettings {
+  if ((s.defaultsVersion ?? 1) >= GAME_SETTINGS_DEFAULTS_VERSION) return s;
+  return {
+    ...s,
+    timerPerClue:
+      s.timerPerClue === v1Defaults.timerPerClue
+        ? defaultGameSettings.timerPerClue
+        : s.timerPerClue,
+    turnsBeforeGuess:
+      (s.turnsBeforeGuess ?? v1Defaults.turnsBeforeGuess) === v1Defaults.turnsBeforeGuess
+        ? defaultGameSettings.turnsBeforeGuess
+        : s.turnsBeforeGuess,
+    defaultsVersion: GAME_SETTINGS_DEFAULTS_VERSION,
+  };
+}
 
 async function get<T>(key: string, fallback: T): Promise<T> {
   try {
@@ -111,7 +144,8 @@ export const storage = {
   getLastCategory: () => get<string>(KEYS.LAST_CATEGORY, 'general'),
   setLastCategory: (cat: string) => set(KEYS.LAST_CATEGORY, cat),
 
-  getGameSettings: () => get<GameSettings>(KEYS.GAME_SETTINGS, defaultGameSettings),
+  getGameSettings: () =>
+    get<GameSettings>(KEYS.GAME_SETTINGS, defaultGameSettings).then(applyGameSettingsDefaults),
   setGameSettings: (s: GameSettings) => set(KEYS.GAME_SETTINGS, s),
 
   getTeamVote: () => get<boolean>(KEYS.TEAM_VOTE, false),

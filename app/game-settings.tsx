@@ -14,7 +14,7 @@ import IconButton from '../components/IconButton';
 import Stepper from '../components/Stepper';
 import Chip from '../components/Chip';
 import Toggle from '../components/Toggle';
-import { storage, GameSettings, defaultGameSettings } from '../utils/storage';
+import { storage, GameSettings, defaultGameSettings, GAME_SETTINGS_DEFAULTS_VERSION } from '../utils/storage';
 import { useGame } from '../context/GameContext';
 import { useWebFocusRing } from '../hooks/useWebFocusRing';
 
@@ -49,7 +49,7 @@ export default function GameSettingsScreen() {
   useEffect(() => {
     storage.getGameSettings().then(s => {
       setPlayerCount(s.playerCount);
-      setTurnsBeforeGuess(s.turnsBeforeGuess ?? 1);
+      setTurnsBeforeGuess(s.turnsBeforeGuess ?? defaultGameSettings.turnsBeforeGuess);
       setTimerPerClue(s.timerPerClue);
       setCustomSeconds(String(s.customTimerSeconds));
     });
@@ -69,7 +69,12 @@ export default function GameSettingsScreen() {
   const handleNext = async () => {
     const parsed = parseInt(customSeconds, 10);
     const safeCustom = isNaN(parsed) || parsed < 1 ? 60 : Math.min(300, parsed);
-    const settings: GameSettings = { playerCount, turnsBeforeGuess, timerPerClue, customTimerSeconds: safeCustom };
+    // Saving here is an explicit choice, so stamp it against the current defaults.
+    const settings: GameSettings = {
+      playerCount, turnsBeforeGuess, timerPerClue,
+      customTimerSeconds: safeCustom,
+      defaultsVersion: GAME_SETTINGS_DEFAULTS_VERSION,
+    };
     await storage.setGameSettings(settings);
     await storage.setTeamVote(teamVote);
     const savedPlayers = await storage.getPlayers();
