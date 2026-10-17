@@ -125,6 +125,52 @@ Run typecheck, lint and check-words. Commit.
 
 ---
 
+## Prompt 8: Clean-up and performance (report first, then fix)
+
+Run this after Prompt 7, when all screens are rebuilt. Paste it again any time before a release.
+
+```
+Stay on branch redesign-v2. Do a clean-up and performance review of the whole app. Part 1 is read-only: do not change any code until I approve.
+
+Part 1, report. Run and summarise each of these:
+1. npx expo-doctor and npx expo install --check (wrong or outdated Expo package versions).
+2. npx knip (or npx depcheck if knip will not run): unused files, unused exports, unused dependencies and devDependencies.
+3. Search for dead code: unused components, styles, constants, AsyncStorage keys no longer read, commented-out blocks, console.log left in.
+4. Hardcoded colours, font names or sizes that should come from constants/theme.ts.
+5. Bundle size: run npx expo export --platform android --dump-sourcemap, then npx source-map-explorer on the bundle. List the 10 largest modules and anything that looks avoidable.
+6. Performance risks: components that re-render on every timer tick, missing React.memo or useCallback on list items, heavy work inside render, BlurView used inside lists or animated views, large images that should be resized, animations not using the native driver or Reanimated worklets.
+7. Startup: what runs before the first screen shows (fonts, RevenueCat, storage reads) and what could be deferred.
+
+Give me one table: Finding | File | Why it matters | Suggested fix | Risk of the fix (low, medium, high). Group it into "Safe to fix now" and "Needs my decision". Then stop and wait.
+
+Part 2 happens only after I reply "fix the safe ones" or name the items. Fix them in small commits, one theme per commit. After each commit run npm run typecheck, npm run lint and walk one full game. Never change game rules, storage keys or purchase logic in this prompt.
+```
+
+---
+
+## Prompt 9: Security and vulnerability check (report first, then fix)
+
+```
+Stay on branch redesign-v2. Do a security review of the app. Part 1 is read-only: do not change any code until I approve.
+
+Part 1, report on each of these:
+1. Dependencies: run npm audit --omit=dev and npm audit. List each high or critical issue, which package pulls it in, whether it ships in the app or is build-only, and the safe upgrade path. Do not run npm audit fix --force.
+2. Secrets: search the whole repo and git history (git log -p) for API keys, tokens, passwords, keystores and .env files. RevenueCat public SDK keys (goog_ and appl_) are allowed; anything else is a finding. Check .gitignore covers .env, keystores and credentials.
+3. Purchases: confirm the 7-tap reviewer unlock is gone from release builds, premium is checked against RevenueCat on launch, and the offline cache has a short expiry.
+4. Storage: list everything written to AsyncStorage. Flag anything personal or anything that should not be trusted when read back (for example premium status or reward counts).
+5. Network: every URL the app calls. All must be HTTPS. The word feed (if built) must be fully validated before use and never treated as code or HTML.
+6. Inputs: player names, suggestion text and report text. Check length limits and that nothing is rendered as HTML or passed to a URL unescaped.
+7. Android: permissions in app.json (only what is needed, blocked list kept), android:allowBackup, cleartext traffic off, deep link handling, debug flags off in release.
+8. Crash reporting and analytics: no player names, words or device identifiers sent.
+9. Web build: anything exposed in the web bundle that should not be.
+
+Give me one table: Finding | Severity (critical, high, medium, low) | File | Fix | Effort. Then stop and wait.
+
+Part 2 happens only after I reply "fix critical and high" or name the items. Fix in small commits, then re-run npm audit, typecheck and lint and show the before and after counts. Do not push.
+```
+
+---
+
 ## Later (do not paste yet)
 
 - Phase 1.5: rewards, streaks, share result card, invite friends (screens 26 to 30, Growth tab).
