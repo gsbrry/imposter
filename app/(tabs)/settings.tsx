@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, Switch,
+  View, Text, StyleSheet, ScrollView, Switch,
   TouchableOpacity, Animated, Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Timer, Volume2, Vibrate, Star, MessageSquare, ChevronRight, Crown } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
@@ -111,7 +114,7 @@ export default function SettingsScreen() {
           </View>
 
           {/* Premium status card */}
-          {isPremium && (
+          {isPremium ? (
             <>
               <Text style={styles.sectionLabel}>SUBSCRIPTION</Text>
               <GlassCard style={styles.premiumCard}>
@@ -138,9 +141,38 @@ export default function SettingsScreen() {
                 )}
               </GlassCard>
             </>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={0.88}
+              onPress={() => router.push('/premium')}
+              style={styles.premiumBannerShadow}
+            >
+              <LinearGradient
+                colors={[COLORS.yellow, COLORS.yellowDeep]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.premiumBanner}
+              >
+                <LinearGradient
+                  pointerEvents="none"
+                  colors={['rgba(255,255,255,0.3)', 'transparent']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={styles.premiumBannerSheen}
+                />
+                <View style={styles.premiumBannerIconWrap}>
+                  <Crown size={22} color={COLORS.nearBlack} />
+                </View>
+                <View style={styles.premiumCardText}>
+                  <Text style={styles.premiumBannerTitle}>Go Premium</Text>
+                  <Text style={styles.premiumBannerSub}>Unlock every category, no ads</Text>
+                </View>
+                <ChevronRight size={20} color={COLORS.nearBlack} />
+              </LinearGradient>
+            </TouchableOpacity>
           )}
 
-          <Text style={[styles.sectionLabel, isPremium && { marginTop: SPACING.md }]}>GAMEPLAY</Text>
+          <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>GAMEPLAY</Text>
           <GlassCard style={styles.section}>
             <SettingRow
               icon={<Timer size={18} color={COLORS.yellow} />}
@@ -177,16 +209,6 @@ export default function SettingsScreen() {
 
           <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>MORE</Text>
           <GlassCard style={styles.section}>
-            {!isPremium && (
-              <>
-                <SettingLink
-                  icon={<Star size={18} color={COLORS.yellow} />}
-                  label="Go Premium"
-                  onPress={() => router.push('/premium')}
-                />
-                <Divider />
-              </>
-            )}
             <SettingLink
               icon={<MessageSquare size={18} color={COLORS.yellow} />}
               label="Suggest a Category"
@@ -228,7 +250,7 @@ function SettingRow({
       <Switch
         value={value}
         onValueChange={onChange}
-        trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(255,214,0,0.4)' }}
+        trackColor={{ false: 'rgba(255,255,255,0.08)', true: 'rgba(111,207,71,0.4)' }}
         thumbColor={value ? COLORS.yellow : 'rgba(255,255,255,0.4)'}
       />
     </View>
@@ -248,7 +270,7 @@ function SettingLink({ icon, label, onPress }: { icon: React.ReactNode; label: s
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.nearBlack },
   safe: { flex: 1 },
-  scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 100 },
+  scroll: { padding: SPACING.md, paddingTop: SPACING.md, paddingBottom: 130 },
   header: { marginBottom: SPACING.md },
   label: {
     fontFamily: FONTS.semiBold,
@@ -322,6 +344,51 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.regular,
     fontSize: 12,
     color: COLORS.textLabel,
+  },
+
+  // Go Premium banner
+  premiumBannerShadow: {
+    borderRadius: RADIUS.card,
+    shadowColor: COLORS.yellow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    elevation: 8,
+  },
+  premiumBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: RADIUS.card,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 16,
+    gap: 12,
+    overflow: 'hidden',
+  },
+  premiumBannerSheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '60%',
+  },
+  premiumBannerIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(21,23,26,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  premiumBannerTitle: {
+    fontFamily: FONTS.extraBold,
+    fontSize: 16,
+    color: COLORS.nearBlack,
+  },
+  premiumBannerSub: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 12,
+    color: 'rgba(21,23,26,0.65)',
+    marginTop: 1,
   },
 
   row: {

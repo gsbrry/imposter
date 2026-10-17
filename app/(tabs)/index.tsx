@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions, SafeAreaView,
+  View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions,
   Pressable,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ghost } from 'lucide-react-native';
+import { Ghost, Drama, MessageCircle, Vote } from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../../constants/theme';
 import PillButton from '../../components/PillButton';
 
@@ -92,7 +93,14 @@ export default function HomeScreen() {
             </View>
           </Animated.View>
 
-          <Text style={styles.title}>IMPOSTR</Text>
+          <Text
+            style={styles.title}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.5}
+          >
+            IMPOSTR
+          </Text>
           <Text style={styles.subtitle}>PARTY WORD GAME</Text>
 
           <View style={styles.buttonGroup}>
@@ -122,17 +130,17 @@ function HowToPlayModal({ onClose }: { onClose: () => void }) {
 
   const slides = [
     {
-      icon: '🎭',
+      Icon: Drama,
       title: 'One Word, One Imposter',
       desc: 'Everyone gets the same secret word — except one player who is the IMPOSTER. They must blend in without knowing the word.',
     },
     {
-      icon: '💬',
+      Icon: MessageCircle,
       title: 'Give Clues, Stay Sneaky',
       desc: "Players take turns giving one-word clues. The imposter must give a convincing clue without revealing they don't know it.",
     },
     {
-      icon: '🗳️',
+      Icon: Vote,
       title: 'Vote & Reveal',
       desc: 'After all clues, vote on who you think is the imposter. Crew wins by catching them. Imposter wins by surviving!',
     },
@@ -147,11 +155,15 @@ function HowToPlayModal({ onClose }: { onClose: () => void }) {
     ]).start();
   }, [slide]);
 
+  const SlideIcon = slides[slide].Icon;
+
   return (
     <Pressable style={styles.modalOverlay} onPress={onClose}>
       <Pressable style={styles.modal} onPress={e => e.stopPropagation()}>
         <Animated.View style={{ opacity: slideAnim, transform: [{ translateY: slideY }] }}>
-          <Text style={styles.modalEmoji}>{slides[slide].icon}</Text>
+          <View style={styles.modalIconWrap}>
+            <SlideIcon size={28} color={COLORS.yellow} strokeWidth={1.75} />
+          </View>
           <Text style={styles.modalTitle}>{slides[slide].title}</Text>
           <Text style={styles.modalDesc}>{slides[slide].desc}</Text>
         </Animated.View>
@@ -203,9 +215,9 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255,214,0,0.08)',
+    backgroundColor: 'rgba(111,207,71,0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255,214,0,0.2)',
+    borderColor: 'rgba(111,207,71,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -214,6 +226,8 @@ const styles = StyleSheet.create({
     fontSize: 48,
     color: COLORS.white,
     letterSpacing: 6,
+    width: '100%',
+    textAlign: 'center',
   },
   subtitle: {
     fontFamily: FONTS.semiBold,
@@ -246,7 +260,7 @@ const styles = StyleSheet.create({
   modalOverlay: {
     position: 'absolute',
     inset: 0,
-    backgroundColor: 'rgba(6,4,18,0.88)',
+    backgroundColor: COLORS.violetOverlay,
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.md,
@@ -259,13 +273,19 @@ const styles = StyleSheet.create({
     maxWidth: 340,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,214,0,0.2)',
+    borderColor: 'rgba(111,207,71,0.2)',
   },
-  modalEmoji: {
-    fontSize: 48,
+  modalIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.yellowGlass,
+    borderWidth: 1,
+    borderColor: COLORS.yellowBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
     marginBottom: SPACING.sm,
-    textAlign: 'center',
-    width: '100%',
   },
   modalTitle: {
     fontFamily: FONTS.bold,

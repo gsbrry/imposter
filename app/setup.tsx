@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Animated,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Lock } from 'lucide-react-native';
+import {
+  ChevronRight, Brain, Car, House, UtensilsCrossed,
+  Clapperboard, Trophy, PawPrint, Briefcase, PartyPopper, Crown,
+} from 'lucide-react-native';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import PillButton from '../components/PillButton';
-import { CATEGORIES, CategoryKey } from '../data/words';
+import { CATEGORIES, CategoryKey, CategoryIcon } from '../data/words';
 import { storage } from '../utils/storage';
 import { useGame } from '../context/GameContext';
 
@@ -18,6 +22,18 @@ const DIFFICULTIES = [
 ] as const;
 
 const LAST_DIFFICULTY_KEY = 'IMPOSTR_LAST_DIFFICULTY';
+
+const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
+  brain: Brain,
+  car: Car,
+  house: House,
+  utensils: UtensilsCrossed,
+  clapperboard: Clapperboard,
+  trophy: Trophy,
+  paw: PawPrint,
+  briefcase: Briefcase,
+  party: PartyPopper,
+};
 
 export default function SetupScreen() {
   const router = useRouter();
@@ -90,6 +106,8 @@ export default function SetupScreen() {
             {CATEGORIES.map(cat => {
               const locked = !cat.free && !isPremium;
               const selected = category === cat.id;
+              const Icon = CATEGORY_ICONS[cat.icon];
+              const iconColor = selected ? COLORS.yellow : locked ? 'rgba(255,255,255,0.45)' : COLORS.textBody;
               return (
                 <Animated.View
                   key={cat.id}
@@ -104,7 +122,12 @@ export default function SetupScreen() {
                       locked && styles.catLocked,
                     ]}
                   >
-                    <Text style={styles.catEmoji}>{cat.emoji}</Text>
+                    {locked && (
+                      <View style={styles.premiumBadge}>
+                        <Crown size={10} color={COLORS.nearBlack} />
+                      </View>
+                    )}
+                    <Icon size={24} color={iconColor} strokeWidth={1.75} />
                     <Text style={[
                       styles.catLabel,
                       selected && styles.catLabelSelected,
@@ -112,16 +135,6 @@ export default function SetupScreen() {
                     ]}>
                       {cat.label}
                     </Text>
-                    {locked && (
-                      <>
-                        <View style={styles.lockCircle}>
-                          <Lock size={9} color={COLORS.nearBlack} />
-                        </View>
-                        <View style={styles.premiumBadge}>
-                          <Text style={styles.premiumBadgeText}>PREMIUM</Text>
-                        </View>
-                      </>
-                    )}
                   </TouchableOpacity>
                 </Animated.View>
               );
@@ -206,10 +219,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.yellowGlass,
   },
   catLocked: {
-    backgroundColor: 'rgba(255,214,0,0.08)',
-    borderColor: 'rgba(255,214,0,0.35)',
+    backgroundColor: 'rgba(111,207,71,0.08)',
+    borderColor: 'rgba(111,207,71,0.35)',
   },
-  catEmoji: { fontSize: 26 },
   catLabel: {
     fontFamily: FONTS.semiBold,
     fontSize: 11,
@@ -218,28 +230,21 @@ const styles = StyleSheet.create({
   },
   catLabelSelected: { color: COLORS.yellow },
   catLabelLocked: { color: 'rgba(255,255,255,0.6)' },
-  lockCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+  premiumBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: COLORS.yellow,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  premiumBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: COLORS.yellow,
-    borderRadius: 4,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-  },
-  premiumBadgeText: {
-    fontFamily: FONTS.extraBold,
-    fontSize: 7,
-    color: COLORS.nearBlack,
-    letterSpacing: 0.3,
+    shadowColor: COLORS.yellow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 4,
   },
 
   sectionHeader: { marginBottom: SPACING.xs },
@@ -274,7 +279,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: COLORS.textMuted,
   },
-  diffDescSelected: { color: 'rgba(255,214,0,0.6)' },
+  diffDescSelected: { color: 'rgba(111,207,71,0.6)' },
 
   startBtn: { marginTop: 0 },
 });
