@@ -207,7 +207,7 @@ export default function SettingsScreen() {
 
           {/* Premium */}
           {isPremium ? (
-            <GlassCard style={styles.card}>
+            <GlassCard plainOnAndroid style={styles.card}>
               <ListRow
                 icon={<Crown size={17} color={COLORS.honeyText} />}
                 title="Premium active"
@@ -246,7 +246,7 @@ export default function SettingsScreen() {
 
           {/* Gameplay */}
           <SectionLabel>Gameplay</SectionLabel>
-          <GlassCard style={styles.card}>
+          <GlassCard plainOnAndroid style={styles.card}>
             <ListRow
               icon={<Timer size={17} color={COLORS.honeyText} />}
               title="Round timer"
@@ -296,7 +296,7 @@ export default function SettingsScreen() {
 
           {/* Sound and feel */}
           <SectionLabel>Sound and feel</SectionLabel>
-          <GlassCard style={styles.card}>
+          <GlassCard plainOnAndroid style={styles.card}>
             <ListRow
               icon={<Volume2 size={17} color={COLORS.honeyText} />}
               title="Sound effects"
@@ -339,7 +339,7 @@ export default function SettingsScreen() {
 
           {/* Accessibility */}
           <SectionLabel>Accessibility</SectionLabel>
-          <GlassCard style={styles.card}>
+          <GlassCard plainOnAndroid style={styles.card}>
             <ListRow
               icon={<ALargeSmall size={17} color={COLORS.honeyText} />}
               title="Larger text"
@@ -369,7 +369,7 @@ export default function SettingsScreen() {
 
           {/* Word packs */}
           <SectionLabel>Word packs</SectionLabel>
-          <GlassCard style={styles.card}>
+          <GlassCard plainOnAndroid style={styles.card}>
             <ListRow
               icon={<CloudDownload size={17} color={COLORS.honeyText} />}
               title={wordsTitle}
@@ -396,7 +396,7 @@ export default function SettingsScreen() {
 
           {/* Help */}
           <SectionLabel>Help</SectionLabel>
-          <GlassCard style={styles.card}>
+          <GlassCard plainOnAndroid style={styles.card}>
             <ListRow
               icon={<LifeBuoy size={17} color={COLORS.honeyText} />}
               title="Help and support"

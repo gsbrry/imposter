@@ -6,6 +6,14 @@ import { COLORS, RADIUS, BLUR, SHADOW } from '../constants/theme';
 interface GlassCardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  /**
+   * Set on the long settings-style lists. A real blur costs a GPU pass per
+   * card, and those screens stack six of them inside a scroll view, which
+   * is where Android drops frames. Over the cream page the solid fill is
+   * near indistinguishable; the cards that carry the look, the reveal and
+   * the sheets, keep the real blur.
+   */
+  plainOnAndroid?: boolean;
 }
 
 /**
@@ -13,11 +21,14 @@ interface GlassCardProps {
  * 1px border, radius 20. Matches impostr.css `.glass`. Always sits over
  * ScreenBackground's orbs — a glass fill over a flat cream page looks dull.
  */
-function GlassCard({ children, style }: GlassCardProps) {
+function GlassCard({ children, style, plainOnAndroid }: GlassCardProps) {
+  const blurred =
+    Platform.OS !== 'web' && !(plainOnAndroid && Platform.OS === 'android');
+
   return (
     <View style={styles.shadowWrap}>
-      <View style={[styles.card, style]}>
-        {Platform.OS !== 'web' && (
+      <View style={[styles.card, plainOnAndroid && styles.cardPlain, style]}>
+        {blurred && (
           <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
         )}
         {children}
@@ -41,6 +52,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     overflow: 'hidden',
+  },
+  // The opaque stand-in for the blur, same fill the web build already uses.
+  cardPlain: {
+    backgroundColor: COLORS.glassFillSolid,
   },
 });
 

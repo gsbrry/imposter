@@ -98,7 +98,7 @@ export default function StatsScreen() {
           </View>
 
           {/* Win rate */}
-          <GlassCard style={styles.rateCard}>
+          <GlassCard plainOnAndroid style={styles.rateCard}>
             <View style={styles.ringWrap}>
               <TimerRing size={92} progress={winRate / 100} strokeWidth={9}>
                 <AppText style={styles.ringValue}>{winRate}%</AppText>
@@ -121,7 +121,7 @@ export default function StatsScreen() {
           <View style={styles.grid}>
             {tiles.map(({ label, value, Icon }) => (
               <View key={label} style={styles.cell}>
-                <GlassCard style={styles.statCard}>
+                <GlassCard plainOnAndroid style={styles.statCard}>
                   <Icon size={16} color={COLORS.honeyText} />
                   <AppText style={styles.statValue}>{value}</AppText>
                   <SectionLabel>{label}</SectionLabel>
@@ -131,7 +131,7 @@ export default function StatsScreen() {
           </View>
 
           {/* Best category */}
-          <GlassCard style={styles.bestCard}>
+          <GlassCard plainOnAndroid style={styles.bestCard}>
             <View style={styles.bestTile}>
               <BestIcon size={17} color={COLORS.honeyText} />
             </View>
