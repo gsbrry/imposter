@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "updatedAt": "2026-10-24",
+  "packs": [
+    {
+      "category": "festival",
+      "id": "diwali-2026",
+      "title": "Diwali",
+      "free": true,
+      "availableFrom": "2026-10-25",
+      "availableUntil": "2026-11-15",
+      "words": {
+        "easy": ["Diya", "Rangoli", "Sweets", "Lantern", "Sparkler", "Candle", "Gifts", "Lights", "Fireworks", "Laddoo"],
+        "medium": ["Lakshmi Puja", "Dhanteras", "Kaju Katli", "Torans", "New Clothes", "Card Party", "Marigold", "Puja Thali", "Flower Pot", "Chakri"],
+        "hard": ["Bhai Dooj", "Govardhan Puja", "Kandil", "Naraka Chaturdashi", "Chopda Pujan", "Annakut", "Ahoi Ashtami", "Kali Puja", "Bali Pratipada", "Rangoli Stencil"]
+      }
+    }
+  ]
+}

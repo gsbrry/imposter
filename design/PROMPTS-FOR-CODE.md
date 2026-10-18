@@ -71,6 +71,33 @@ Keep the existing imposter selection, word selection, timer, voting and tie logi
 
 ---
 
+## Prompt 3b: Random starter and new defaults
+
+```
+Stay on branch redesign-v2. Read design/specs/game-flow-changes.md, sections 1 and 2, and open design/screens/37-who-starts.html.
+1. After the last word reveal, show the Who starts screen: pick a random starting player, show the clue order going round from them, then Start clues. Clue rounds use that order. Rules: imposter can start; no player starts two games in a row (3+ players); uniform random otherwise; Pick again rerolls under the same rules. Word reveal order is unchanged.
+2. Defaults: timer per clue Off, clue rounds 2. Only for new installs or players who never changed these settings.
+3. Add a unit test that simulates 100 games of 5 players and checks: everyone starts at least once, nobody starts twice in a row, imposter start rate is close to 1 in 5.
+Keep all other game logic. Theme tokens only. Run typecheck, lint and the test. Commit. Do not push.
+```
+
+---
+
+## Prompt 3c: One more round, Skip vote, reload crash
+
+(The clue-round loop itself was already built in Prompt 3b.)
+
+```
+Stay on branch redesign-v2. The clue-round loop is already built; do not rework it.
+1. One more round: when the last player of the final clue round finishes, show two buttons: "Go to vote" (primary) and "One more round" (secondary). One more round adds one full pass in the same order and bumps the header to "Clue round X of N+1". It can be used any number of times.
+2. Skip vote: add the dashed "Skip vote" cell from design/screens/11-vote.html. A skipped vote is stored as null and counts for nobody. The tally shows "x skipped". If every vote is skipped, go to the result in its existing "Voting skipped" state.
+3. Fix the crash when the web build loads /reveal (or any in-game route) directly with no players: if there is no game in progress, redirect to Home instead of calling selectImposter.
+4. Keep hold-to-peek with the 3s auto-hide on the reveal.
+Add unit tests: One more round adds exactly one pass in the same order; votes with nulls tally correctly; all-null votes give the skipped state. Run typecheck, lint and npm test. Commit. Do not push.
+```
+
+---
+
 ## Prompt 4: Stats, Settings, Premium, Suggest
 
 ```
@@ -110,6 +137,28 @@ Read design/specs/phase1-additions.md. Build items 2, 6, 7 and 3 and meet every 
 - Item 3 Privacy: update public/privacy-policy.html with plain sections (what we collect, why, who processes it, how long, contact) matching the Phase 1 column of the table in the spec.
 
 Run typecheck, lint and check-words. Commit.
+```
+
+---
+
+## Prompt 6 (current version): word updates, age rating, privacy, device model
+
+Sentry is moved to the backlog (Prompt 6b) until the account exists.
+
+```
+Stay on branch redesign-v2. Read design/specs/phase1-additions.md. Build items 6, 7 and 3 now; item 2 (Sentry) is on hold.
+
+0. Add expo-device and include the phone model and Android version in the report form's device details.
+1. Privacy: set PRIVACY_URL in constants/support.ts to https://apps.obio.in/imposter/#privacy and TERMS_URL to https://apps.obio.in/imposter/#terms. Link both from Settings (Help section) and the Premium screen footer. The website itself is hosted separately; do not change public/privacy-policy.html beyond pointing it to the new URL.
+2. Item 6, word updates: the feed will live at https://apps.obio.in/imposter/words/feed.json. Read it from EXPO_PUBLIC_WORDS_FEED_URL with that as the default. Create design/website/words/feed.json shaped like design/specs/words-feed.example.json with no extra packs, so I can upload it. Fetch at most once a day, never block, validate the whole file (version, known categories, short plain strings, under 1 MB), reject it entirely if anything fails. Cache in AsyncStorage, merge with bundled words, honour availableFrom and availableUntil. Show 35-new-words.html once when new words arrive. Wire the Settings Word packs row and Check button to the real feed and real last-updated date.
+3. Item 7, age rating: add npm run check-words that fails if any bundled or feed word is on a blocked list file; add the list with a starter set and run it inside npm test.
+Theme tokens only. Run typecheck, lint and npm test. Commit. Do not push. Finish with the list of things I must set up myself.
+```
+
+## Prompt 6b (backlog): Sentry crash reporting
+
+```
+Stay on branch redesign-v2. Build item 2 of design/specs/phase1-additions.md: @sentry/react-native with its Expo config plugin, release builds only, default PII off, strip player names and words from events and breadcrumbs. DSN from EXPO_PUBLIC_SENTRY_DSN; auth token from the EAS secret SENTRY_AUTH_TOKEN only. If the DSN is missing the app runs normally with Sentry off. Upload source maps during EAS build. Typecheck, lint, npm test. Commit. Do not push.
 ```
 
 ---

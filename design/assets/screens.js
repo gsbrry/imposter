@@ -34,6 +34,7 @@ const SPRITE=`<svg width="0" height="0" style="position:absolute" aria-hidden="t
 <symbol id="bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15zM10 20.5h4"/></symbol>
 <symbol id="msg" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
 <symbol id="trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 01-10 0zM7 6H4v1.5A3 3 0 007 10.5M17 6h3v1.5a3 3 0 01-3 3M12 14v3M9.5 17h5v3h-5z"/></symbol>
+<symbol id="dice" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></symbol>
 <symbol id="refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/></symbol>
 <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
 <symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .6-1.5 1.2-1.5 2.3M12 17h0"/></symbol>
@@ -131,13 +132,13 @@ add({id:'how-to-play',group:'core',name:'How to play',note:'Sheet over Home',rou
 add({id:'category',group:'core',name:'Choose category',note:'Setup step 1',route:'app/setup.tsx',html:()=>`<div class="body">${NAV(1,'Step 1 of 3')}
  <div class="col" style="gap:4px"><h2 class="h h-l">Pick a category</h2><p class="sub">Words come from this pack.</p></div>
  <div class="catgrid">${CATS.map((c,i)=>`<div class="cat glass ${i===0?'sel':''}">${c[2]?`<svg class="i lock"><use href="#lock"/></svg>`:''}<span class="tile-ic">${I(c[0])}</span><span class="n">${c[1]}</span><span class="c">150 words</span></div>`).join('')}</div>
- <div class="col" style="gap:8px"><span class="lab">Difficulty</span><div class="seg glass"><button>Easy</button><button class="on">Medium</button><button>Chaos</button></div><p class="sub" style="font-size:12px">Standard words, no hints.</p></div>
+ <div class="col" style="gap:8px"><span class="lab">Difficulty</span><div class="seg glass"><button>Easy</button><button class="on">Medium</button><button>Hard</button><button>Chaos</button></div><p class="sub" style="font-size:12px">Standard words.</p></div>
  <div class="spacer"></div><button class="btn btn-gold">Continue${I('arrow')}</button></div>`});
 
 add({id:'game-settings',group:'core',name:'Game settings',note:'Setup step 2',route:'app/game-settings.tsx',html:()=>`<div class="body">${NAV(2,'Step 2 of 3')}
  <h2 class="h h-l">Game settings</h2>
  <div class="glass pad col" style="gap:10px"><span class="lab">Players</span><div class="stepper"><button class="iconbtn" aria-label="Fewer">${I('minus')}</button><span class="big-num">5</span><button class="iconbtn" aria-label="More">${I('plus')}</button></div><div class="row" style="justify-content:center;gap:5px">${[1,2,3,4,5].map(n=>`<span class="av a${n}" style="width:22px;height:22px;border-radius:7px"></span>`).join('')}<span style="width:22px;height:22px;border-radius:7px;border:1.5px dashed var(--muted)"></span></div></div>
- <div class="glass pad col" style="gap:10px"><div class="navrow"><span class="lab">Timer per clue</span><span class="gold" style="font-size:12.5px;font-weight:700">60 sec</span></div><div class="chips"><span class="chip">Off</span><span class="chip">30s</span><span class="chip on">60s</span><span class="chip">90s</span><span class="chip">Custom</span></div></div>
+ <div class="glass pad col" style="gap:10px"><div class="navrow"><span class="lab">Timer per clue</span><span class="gold" style="font-size:12.5px;font-weight:700">Off</span></div><div class="chips"><span class="chip on">Off</span><span class="chip">30s</span><span class="chip">60s</span><span class="chip">90s</span><span class="chip">Custom</span></div></div>
  <div class="glass" style="border-radius:20px"><div class="list-row"><div class="grow"><div class="t">Clue rounds</div><div class="d">Turns before voting</div></div><div class="row" style="gap:6px"><button class="iconbtn glass" style="width:32px;height:32px" aria-label="Fewer">${I('minus')}</button><span class="num" style="font-weight:700;font-size:17px;width:16px;text-align:center">2</span><button class="iconbtn glass" style="width:32px;height:32px" aria-label="More">${I('plus')}</button></div></div>
  <div class="list-row"><div class="grow"><div class="t">Team votes together</div><div class="d">One shared vote on this phone</div></div><button class="tog" aria-pressed="true" aria-label="Team votes together"></button></div></div>
  <div class="spacer"></div><button class="btn btn-gold">Add player names${I('arrow')}</button></div>`});
@@ -332,6 +333,13 @@ add({id:'new-words',group:'extra',name:'New words added',note:'Sheet on Home aft
  <button class="btn btn-gold">${I('play')}Play Diwali pack</button><button class="btn btn-text">Later</button></div>`});
 
 add({id:'settings-scrolled',group:'extra',name:'Settings, scrolled',note:'Accessibility, words, help',route:'app/(tabs)/settings.tsx',tab:'Settings',scroll:true,html:()=>S.find(x=>x.id==='settings').html()});
+add({id:'who-starts',group:'core',name:'Who starts',note:'Random each game',route:'app/clue-round.tsx (intro)',html:()=>`<div class="body center" style="justify-content:center;gap:18px">
+ <span class="lab">Everyone has seen their word</span>
+ <div style="position:relative;width:120px;height:120px;display:grid;place-items:center"><span style="position:absolute;inset:0;border-radius:38px;background:var(--gold);opacity:.35;filter:blur(12px);animation:pulse 2.4s ease-in-out infinite"></span><span class="av a4" style="position:relative;width:104px;height:104px;border-radius:32px;font-size:44px">D</span><span class="tile-ic ink" style="position:absolute;right:-6px;bottom:-6px;width:38px;height:38px;border-radius:12px;border:3px solid var(--bg)">${I('dice','width:18px;height:18px')}</span></div>
+ <div class="col center" style="gap:6px"><h2 class="h hero" style="font-size:clamp(34px,12cqi,46px)">Diya starts</h2><p class="sub">Picked at random. Then go clockwise.</p></div>
+ <div class="glass" style="border-radius:18px;padding:12px 14px;width:100%"><div class="lab" style="margin-bottom:10px">Clue order</div><div class="row" style="gap:6px;justify-content:center;flex-wrap:wrap">${['Diya','Rohan','Aarav','Meera','Kabir'].map((n,i)=>`<span class="chip ${i===0?'on':''}"><span style="font-weight:700">${i+1}</span>${n}</span>`).join('')}</div></div>
+ <span class="pill">2 clue rounds &middot; timer off</span>
+ <div class="col" style="width:100%;gap:8px;margin-top:6px"><button class="btn btn-gold">${I('play')}Start clues</button><button class="btn btn-text">${I('dice')}Pick again</button></div></div>`});
 window.IMP={S,SPRITE,STATUS,ORBS,TABBAR,MARK,
   phone(s,{w=340,h=736,frame=true}={}){
     const inner=`<div class="scr">${ORBS}${frame?STATUS:''}${s.html()}${s.tab?TABBAR(s.tab):''}</div>`;
