@@ -11,3 +11,58 @@
 | Session scoreboard | Later | Idea | See specs/game-flow-changes.md section 3 |
 | Online play | Phase 2 | Designed | Screens 17 to 22 |
 | Rewards, share, invite | Phase 1.5 | Designed | Screens 26 to 30 |
+| Player setup: add/remove, edit affordance | Code | To do next session | Game settings (step 2) and player names (step 3). See "Player setup" below. |
+| Reveal screen rework | Code | To do next session, needs one decision first | Press-and-hold, button colour and text, header placement, undo safety. See "Reveal screen" below. |
+
+---
+
+## Player setup (requested 2026-10-18)
+
+**Game settings (step 2 — `app/game-settings.tsx`)**
+- The player-count stepper's `+` button is reported as not clearly visible. It currently
+  renders as a honey-coloured plus icon (`components/Stepper.tsx`) — check contrast and
+  size against the card background before assuming it is a code bug; may just need a
+  stronger visual treatment (filled circle, bigger hit target).
+
+**Player names (step 3 — `app/player-names.tsx`)**
+- Names are already directly editable today (a live `TextInput` per row, no tap-to-edit
+  step) — but there is no visual cue that they're editable. Add a light grey pencil icon
+  next to each name as an edit affordance.
+- Add a `+` button on this screen to add another player directly here, instead of only
+  being able to set the count back on step 2.
+- Add a way to remove a player from this screen (e.g. a delete icon per row). Needs a
+  floor: keep the existing 3-player minimum (`MIN_PLAYERS` in `game-settings.tsx`) in
+  sync if removal can drop below it.
+
+## Reveal screen (requested 2026-10-18)
+
+Current behaviour in `app/reveal.tsx`, for context: press-and-hold on the card reveals
+the word (`onPressIn`), hides on release (`onPressOut`) **and also auto-hides after 3
+seconds even while still held** (`PEEK_MS` timer runs regardless of finger state). The
+"Hide and pass" button only renders once the word is hidden again
+(`hasSeenWord && !wordVisible`), so it is off-screen the whole time the card is held.
+
+Requested changes:
+- While the player is touching and holding, keep the word revealed for as long as they
+  hold — remove the 3-second auto-hide while still pressed (it can still apply after
+  release, if that is wanted as a safety timeout).
+- Keep it the *same* card throughout, not a swap to what reads as a different pop-up
+  card for the revealed state vs. the pre-reveal "press and hold" prompt.
+- The pass/next button should be visible **while holding**, not only after release so
+  it is no longer hidden behind the hold gesture.
+- Make that button the primary (honey) colour instead of the current ink `InkButton`.
+- Button label: "Pass to [Player name]" instead of the current generic "Hide and pass".
+- Move the "PLAYER 1 OF 3" counter from the top header down to sit just above the
+  action button. Raphy's reasoning: clearer there, worth doing — agreed, no objection
+  from this side either.
+
+**Needs a decision before building — flagged, not assumed:** "if someone accidentally
+taps pass to next player, I need an option to move to previous screen." Two different
+things this could mean, with different privacy implications:
+  1. Undo the tap and return to the *same* player's own reveal screen (safe — it is
+     still their own word).
+  2. Go back and show the *previous* player's card again (not safe by default: the
+     phone has already moved on, so whoever is holding it now would see the previous
+     player's identity and word — would need its own hold-to-reveal gate re-applied,
+     not just a raw "go back").
+  Confirm which with Raphy before implementing.
