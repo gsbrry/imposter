@@ -33,6 +33,17 @@ export const PRODUCTS = {
   lifetime: 'lifetime',
 };
 
+/**
+ * Whether the paywall accepts real purchases.
+ *
+ * False until three things exist: a Play Console merchant account, the
+ * three products created there and imported into RevenueCat, and a
+ * service account connected so RevenueCat can validate them. Until then
+ * the premium screen is a preview only — no purchase button, no free
+ * unlock. Flip to true once all three are confirmed live.
+ */
+export const PURCHASES_ENABLED = false;
+
 /** A key we must not hand to the SDK: missing, a sandbox test key, or an unfilled placeholder. */
 function isUnusableKey(key: string): boolean {
   return !/^(goog|appl)_/.test(key);

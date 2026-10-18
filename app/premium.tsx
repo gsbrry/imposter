@@ -16,7 +16,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import TextButton from '../components/TextButton';
 import { usePremium } from '@/hooks/usePremium';
 import { useGame } from '../context/GameContext';
-import { PRODUCTS } from '../constants/revenuecat';
+import { PRODUCTS, PURCHASES_ENABLED } from '../constants/revenuecat';
 
 type PurchasesPackage = import('react-native-purchases').PurchasesPackage;
 type PlanKey = 'monthly' | 'yearly' | 'lifetime';
@@ -91,6 +91,7 @@ export default function PremiumScreen() {
   const toastAnim = useRef(new Animated.Value(0)).current;
 
   const loadOfferings = useCallback(async () => {
+    if (!PURCHASES_ENABLED) return;
     const offerings = await getOfferings();
     if (!offerings?.current) return;
     const map: Record<string, PurchasesPackage> = {};
@@ -126,11 +127,12 @@ export default function PremiumScreen() {
   };
 
   const handlePurchase = async () => {
+    // Belt and braces: the button is disabled too, but this stops anything
+    // granting premium for free while there is no real product to sell.
+    if (!PURCHASES_ENABLED) return;
     const pkg = packages[selected];
     if (!pkg) {
-      // No real offerings yet (test mode) — mock success.
-      setIsPremium(true);
-      triggerSuccess();
+      showToast('This plan is not available right now.');
       return;
     }
     setLoading(true);
@@ -218,6 +220,9 @@ export default function PremiumScreen() {
                 Impostr <AppText style={styles.titleAccent}>Pro</AppText>
               </AppText>
               <AppText style={styles.sub}>Every pack, every mode, no ads.</AppText>
+              {!PURCHASES_ENABLED && (
+                <AppText style={styles.comingSoon}>Purchases open soon. Here is what is included.</AppText>
+              )}
             </View>
 
             {/* What you get */}
@@ -271,11 +276,17 @@ export default function PremiumScreen() {
             <View style={styles.spacer} />
 
             <PrimaryButton
-              label={loading ? 'Working...' : `Continue with ${selectedLabel}`}
+              label={
+                !PURCHASES_ENABLED ? 'Coming soon'
+                  : loading ? 'Working...'
+                  : `Continue with ${selectedLabel}`
+              }
               onPress={handlePurchase}
-              disabled={loading}
+              disabled={!PURCHASES_ENABLED || loading}
             />
-            <AppText style={styles.note}>Cancel any time in Play Store</AppText>
+            <AppText style={styles.note}>
+              {PURCHASES_ENABLED ? 'Cancel any time in Play Store' : 'We will let you know the moment this opens.'}
+            </AppText>
           </ScrollView>
         </View>
       </SafeAreaView>
@@ -333,6 +344,12 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     lineHeight: 19.6,
     color: COLORS.textBody,
+  },
+  comingSoon: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 12.5,
+    color: COLORS.honeyText,
+    marginTop: 2,
   },
 
   benefits: { borderRadius: 18, paddingVertical: 6 },
