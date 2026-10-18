@@ -301,19 +301,134 @@ Live at: `impostr.netlify.app` (or your custom domain)
 
 ---
 
-## Keeping Code Updated
+## Git Workflow
 
-### After making changes in Bolt:
-1. In Bolt → click GitHub sync button
-2. Commit and push changes
+### The rule that drives everything else
 
-### On your Windows machine:
-```bash
-cd impostr
-git pull
-npm install
-eas build --platform android --profile preview
+A mobile release is **one artifact, promoted**. You build a single `.aab`, then move
+that same file through Play Console tracks: Internal, then Closed, then Open, then
+Production. You never rebuild between tracks.
+
+That is why this project has **no long-lived `testing` or `production` branch**. A
+separate testing branch would mean testing one binary and shipping a different one,
+which defeats the point of testing. The Play Console tracks are the test stages.
+Branches are only for work in progress.
+
+### Branches
+
+| Branch | Lifetime | Purpose |
+|---|---|---|
+| `main` | permanent | Always releasable. Every commit here could ship. Tagged when it does. |
+| `feature/<name>` | days | One piece of work. Branch from `main`, merge back, delete. |
+| `hotfix/<name>` | hours | Urgent production fix. Branch from the released tag, not from `main`. |
+
+Tags mark what was actually built: `v1.1.0`, `v1.1.1`. The tag is the record of which
+commit became which Play Store release.
+
+### Flow
+
+```mermaid
+gitGraph
+   commit tag: "v1.0.0"
+   branch feature/who-starts
+   commit
+   commit
+   checkout main
+   merge feature/who-starts
+   branch feature/accessibility
+   commit
+   checkout main
+   merge feature/accessibility
+   commit tag: "v1.1.0"
+   branch hotfix/vote-crash
+   commit
+   checkout main
+   merge hotfix/vote-crash
+   commit tag: "v1.1.1"
 ```
+
+### From branch to Play Store
+
+```
+  feature/*  ──┐
+               ├──►  main  ──►  tag v1.1.0  ──►  eas build  ──►  one .aab
+  hotfix/*   ──┘                                                     │
+                                                                     ▼
+                              Play Console:  Internal ─► Closed ─► Open ─► Production
+                                             (the same file promoted, never rebuilt)
+```
+
+### Day to day, one developer
+
+```bash
+# start a piece of work
+git checkout main
+git pull
+git checkout -b feature/session-scoreboard
+
+# ... make changes, committing as you go ...
+npm run typecheck && npm run lint && npm test
+
+# merge back
+git checkout main
+git pull
+git merge feature/session-scoreboard
+git push
+git branch -d feature/session-scoreboard
+```
+
+### Cutting a release
+
+```bash
+git checkout main
+git pull
+npm run typecheck && npm run lint && npm test
+
+# bump "version" in app.json, then
+git commit -am "Release prep 1.2.0"
+git tag -a v1.2.0 -m "1.2.0"
+git push && git push --tags
+
+eas build --platform android --profile production
+# upload the .aab to Play Console, Internal testing first
+```
+
+`versionCode` is handled by EAS `autoIncrement`. Do not set it by hand.
+
+### Fixing something already live
+
+```bash
+git checkout -b hotfix/vote-crash v1.1.0   # branch from the tag, not main
+# ... fix, test ...
+git checkout main && git merge hotfix/vote-crash
+git tag -a v1.1.1 -m "1.1.1" && git push && git push --tags
+```
+
+Branching from the tag keeps unrelated work in `main` out of an urgent fix.
+
+### When the team grows
+
+The branch model does not change. Add process around it:
+
+| Add | Why |
+|---|---|
+| Pull requests instead of direct merge | A second pair of eyes before `main` |
+| Branch protection on `main` | No direct pushes, no force pushes |
+| Required status checks | `typecheck`, `lint`, `test` must pass to merge |
+| CODEOWNERS | Routes reviews to whoever owns that area |
+| Squash merge | One commit per feature keeps `main` readable |
+
+Only add a shared `develop` branch if you ever need to stage several unreleased
+features together. For one developer it is pure overhead.
+
+### Rules worth keeping
+
+- `main` always builds. If it does not, fixing that comes before new work.
+- Branch names say what, not who: `feature/online-rooms`, not `feature/raphy`.
+- Commit messages say why, not what the diff shows.
+- Never commit secrets. Public RevenueCat keys (`goog_`, `appl_`) are fine. Anything
+  else belongs in EAS secrets.
+- Never rewrite published history on `main`.
 
 ---
 
