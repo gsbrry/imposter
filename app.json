@@ -10,11 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "in.gooseberrymedia.imposter",
+      "bundleIdentifier": "com.gooseberrymedia.impostr",
       "buildNumber": "1"
     },
     "android": {
-      "package": "in.gooseberrymedia.imposter",
+      "package": "com.gooseberrymedia.impostr",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-foreground-1024.png",

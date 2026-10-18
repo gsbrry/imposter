@@ -467,20 +467,10 @@ Located in `utils/getWord.ts`
 ## Package Name
 
 ```
-in.gooseberrymedia.imposter
+com.gooseberrymedia.impostr
 ```
 
-> This is permanent. Google Play uses the package name as the app's primary key,
-> so it can never be changed on an existing listing. Changing it means creating a
-> new app and losing that listing's installs, ratings and reviews.
-
-Note for anyone editing the native code: `in` is a reserved keyword in Kotlin, so
-the generated `MainActivity.kt` and `MainApplication.kt` declare their package with
-backticks, as `` package `in`.gooseberrymedia.imposter ``. Expo's prebuild does this
-automatically. Do not "tidy" the backticks away, it will not compile.
-
-The previous name `com.gooseberrymedia.impostr` was used for closed testing builds
-up to versionCode 6 and is now retired. It cannot be reused.
+> This is permanent — never change after first Play Store upload.
 
 ---
 

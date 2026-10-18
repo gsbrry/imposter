@@ -79,7 +79,7 @@ type app.json
 
 Confirm you see:
 ```json
-"package": "in.gooseberrymedia.imposter"
+"package": "com.gooseberrymedia.impostr"
 ```
 
 ---
