@@ -57,6 +57,15 @@
           "project": "SENTRY_PROJECT_SLUG",
           "url": "https://sentry.io/"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
       ]
     ],
     "experiments": {
