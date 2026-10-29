@@ -11,8 +11,8 @@
 | Session scoreboard | Later | Idea | See specs/game-flow-changes.md section 3 |
 | Online play | Phase 2 | Designed | Screens 17 to 22 |
 | Rewards, share, invite | Phase 1.5 | Designed | Screens 26 to 30 |
-| Player setup: add/remove, edit affordance | Code | To do next session | Game settings (step 2) and player names (step 3). See "Player setup" below. |
-| Reveal screen rework | Code | To do next session, needs one decision first | Press-and-hold, button colour and text, header placement, undo safety. See "Reveal screen" below. |
+| Player setup: add/remove, edit affordance | Code | Done 2026-10-29 | Game settings (step 2) and player names (step 3). See "Player setup" below. |
+| Reveal screen rework | Code | Done 2026-10-29 | Press-and-hold, button colour and text, header placement, undo safety. See "Reveal screen" below. |
 
 ---
 
@@ -56,13 +56,13 @@ Requested changes:
   action button. Raphy's reasoning: clearer there, worth doing — agreed, no objection
   from this side either.
 
-**Needs a decision before building — flagged, not assumed:** "if someone accidentally
-taps pass to next player, I need an option to move to previous screen." Two different
-things this could mean, with different privacy implications:
-  1. Undo the tap and return to the *same* player's own reveal screen (safe — it is
-     still their own word).
-  2. Go back and show the *previous* player's card again (not safe by default: the
-     phone has already moved on, so whoever is holding it now would see the previous
-     player's identity and word — would need its own hold-to-reveal gate re-applied,
-     not just a raw "go back").
-  Confirm which with Raphy before implementing.
+**Decided and built 2026-10-29:** option 2 — a back button that returns to the
+*previous* player's card — shipped as a `GameSettings.revealBackEnabled` toggle in
+Game settings, on by default. The privacy gap this opens (whoever now holds the
+phone can press-and-hold to see the previous player's word) is mitigated but not
+eliminated: going back re-shows that player's own pass-the-phone prompt, gated
+behind its own fresh press-and-hold rather than auto-revealing — it does not hand
+the word straight over. A one-time tip banner nudges players that this can be
+turned off in Game Settings; it only shows after a real gap since the last launch
+(`storage.LONG_ABSENCE_MS`, 7 days) and never on a first-ever install, and only
+ever once (`storage.getRevealBackTipShown`).

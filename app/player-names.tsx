@@ -8,6 +8,8 @@ import { useRouter } from 'expo-router';
 import Play from 'lucide-react-native/dist/esm/icons/play';
 import Plus from 'lucide-react-native/dist/esm/icons/plus';
 import X from 'lucide-react-native/dist/esm/icons/x';
+import Pencil from 'lucide-react-native/dist/esm/icons/pencil';
+import Trash2 from 'lucide-react-native/dist/esm/icons/trash-2';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import StepHeader from '../components/StepHeader';
@@ -18,6 +20,11 @@ import PrimaryButton from '../components/PrimaryButton';
 import { storage } from '../utils/storage';
 import { useGame } from '../context/GameContext';
 import { useWebFocusRing } from '../hooks/useWebFocusRing';
+
+// Keep in sync with MIN_PLAYERS in game-settings.tsx — removal here must
+// not be able to take the lineup below what a game can be played with.
+const MIN_PLAYERS = 3;
+const MAX_PLAYERS = 15;
 
 export default function PlayerNamesScreen() {
   const router = useRouter();
@@ -37,6 +44,17 @@ export default function PlayerNamesScreen() {
 
   const updateName = (index: number, name: string) => {
     setPlayers(prev => prev.map((p, i) => (i === index ? { ...p, name } : p)));
+  };
+
+  const addPlayer = () => {
+    setPlayers(prev => {
+      if (prev.length >= MAX_PLAYERS) return prev;
+      return [...prev, { id: `player_${Date.now()}`, name: '', iconIndex: prev.length, score: 0 }];
+    });
+  };
+
+  const removePlayer = (index: number) => {
+    setPlayers(prev => (prev.length <= MIN_PLAYERS ? prev : prev.filter((_, i) => i !== index)));
   };
 
   const fillFromSaved = (name: string) => {
@@ -91,8 +109,26 @@ export default function PlayerNamesScreen() {
                 index={index}
                 showDivider={index > 0}
                 onChangeName={updateName}
+                onRemove={removePlayer}
+                canRemove={players.length > MIN_PLAYERS}
               />
             ))}
+            {players.length < MAX_PLAYERS && (
+              <>
+                <View style={styles.divider} />
+                <TouchableOpacity
+                  style={styles.addRow}
+                  onPress={addPlayer}
+                  accessibilityRole="button"
+                  accessibilityLabel="Add another player"
+                >
+                  <View style={styles.addIcon}>
+                    <Plus size={16} color={COLORS.ink} />
+                  </View>
+                  <AppText style={styles.addLabel}>Add player</AppText>
+                </TouchableOpacity>
+              </>
+            )}
           </GlassCard>
 
           {unusedSaved.length > 0 && (
@@ -136,13 +172,15 @@ export default function PlayerNamesScreen() {
 }
 
 const PlayerRow = React.memo(function PlayerRow({
-  name, index, showDivider, onChangeName,
+  name, index, showDivider, onChangeName, onRemove, canRemove,
 }: {
   name: string;
   index: number;
   showDivider: boolean;
   /** Takes the row index so one stable handler serves every row. */
   onChangeName: (index: number, text: string) => void;
+  onRemove: (index: number) => void;
+  canRemove: boolean;
 }) {
   const focusRing = useWebFocusRing();
 
@@ -162,7 +200,20 @@ const PlayerRow = React.memo(function PlayerRow({
           maxLength={20}
           accessibilityLabel={`Name for player ${index + 1}`}
         />
+        {/* Visual-only cue — the field above is already directly editable. */}
+        <Pencil size={13} color={COLORS.textFaint} />
         <AppText style={styles.slot}>P{index + 1}</AppText>
+        {canRemove && (
+          <TouchableOpacity
+            style={styles.removeBtn}
+            onPress={() => onRemove(index)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={`Remove ${name.trim() || `player ${index + 1}`}`}
+          >
+            <Trash2 size={15} color={COLORS.textMuted} />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -204,7 +255,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 9,
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
@@ -222,10 +273,35 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: COLORS.textMuted,
   },
+  removeBtn: {
+    paddingLeft: 2,
+  },
   divider: {
     height: 1,
     marginHorizontal: 12,
     backgroundColor: COLORS.divider,
+  },
+  addRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  addIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: COLORS.textMuted,
+  },
+  addLabel: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 14,
+    color: COLORS.ink,
   },
 
   recent: { gap: 8 },

@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
-  View, StyleSheet, Pressable, Animated, Easing, Platform,
+  View, StyleSheet, Pressable, Animated, Easing, Platform, TouchableOpacity,
 } from 'react-native';
 import AppText from '../components/AppText';
+import { BlurView } from 'expo-blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import EyeOff from 'lucide-react-native/dist/esm/icons/eye-off';
 import Pointer from 'lucide-react-native/dist/esm/icons/pointer';
+import ArrowLeft from 'lucide-react-native/dist/esm/icons/arrow-left';
 import X from 'lucide-react-native/dist/esm/icons/x';
 import Brain from 'lucide-react-native/dist/esm/icons/brain';
 import Car from 'lucide-react-native/dist/esm/icons/car';
@@ -17,10 +19,10 @@ import Trophy from 'lucide-react-native/dist/esm/icons/trophy';
 import PawPrint from 'lucide-react-native/dist/esm/icons/paw-print';
 import Briefcase from 'lucide-react-native/dist/esm/icons/briefcase';
 import PartyPopper from 'lucide-react-native/dist/esm/icons/party-popper';
-import { COLORS, FONTS, SPACING } from '../constants/theme';
+import { COLORS, FONTS, SPACING, SHADOW, BLUR } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import RevealCard from '../components/RevealCard';
-import InkButton from '../components/InkButton';
+import PrimaryButton from '../components/PrimaryButton';
 import IconButton from '../components/IconButton';
 import Pill from '../components/Pill';
 import ProgressBar from '../components/ProgressBar';
@@ -32,9 +34,6 @@ import { storage } from '../utils/storage';
 import { getWord } from '../utils/getWord';
 import { selectImposter, selectTwoImposters } from '../utils/selectImposter';
 import { HINTS, CATEGORIES, CategoryIcon, CategoryKey, Difficulty } from '../data/words';
-
-// How long the word stays up once revealed, matching the card's countdown bar.
-const PEEK_MS = 3000;
 
 const CATEGORY_ICONS: Record<CategoryIcon, typeof Brain> = {
   brain: Brain,
@@ -79,16 +78,15 @@ async function pulse() {
 
 export default function RevealScreen() {
   const router = useRouter();
-  const { game, setGame, resetGame } = useGame();
+  const { game, setGame, resetGame, longAbsence } = useGame();
   const hasGame = useRequireGame();
   const { reduceMotion, screenReader } = useAccessibility();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [wordVisible, setWordVisible] = useState(false);
   const [hasSeenWord, setHasSeenWord] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
+  const [showBackTip, setShowBackTip] = useState(false);
 
-  const peekAnim = useRef(new Animated.Value(1)).current;
-  const peekTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const entryAnim = useRef(new Animated.Value(0)).current;
   const entryY = useRef(new Animated.Value(16)).current;
   const holdPulse = useRef(new Animated.Value(0)).current;
@@ -144,30 +142,28 @@ export default function RevealScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasGame, reduceMotion]);
 
-  useEffect(() => () => clearTimeout(peekTimer.current), []);
+  // The one-time nudge that going back can be turned off — only once ever,
+  // and only after a real gap since the last launch (see SessionTracker in
+  // app/_layout.tsx), so it never shows up on a fresh install or every reopen.
+  useEffect(() => {
+    if (!hasGame || !longAbsence || !game.gameSettings.revealBackEnabled) return;
+    storage.getRevealBackTipShown().then(alreadyShown => {
+      if (alreadyShown) return;
+      setShowBackTip(true);
+      storage.setRevealBackTipShown(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasGame]);
 
   const hideWord = useCallback(() => {
-    clearTimeout(peekTimer.current);
     setWordVisible(false);
-    peekAnim.setValue(1);
-  }, [peekAnim]);
+  }, []);
 
   const showWord = useCallback(() => {
     setWordVisible(true);
     setHasSeenWord(true);
     pulse();
-
-    peekAnim.setValue(1);
-    Animated.timing(peekAnim, {
-      toValue: 0,
-      duration: PEEK_MS,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    }).start();
-
-    clearTimeout(peekTimer.current);
-    peekTimer.current = setTimeout(hideWord, PEEK_MS);
-  }, [peekAnim, hideWord]);
+  }, []);
 
   const exitGame = () => {
     resetGame();
@@ -184,6 +180,16 @@ export default function RevealScreen() {
       // The word reveal order itself is unchanged.
       router.push('/who-starts');
     }
+  };
+
+  // Undoes a mis-tap of "pass": re-shows the previous player's own
+  // pass-the-phone prompt, gated behind its own press-and-hold again rather
+  // than auto-revealing — the phone has already moved on, so whoever is
+  // holding it now is not necessarily that player.
+  const handlePrevious = () => {
+    hideWord();
+    setHasSeenWord(false);
+    setCurrentIndex(i => Math.max(0, i - 1));
   };
 
   const player = setupDone && hasGame ? game.players[currentIndex] : null;
@@ -204,6 +210,9 @@ export default function RevealScreen() {
   const category = CATEGORIES.find(c => c.id === game.category);
   const CategoryIconCmp = category ? CATEGORY_ICONS[category.icon] : Brain;
   const packLabel = `${category?.label ?? 'General'} · ${DIFFICULTY_LABEL[game.difficulty] ?? 'Medium'}`;
+  const canGoBack = currentIndex > 0 && game.gameSettings.revealBackEnabled;
+  const nextPlayer = game.players[currentIndex + 1];
+  const passLabel = nextPlayer ? `Pass to ${nextPlayer.name}` : 'Start the game';
 
   const glowScale = holdPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] });
   const glowOpacity = reduceMotion
@@ -220,9 +229,7 @@ export default function RevealScreen() {
           {wordVisible ? (
             /* Revealed: no exit button, so nobody taps away mid-peek. */
             <View style={styles.revealHeader}>
-              <AppText style={styles.label}>
-                {player.name.toUpperCase()} · PLAYER {currentIndex + 1}
-              </AppText>
+              <AppText style={styles.label}>{player.name.toUpperCase()}</AppText>
             </View>
           ) : (
             <>
@@ -230,8 +237,6 @@ export default function RevealScreen() {
                 <IconButton onPress={exitGame} accessibilityLabel="Exit game">
                   <X size={20} color={COLORS.ink} />
                 </IconButton>
-                <AppText style={styles.label}>PLAYER {currentIndex + 1} OF {total}</AppText>
-                <View style={styles.headerSpacer} />
               </View>
 
               <View style={styles.pips}>
@@ -261,6 +266,22 @@ export default function RevealScreen() {
                   Use headphones so others cannot hear your word.
                 </AppText>
               )}
+              {showBackTip && !hasSeenWord && (
+                <View style={styles.tip}>
+                  <AppText style={styles.tipText}>
+                    Tip: a back button lets a player undo an accidental pass. Turn it off
+                    in Game Settings if you would rather it was not there.
+                  </AppText>
+                  <TouchableOpacity
+                    onPress={() => setShowBackTip(false)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Dismiss tip"
+                  >
+                    <X size={14} color={COLORS.honeyText} />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )}
 
@@ -289,42 +310,56 @@ export default function RevealScreen() {
                 // card a different shape from the crew card, which is exactly
                 // what the reveal must never do.
                 subtitle={subtitleFor(isImposter, game.difficulty === 'easy', game.hint)}
-                footer={
-                  <View style={styles.peekWrap}>
-                    <View style={styles.peekBar}>
-                      {/* scaleX anchored left, not width, so the countdown
-                          runs on the UI thread rather than the JS thread. */}
-                      <Animated.View
-                        style={[styles.peekFill, { transform: [{ scaleX: peekAnim }] }]}
-                      />
-                    </View>
-                    <AppText style={styles.peekText}>Let go to hide it</AppText>
-                  </View>
-                }
+                footer={<AppText style={styles.peekText}>Let go to hide it</AppText>}
               />
             ) : (
-              <View style={styles.holdCard}>
-                <View style={styles.holdIconWrap}>
-                  <Animated.View
-                    pointerEvents="none"
-                    style={[styles.holdGlow, { opacity: glowOpacity, transform: [{ scale: glowScale }] }]}
-                  />
-                  <View style={styles.holdIcon}>
-                    <Pointer size={38} color={COLORS.honey} />
+              // Same shadow/blur/radius recipe as RevealCard above, so the
+              // pre-reveal and revealed states read as one physical card
+              // rather than a swap to a different pop-up.
+              <View style={styles.shadowWrap}>
+                <View style={styles.card}>
+                  {Platform.OS !== 'web' && (
+                    <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
+                  )}
+                  <View style={styles.holdContent}>
+                    <View style={styles.holdIconWrap}>
+                      <Animated.View
+                        pointerEvents="none"
+                        style={[styles.holdGlow, { opacity: glowOpacity, transform: [{ scale: glowScale }] }]}
+                      />
+                      <View style={styles.holdIcon}>
+                        <Pointer size={38} color={COLORS.honey} />
+                      </View>
+                    </View>
+                    <AppText style={styles.holdTitle}>Press and hold to see your word</AppText>
+                    <AppText style={styles.holdSub}>Let go to hide it again</AppText>
                   </View>
                 </View>
-                <AppText style={styles.holdTitle}>Press and hold to see your word</AppText>
-                <AppText style={styles.holdSub}>Let go to hide it again</AppText>
               </View>
             )}
           </Pressable>
 
-          {hasSeenWord && !wordVisible && (
-            <InkButton
-              label="Hide and pass"
-              onPress={handleNext}
-              icon={<EyeOff size={18} color={COLORS.background} />}
-            />
+          {hasSeenWord && (
+            <View style={styles.actions}>
+              <AppText style={styles.counterLabel}>PLAYER {currentIndex + 1} OF {total}</AppText>
+              <View style={styles.actionRow}>
+                {canGoBack && (
+                  <IconButton
+                    size={48}
+                    onPress={handlePrevious}
+                    accessibilityLabel="Go back to the previous player's turn"
+                  >
+                    <ArrowLeft size={20} color={COLORS.ink} />
+                  </IconButton>
+                )}
+                <PrimaryButton
+                  label={passLabel}
+                  onPress={handleNext}
+                  icon={<EyeOff size={18} color={COLORS.onHoney} />}
+                  style={styles.passButton}
+                />
+              </View>
+            </View>
           )}
         </Animated.View>
       </SafeAreaView>
@@ -352,10 +387,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: 10,
   },
-  headerSpacer: { width: 40 },
   revealHeader: {
     alignItems: 'center',
     paddingVertical: 10,
@@ -409,17 +442,51 @@ const styles = StyleSheet.create({
     color: COLORS.textBody,
     textAlign: 'center',
   },
+  tip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    maxWidth: 320,
+    backgroundColor: COLORS.honeySoft,
+    borderWidth: 1,
+    borderColor: COLORS.honeyBorder,
+  },
+  tipText: {
+    flex: 1,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 11.5,
+    lineHeight: 16,
+    color: COLORS.honeyText,
+  },
 
   cardPress: { flex: 1 },
 
-  // Pre-reveal card
-  holdCard: {
+  // Shared card recipe — pre-reveal and revealed states both use this, via
+  // RevealCard's own copy of the same styling for the revealed state.
+  shadowWrap: {
+    flex: 1,
+    borderRadius: 26,
+    shadowColor: SHADOW.card.color,
+    shadowOffset: { width: 0, height: SHADOW.card.offsetY },
+    shadowOpacity: SHADOW.card.opacity,
+    shadowRadius: SHADOW.card.radius,
+    elevation: SHADOW.card.elevation,
+  },
+  card: {
     flex: 1,
     minHeight: 300,
     borderRadius: 26,
     backgroundColor: COLORS.glassFill,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
+    overflow: 'hidden',
+  },
+  holdContent: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
@@ -462,31 +529,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Revealed card footer
-  peekWrap: {
-    width: 150,
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 16,
-  },
-  peekBar: {
-    width: '100%',
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-    backgroundColor: COLORS.divider,
-  },
-  peekFill: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 3,
-    backgroundColor: COLORS.honey,
-    // scaleX shrinks towards this origin, matching the old width animation.
-    transformOrigin: 'left',
-  },
   peekText: {
     fontFamily: FONTS.bodyRegular,
     fontSize: 11,
     color: COLORS.textMuted,
+    marginTop: 16,
   },
+
+  actions: { gap: 10 },
+  counterLabel: {
+    fontFamily: FONTS.bodySemiBold,
+    fontSize: 10.5,
+    letterSpacing: 1.2,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  passButton: { flex: 1 },
 });

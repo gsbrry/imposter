@@ -31,6 +31,9 @@ interface GameContextType {
   resetGame: () => void;
   isPremium: boolean;
   setIsPremium: (v: boolean) => void;
+  /** True for this app session only, when the previous launch was a long time ago. */
+  longAbsence: boolean;
+  setLongAbsence: (v: boolean) => void;
 }
 
 const defaultGame: GameState = {
@@ -51,16 +54,21 @@ const GameContext = createContext<GameContextType>({
   resetGame: () => {},
   isPremium: false,
   setIsPremium: () => {},
+  longAbsence: false,
+  setLongAbsence: () => {},
 });
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [game, setGame] = useState<GameState>(defaultGame);
   const [isPremium, setIsPremium] = useState(false);
+  const [longAbsence, setLongAbsence] = useState(false);
 
   const resetGame = () => setGame(defaultGame);
 
   return (
-    <GameContext.Provider value={{ game, setGame, resetGame, isPremium, setIsPremium }}>
+    <GameContext.Provider
+      value={{ game, setGame, resetGame, isPremium, setIsPremium, longAbsence, setLongAbsence }}
+    >
       {children}
     </GameContext.Provider>
   );

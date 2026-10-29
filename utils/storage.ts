@@ -16,7 +16,12 @@ const KEYS = {
   WORDS_FEED: 'IMPOSTR_WORDS_FEED',
   WORDS_FEED_CHECKED_AT: 'IMPOSTR_WORDS_FEED_CHECKED_AT',
   WORDS_FEED_SEEN_VERSION: 'IMPOSTR_WORDS_FEED_SEEN_VERSION',
+  LAST_OPENED_AT: 'IMPOSTR_LAST_OPENED_AT',
+  REVEAL_BACK_TIP_SHOWN: 'IMPOSTR_REVEAL_BACK_TIP_SHOWN',
 };
+
+/** How long a gap between launches counts as "away for a while". */
+export const LONG_ABSENCE_MS = 7 * 24 * 60 * 60 * 1000;
 
 export interface PlayerData {
   id: string;
@@ -55,6 +60,13 @@ export interface GameSettings {
   customTimerSeconds: number;
   /** Which generation of shipped defaults this record has been through. */
   defaultsVersion?: number;
+  /**
+   * Shows a "go back" button alongside "pass to next" on the reveal screen,
+   * letting a mis-tap be corrected. On by default; see app/reveal.tsx for
+   * the privacy trade-off this carries (going back re-shows a previous
+   * player's card, gated behind its own press-and-hold).
+   */
+  revealBackEnabled: boolean;
 }
 
 const defaultStats: Stats = {
@@ -83,6 +95,7 @@ export const defaultGameSettings: GameSettings = {
   timerPerClue: 'none',
   customTimerSeconds: 60,
   defaultsVersion: GAME_SETTINGS_DEFAULTS_VERSION,
+  revealBackEnabled: true,
 };
 
 /** What version 1 of the app shipped as defaults. */
@@ -149,8 +162,13 @@ export const storage = {
   getLastCategory: () => get<string>(KEYS.LAST_CATEGORY, 'general'),
   setLastCategory: (cat: string) => set(KEYS.LAST_CATEGORY, cat),
 
+  // Merged over the defaults so a record saved before a field existed
+  // (e.g. revealBackEnabled) comes back with that field set rather than
+  // undefined.
   getGameSettings: () =>
-    get<GameSettings>(KEYS.GAME_SETTINGS, defaultGameSettings).then(applyGameSettingsDefaults),
+    get<Partial<GameSettings>>(KEYS.GAME_SETTINGS, defaultGameSettings).then(s =>
+      applyGameSettingsDefaults({ ...defaultGameSettings, ...s })
+    ),
   setGameSettings: (s: GameSettings) => set(KEYS.GAME_SETTINGS, s),
 
   getTeamVote: () => get<boolean>(KEYS.TEAM_VOTE, false),
@@ -172,6 +190,13 @@ export const storage = {
   /** The feed version whose New words sheet has already been shown. */
   getWordsFeedSeenVersion: () => get<number>(KEYS.WORDS_FEED_SEEN_VERSION, 0),
   setWordsFeedSeenVersion: (v: number) => set(KEYS.WORDS_FEED_SEEN_VERSION, v),
+
+  getLastOpenedAt: () => get<number>(KEYS.LAST_OPENED_AT, 0),
+  setLastOpenedAt: (at: number) => set(KEYS.LAST_OPENED_AT, at),
+
+  /** The reveal screen's "you can turn off going back" tip — shown once ever. */
+  getRevealBackTipShown: () => get<boolean>(KEYS.REVEAL_BACK_TIP_SHOWN, false),
+  setRevealBackTipShown: (val: boolean) => set(KEYS.REVEAL_BACK_TIP_SHOWN, val),
 
   getSuggestions: () => get<Suggestion[]>(KEYS.SUGGESTIONS, []),
   addSuggestion: async (category: string, reason: string): Promise<void> => {

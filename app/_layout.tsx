@@ -24,7 +24,7 @@ import { initCrashReporting } from '@/utils/crashReporting';
 import PhoneFrame from '@/components/PhoneFrame';
 import AppSplash from '@/components/SplashScreen';
 import { usePremium } from '@/hooks/usePremium';
-import { storage } from '@/utils/storage';
+import { storage, LONG_ABSENCE_MS } from '@/utils/storage';
 import { ENTITLEMENT_ID } from '@/constants/revenuecat';
 import { REVIEW_ACCESS_ENABLED } from '@/constants/reviewAccess';
 import { COLORS } from '@/constants/theme';
@@ -79,6 +79,29 @@ function RCInitialiser() {
   return null;
 }
 
+/**
+ * Records this launch against the last one, so the reveal screen can show
+ * its one-time "you can turn off going back" tip only after a real gap —
+ * never on a first-ever install, and never on every ordinary reopen.
+ */
+function SessionTracker() {
+  const { setLongAbsence } = useGame();
+
+  useEffect(() => {
+    (async () => {
+      const lastOpenedAt = await storage.getLastOpenedAt();
+      const now = Date.now();
+      if (lastOpenedAt > 0 && now - lastOpenedAt > LONG_ABSENCE_MS) {
+        setLongAbsence(true);
+      }
+      await storage.setLastOpenedAt(now);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return null;
+}
+
 export default function RootLayout() {
   useFrameworkReady();
 
@@ -105,6 +128,7 @@ export default function RootLayout() {
       <GameProvider>
         <AccessibilityProvider>
         <RCInitialiser />
+        <SessionTracker />
         <PhoneFrame>
           {!fontsLoaded && !fontError ? (
             <AppSplash />

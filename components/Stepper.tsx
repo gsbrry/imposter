@@ -31,11 +31,13 @@ export default function Stepper({
   return (
     <View style={styles.row}>
       <IconButton
+        size={44}
+        glass={false}
         onPress={onDecrement}
         accessibilityLabel={decrementAccessibilityLabel}
-        style={atMin ? styles.disabled : undefined}
+        style={[styles.minusFill, atMin && styles.disabled]}
       >
-        <Minus size={24} color={atMin ? COLORS.textFaint : COLORS.ink} />
+        <Minus size={22} color={atMin ? COLORS.textFaint : COLORS.ink} />
       </IconButton>
 
       <View style={styles.center}>
@@ -44,11 +46,13 @@ export default function Stepper({
       </View>
 
       <IconButton
+        size={44}
+        glass={false}
         onPress={onIncrement}
         accessibilityLabel={incrementAccessibilityLabel}
-        style={atMax ? styles.disabled : undefined}
+        style={[styles.plusFill, atMax && styles.disabled]}
       >
-        <Plus size={24} color={atMax ? COLORS.textFaint : COLORS.honey} />
+        <Plus size={22} color={COLORS.onHoney} />
       </IconButton>
     </View>
   );
@@ -72,6 +76,17 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
     color: COLORS.textMuted,
+  },
+  // Filled circles so the buttons read clearly against the card, instead of
+  // a faint icon over translucent glass — the `+` especially was reported
+  // as hard to see.
+  minusFill: {
+    backgroundColor: COLORS.glassFillStrong,
+    borderWidth: 1,
+    borderColor: COLORS.divider,
+  },
+  plusFill: {
+    backgroundColor: COLORS.honey,
   },
   disabled: { opacity: 0.4 },
 });

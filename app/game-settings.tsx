@@ -47,6 +47,7 @@ export default function GameSettingsScreen() {
   const [timerPerClue, setTimerPerClue] = useState<TimerValue>(defaultGameSettings.timerPerClue);
   const [customSeconds, setCustomSeconds] = useState(String(defaultGameSettings.customTimerSeconds));
   const [teamVote, setTeamVote] = useState(false);
+  const [revealBackEnabled, setRevealBackEnabled] = useState(defaultGameSettings.revealBackEnabled);
   const customFocus = useWebFocusRing();
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function GameSettingsScreen() {
       setTurnsBeforeGuess(s.turnsBeforeGuess ?? defaultGameSettings.turnsBeforeGuess);
       setTimerPerClue(s.timerPerClue);
       setCustomSeconds(String(s.customTimerSeconds));
+      setRevealBackEnabled(s.revealBackEnabled);
     });
     storage.getTeamVote().then(setTeamVote);
     Animated.parallel([
@@ -83,6 +85,7 @@ export default function GameSettingsScreen() {
       playerCount, turnsBeforeGuess, timerPerClue,
       customTimerSeconds: safeCustom,
       defaultsVersion: GAME_SETTINGS_DEFAULTS_VERSION,
+      revealBackEnabled,
     };
     await storage.setGameSettings(settings);
     await storage.setTeamVote(teamVote);
@@ -218,6 +221,20 @@ export default function GameSettingsScreen() {
                 value={teamVote}
                 onValueChange={setTeamVote}
                 accessibilityLabel="Team votes together"
+              />
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.row}>
+              <View style={styles.rowText}>
+                <AppText style={styles.rowTitle}>Back button while passing</AppText>
+                <AppText style={styles.rowSub}>Lets a player undo a pass and show a previous turn again</AppText>
+              </View>
+              <Toggle
+                value={revealBackEnabled}
+                onValueChange={setRevealBackEnabled}
+                accessibilityLabel="Back button while passing"
               />
             </View>
           </GlassCard>
