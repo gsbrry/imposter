@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, RADIUS, SPACING, BLUR, SHADOW } from '../constants/theme';
+import { COLORS, RADIUS, SPACING, BLUR, SHADOW, NATIVE_BLUR } from '../constants/theme';
 
 interface BottomSheetProps {
   visible: boolean;
@@ -44,14 +44,14 @@ export default function BottomSheet({ visible, onClose, children }: BottomSheetP
         accessibilityRole="button"
         accessibilityLabel="Close"
       >
-        {Platform.OS !== 'web' && (
+        {NATIVE_BLUR && (
           <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
         )}
       </Pressable>
 
       <View style={[styles.shadow, { bottom: Math.max(insets.bottom, 8), maxHeight: height * 0.85 }]}>
         <View style={styles.sheet}>
-          {Platform.OS !== 'web' && (
+          {NATIVE_BLUR && (
             <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
           )}
           <View style={styles.handle} />
@@ -79,7 +79,10 @@ const styles = StyleSheet.create({
   },
   sheet: {
     borderRadius: RADIUS.sheet,
-    backgroundColor: Platform.OS === 'web' ? COLORS.glassFillSolid : COLORS.glassFillStrong,
+    // Near-opaque wherever there is no real blur behind it (web always;
+    // Android since NATIVE_BLUR is iOS-only) — the thinner fill is only
+    // right when a true blur is doing the rest of the work.
+    backgroundColor: NATIVE_BLUR ? COLORS.glassFillStrong : COLORS.glassFillSolid,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     paddingHorizontal: 20,

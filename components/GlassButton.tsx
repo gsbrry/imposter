@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-  Animated, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, Platform,
+  Animated, TouchableOpacity, StyleSheet, StyleProp, ViewStyle,
 } from 'react-native';
 import AppText from './AppText';
 import { BlurView } from 'expo-blur';
-import { COLORS, FONTS, RADIUS, SIZE, SPACING, BLUR } from '../constants/theme';
+import { COLORS, FONTS, RADIUS, SIZE, SPACING, BLUR, NATIVE_BLUR } from '../constants/theme';
 import { usePressScale } from '../hooks/usePressScale';
 import { useAccessibility } from '../context/AccessibilityContext';
 
@@ -37,7 +37,7 @@ export default function GlassButton({
         accessibilityLabel={accessibilityLabel ?? label}
         style={[styles.button, { minHeight: SIZE.button * textScale }]}
       >
-        {Platform.OS !== 'web' && (
+        {NATIVE_BLUR && (
           <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
         )}
         {icon}

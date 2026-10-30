@@ -19,7 +19,7 @@ import Trophy from 'lucide-react-native/dist/esm/icons/trophy';
 import PawPrint from 'lucide-react-native/dist/esm/icons/paw-print';
 import Briefcase from 'lucide-react-native/dist/esm/icons/briefcase';
 import PartyPopper from 'lucide-react-native/dist/esm/icons/party-popper';
-import { COLORS, FONTS, SPACING, SHADOW, BLUR } from '../constants/theme';
+import { COLORS, FONTS, SPACING, SHADOW, BLUR, NATIVE_BLUR } from '../constants/theme';
 import ScreenBackground from '../components/ScreenBackground';
 import RevealCard from '../components/RevealCard';
 import PrimaryButton from '../components/PrimaryButton';
@@ -318,7 +318,7 @@ export default function RevealScreen() {
               // rather than a swap to a different pop-up.
               <View style={styles.shadowWrap}>
                 <View style={styles.card}>
-                  {Platform.OS !== 'web' && (
+                  {NATIVE_BLUR && (
                     <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
                   )}
                   <View style={styles.holdContent}>

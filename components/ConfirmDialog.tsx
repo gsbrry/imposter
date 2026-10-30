@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import AppText from './AppText';
-import { COLORS, FONTS, RADIUS, SHADOW, SPACING } from '../constants/theme';
+import { COLORS, FONTS, RADIUS, SHADOW, SPACING, NATIVE_BLUR } from '../constants/theme';
 import GlassButton from './GlassButton';
 import InkButton from './InkButton';
 
@@ -50,7 +50,7 @@ export default function ConfirmDialog({
         accessibilityRole="button"
         accessibilityLabel={cancelLabel}
       >
-        {Platform.OS !== 'web' && (
+        {NATIVE_BLUR && (
           <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
         )}
       </Pressable>
@@ -88,7 +88,10 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.xl,
     padding: 20,
     gap: 12,
-    backgroundColor: Platform.OS === 'web' ? COLORS.glassFillSolid : COLORS.glassFillStrong,
+    // This card itself never sits over a BlurView (only the scrim behind it
+    // does), so it should always take the more opaque fill — glassFillStrong
+    // was wrong here on Android, which had no blur underneath it either.
+    backgroundColor: NATIVE_BLUR ? COLORS.glassFillStrong : COLORS.glassFillSolid,
     borderWidth: 1,
     borderColor: COLORS.glassBorder,
     shadowColor: SHADOW.card.color,

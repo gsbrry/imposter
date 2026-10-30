@@ -1,12 +1,12 @@
 import React from 'react';
 import {
-  View, TouchableOpacity, StyleSheet, Platform,
+  View, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import AppText from './AppText';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { COLORS, FONTS, SHADOW, BLUR } from '../constants/theme';
+import { COLORS, FONTS, SHADOW, BLUR, NATIVE_BLUR } from '../constants/theme';
 import { useTabBarHidden } from './TabBarVisibility';
 
 export interface TabConfig {
@@ -32,7 +32,7 @@ export default function GlassTabBar({ state, descriptors, navigation, tabs }: Bo
   return (
     <View style={[styles.wrap, { bottom: insets.bottom + 16 }]}>
       <View style={styles.bar}>
-        {Platform.OS !== 'web' && (
+        {NATIVE_BLUR && (
           <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
         )}
         <View style={[StyleSheet.absoluteFill, styles.fill]} />
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     elevation: SHADOW.card.elevation,
   },
   fill: {
-    backgroundColor: Platform.OS === 'web' ? COLORS.glassFillSolid : COLORS.glassFillStrong,
+    backgroundColor: NATIVE_BLUR ? COLORS.glassFillStrong : COLORS.glassFillSolid,
   },
   row: {
     flexDirection: 'row',
@@ -116,7 +116,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   tabOn: {
-    backgroundColor: COLORS.glassFillStrong,
+    // A solid accent tint of its own, not another translucent layer — two
+    // stacked glassFillStrong washes (this pill over the bar's own fill)
+    // read as an over-bright, hard-edged rectangle once there is no blur
+    // underneath to soften the seam.
+    backgroundColor: COLORS.honeySoft,
     shadowColor: SHADOW.card.color,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18,

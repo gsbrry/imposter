@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-  View, StyleSheet, Platform,
+  View, StyleSheet,
 } from 'react-native';
 import AppText from './AppText';
 import { BlurView } from 'expo-blur';
-import { COLORS, FONTS, BLUR, SHADOW } from '../constants/theme';
+import { COLORS, FONTS, BLUR, SHADOW, NATIVE_BLUR } from '../constants/theme';
 import { useAccessibility } from '../context/AccessibilityContext';
 import { useContentSize } from './ContentSize';
 
@@ -39,7 +39,7 @@ export default function RevealCard({ badge, eyebrow, title, subtitle, footer }: 
   return (
     <View style={styles.shadowWrap}>
       <View style={styles.card}>
-        {Platform.OS !== 'web' && (
+        {NATIVE_BLUR && (
           <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
         )}
         <View style={styles.content}>

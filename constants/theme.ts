@@ -137,6 +137,16 @@ export const BLUR = {
 };
 
 /**
+ * expo-blur's native BlurView only renders a true blur on iOS; on Android
+ * it has been observed to paint as a flat, hard-edged near-white panel
+ * instead of blending with what's behind it (reported against a real
+ * device, invisible on web since web never uses it). Every surface that
+ * uses BlurView falls back to its own solid/translucent tint when this is
+ * false, which is also what web has always rendered.
+ */
+export const NATIVE_BLUR = Platform.OS === 'ios';
+
+/**
  * Focus ring styles for text inputs on web. react-native-web paints the
  * browser's default blue outline, which is off-brand; impostr.css uses a
  * honey ring (`:focus-visible { outline: 2px solid var(--gold-deep) }`).

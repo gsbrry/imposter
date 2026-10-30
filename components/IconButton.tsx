@@ -1,7 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, View, StyleSheet, StyleProp, ViewStyle, Platform } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { COLORS, RADIUS, SIZE, BLUR } from '../constants/theme';
+import { COLORS, RADIUS, SIZE, BLUR, NATIVE_BLUR } from '../constants/theme';
 import { useAccessibility } from '../context/AccessibilityContext';
 
 interface IconButtonProps {
@@ -36,7 +36,7 @@ export default function IconButton({
       hitSlop={{ top: pad, bottom: pad, left: pad, right: pad }}
       style={[styles.btn, { width: visual, height: visual }, style]}
     >
-      {glass && Platform.OS !== 'web' && (
+      {glass && NATIVE_BLUR && (
         <BlurView intensity={BLUR.intensity} tint={BLUR.tint} style={StyleSheet.absoluteFill} />
       )}
       {glass && <View style={[StyleSheet.absoluteFill, styles.fill]} />}
